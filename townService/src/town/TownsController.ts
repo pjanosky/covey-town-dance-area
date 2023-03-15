@@ -23,6 +23,7 @@ import {
   TownSettingsUpdate,
   ViewingArea,
   PosterSessionArea,
+  DanceArea,
 } from '../types/CoveyTownSocket';
 import PosterSessionAreaReal from './PosterSessionArea';
 import { isPosterSessionArea } from '../TestUtils';
@@ -192,6 +193,38 @@ export class TownsController extends Controller {
     }
     // add viewing area to the town, throw error if it fails
     if (!curTown.addPosterSessionArea(requestBody)) {
+      throw new InvalidParametersError('Invalid poster session area');
+    }
+  }
+
+  /**
+   * Creates a dance area in a given town
+   *
+   * @param townID ID of the town in which to create the new poster session area
+   * @param sessionToken session token of the player making the request, must
+   *        match the session token returned when the player joined the town
+   * @param requestBody The new poster session area to create
+   *
+   * @throws InvalidParametersError if the session token is not valid, or if the
+   *          dance area could not be created
+   */
+  @Post('{townID}/danceArea')
+  @Response<InvalidParametersError>(400, 'Invalid values specified')
+  public async createDanceArea(
+    @Path() townID: string,
+    @Header('X-Session-Token') sessionToken: string,
+    @Body() requestBody: DanceArea,
+  ): Promise<void> {
+    // download file here TODO
+    const curTown = this._townsStore.getTownByID(townID);
+    if (!curTown) {
+      throw new InvalidParametersError('Invalid town ID');
+    }
+    if (!curTown.getPlayerBySessionToken(sessionToken)) {
+      throw new InvalidParametersError('Invalid session ID');
+    }
+    // add viewing area to the town, throw error if it fails
+    if (!curTown.addDanceArea(requestBody)) {
       throw new InvalidParametersError('Invalid poster session area');
     }
   }

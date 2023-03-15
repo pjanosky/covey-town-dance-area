@@ -17,7 +17,7 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 }
 
-export type Interactable = ViewingArea | ConversationArea | PosterSessionArea;
+export type Interactable = ViewingArea | ConversationArea | PosterSessionArea | DanceArea;
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
@@ -76,6 +76,15 @@ export interface PosterSessionArea {
   imageContents?: string;
   title?: string;
 }
+
+export interface DanceArea {
+  id: string;
+  music?: string;
+  roundId: string;
+  keySequence: number[];
+  duration: number;
+  points: Map<string, number>;
+};
 
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
