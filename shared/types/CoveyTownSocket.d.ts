@@ -120,7 +120,7 @@ export type KeySequence = number[];
 export interface DanceArea {
   id: string;
   /** The url or song id of the current song */
-  music: string;
+  music?: string;
   /** An ID representing the current round */
   roundId: string;
   /** The current number of  */

@@ -104,8 +104,8 @@ export default class DanceArea extends InteractableArea {
         id: mapObject.name,
         music: undefined,
         roundId: nanoid(),
-        // TODOO: this feels wrong.
-        keySequence: [0, 0],
+        keySequence: [],
+        // TODO: set initial values.... or make them undefined?
         duration: 20,
         points: new Map<string, number>(),
       },
