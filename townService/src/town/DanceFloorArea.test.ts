@@ -29,6 +29,24 @@ describe('DanceArea', () => {
     testArea.add(newPlayer);
   });
 
+  describe('Getters', () => {
+    it('Gets current music', () => {
+      expect(testArea.music).toEqual(music);
+    });
+    it('Gets current round ID', () => {
+      expect(testArea.roundId).toEqual(roundId);
+    });
+    it('Gets current key sequence', () => {
+      expect(testArea.keySequence).toEqual(keySequence);
+    });
+    it('Gets current duration', () => {
+      expect(testArea.duration).toEqual(duration);
+    });
+    it('Gets current points', () => {
+      expect(testArea.points).toEqual(points);
+    });
+  });
+
   describe('[OMG2 remove]', () => {
     it('Removes the player from the list of occupants and emits an interactableUpdate event', () => {
       // Add another player so that we are not also testing what happens when the last player leaves
