@@ -56,6 +56,51 @@ export default class DanceArea extends InteractableArea {
   }
 
   /**
+   * Removes a player from this dance session area.
+   *
+   * When the last player leaves, this method clears the music, and resets the points, roundId, keySequence and duration, and emits this update to all players in the Town.
+   *
+   * @param player
+   */
+  public remove(player: Player): void {
+    super.remove(player);
+    this.points.delete(player.id);
+    if (this._occupants.length === 0) {
+      this._music = undefined;
+      this._roundId = '';
+      this._keySequence = [];
+      this._duration = 0;
+      this._points.clear();
+    }
+    this._emitAreaChanged();
+  }
+
+  /**
+   * Adds a player to this dance session area.
+   *
+   * @param player
+   */
+  public add(player: Player): void {
+    super.add(player);
+    this._points.set(player.id, 0);
+    this._emitAreaChanged();
+  }
+
+  /**
+   * Increase a players points
+   *
+   * @param player
+   * @param pointInc
+   */
+  public addPoints(player: Player, pointInc: number): void {
+    super.add(player);
+    const curPoints = this.points.get(player.id);
+    const newPoints = curPoints ? curPoints + pointInc : pointInc;
+    this._points.set(player.id, newPoints);
+    this._emitAreaChanged();
+  }
+
+  /**
    * Updates the state of this PosterSessionArea, setting the poster, title, and stars properties
    *
    * @param posterSessionArea updated model
