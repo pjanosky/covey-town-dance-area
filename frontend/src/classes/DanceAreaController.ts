@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { DanceArea, KeySequence } from '../types/CoveyTownSocket';
+import { KeySequence } from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
 
 /**
@@ -30,6 +30,14 @@ export type DanceAreaEvents = {
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _model: DanceAreaModel;
 
+  private _roundId: string;
+
+  private _keySequnce: KeySequence;
+
+  private _duration: number;
+
+  private _points: Map<string, number>;
+
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
    * provided danceAreaModel.
@@ -39,6 +47,10 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   constructor(danceAreaModel: DanceAreaModel) {
     super();
     this._model = danceAreaModel;
+    this._roundId = '';
+    this._keySequnce = [];
+    this._duration = 0;
+    this._points = new Map();
   }
 
   /**
@@ -96,22 +108,40 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
-   * @returns A DanceAreaMOdel that represents the current state of this DanceAreaController.
+   * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
     return this._model;
   }
 
   /**
-   * Applies updates to this dance area controller's model, setting the music.
+   * Applies updates to this dance area controller's model, setting the music,
+   * roundId, keySequence, duration, and points.
    *
-   * @param updatedModel the model from which we are getting the udpated music
+   * @param updatedModel the model from which we are getting the udpated properties
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
+    this._roundId = updatedModel.roundId;
+    this._keySequnce = updatedModel.keySequence;
+    this._duration = updatedModel.duration;
+    this._points = updatedModel.points;
   }
+}
 
-  // export function useMusic(controller: DanceAreaController): string {
-  //   const [music, setMusic] = useState(controller.music)
-  // }
+/**
+ * A hook that returns the music for the dance area with the given controller.
+ *
+ * @param controller the given controller
+ * @returns a string representing the music
+ */
+export function useMusic(controller: DanceAreaController): string | undefined {
+  const [music, setMusic] = useState(controller.music);
+  useEffect(() => {
+    controller.addListener('musicChanged', setMusic);
+    return () => {
+      controller.removeListener('musicChanged', setMusic);
+    };
+  }, [controller]);
+  return music;
 }
