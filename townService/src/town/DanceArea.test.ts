@@ -16,17 +16,18 @@ describe('DanceArea', () => {
   const roundId = nanoid();
   const keySequence: number[] = [];
   const duration = 20;
-  const points = {};
+  let points: Record<string, number>;
 
   beforeEach(() => {
     mockClear(townEmitter);
     testArea = new DanceArea(
-      { id, music, roundId, keySequence, duration, points },
+      { id, music, roundId, keySequence, duration, points: {} },
       testAreaBox,
       townEmitter,
     );
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
+    points = { [newPlayer.id]: 0 };
   });
 
   describe('Getters', () => {
@@ -43,7 +44,7 @@ describe('DanceArea', () => {
       expect(testArea.duration).toEqual(duration);
     });
     it('Gets current points', () => {
-      expect(testArea.points).toEqual(points);
+      expect(Object.fromEntries(testArea.points)).toEqual(points);
     });
   });
 
@@ -56,7 +57,14 @@ describe('DanceArea', () => {
 
       expect(testArea.occupantsByID).toEqual([extraPlayer.id]);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({ id, music, roundId, keySequence, duration, points });
+      expect(lastEmittedUpdate).toEqual({
+        id,
+        music,
+        roundId,
+        keySequence,
+        duration,
+        points: { [extraPlayer.id]: 0 },
+      });
     });
     it("Clears the player's interactableID and emits an update for their location", () => {
       testArea.remove(newPlayer);
@@ -69,11 +77,12 @@ describe('DanceArea', () => {
       testArea.remove(newPlayer);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
+        id,
         music: undefined,
         roundId: '',
         keySequence: [],
         duration: 0,
-        points: new Map(),
+        points: {},
       });
 
       expect(testArea.music).toBeUndefined();
@@ -125,7 +134,7 @@ describe('DanceArea', () => {
     expect(testArea.roundId).toBe(newRoundId);
     expect(testArea.keySequence).toBe(newKeySequence);
     expect(testArea.duration).toBe(newDuration);
-    expect(testArea.points).toBe(newPoints);
+    expect(Object.fromEntries(testArea.points)).toEqual(newPoints);
   });
   describe('[OMG2 fromMapObject]', () => {
     it('Throws an error if the width or height are missing', () => {
