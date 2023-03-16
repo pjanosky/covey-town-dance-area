@@ -31,7 +31,7 @@ import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
 import PosterSessionAreaController from './PosterSessionAreaController';
-import { DanceAreaController } from './DanceAreaController';
+import DanceAreaController from './DanceAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 
@@ -748,7 +748,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
-   * Retrieve the poster session area controller that corresponds to a posterSessionAreaModel, creating one if necessary
+   * Retrieve the dance  area controller that corresponds to a dancaArea model, creating one if necessary
    *
    * @param posterSessionArea
    * @returns
