@@ -16,29 +16,39 @@ describe('DanceArea', () => {
   const roundId = nanoid();
   const keySequence: number[] = [];
   const duration = 20;
-  const points = new Map<string, number>();
+  let points: Map<string, number>;
 
   beforeEach(() => {
     mockClear(townEmitter);
     testArea = new DanceArea(
-      { id, music, roundId, keySequence, duration, points },
+      { id, music, roundId, keySequence, duration, points: new Map() },
       testAreaBox,
       townEmitter,
     );
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
+    points = new Map([[newPlayer.id, 0]]);
   });
 
   describe('[OMG2 remove]', () => {
     it('Removes the player from the list of occupants and emits an interactableUpdate event', () => {
       // Add another player so that we are not also testing what happens when the last player leaves
       const extraPlayer = new Player(nanoid(), mock<TownEmitter>());
+      const extraPoints = new Map([[extraPlayer.id, 0]]);
       testArea.add(extraPlayer);
       testArea.remove(newPlayer);
 
       expect(testArea.occupantsByID).toEqual([extraPlayer.id]);
+      expect(testArea.points).toEqual(extraPoints);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
-      expect(lastEmittedUpdate).toEqual({ id, music, roundId, keySequence, duration, points });
+      expect(lastEmittedUpdate).toEqual({
+        id,
+        music,
+        roundId,
+        keySequence,
+        duration,
+        points: extraPoints,
+      });
     });
     it("Clears the player's interactableID and emits an update for their location", () => {
       testArea.remove(newPlayer);
@@ -46,24 +56,28 @@ describe('DanceArea', () => {
       const lastEmittedMovement = getLastEmittedEvent(townEmitter, 'playerMoved');
       expect(lastEmittedMovement.location.interactableID).toBeUndefined();
     });
-    /*
-    it('Clears the poster image and title and sets stars to zero when the last occupant leaves', () => {
+    it('Clears the music and resets fields when the last occupant leaves', () => {
       testArea.remove(newPlayer);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
         id,
-        stars: 0,
-        title: undefined,
-        imageContents: undefined,
+        music: undefined,
+        roundId: '',
+        keySequence: [],
+        duration: 0,
+        points: new Map(),
       });
-      expect(testArea.title).toBeUndefined();
-      expect(testArea.imageContents).toBeUndefined();
-      expect(testArea.stars).toEqual(0);
-    }); */
+      expect(testArea.music).toBeUndefined();
+      expect(testArea.roundId).toEqual('');
+      expect(testArea.keySequence).toEqual([]);
+      expect(testArea.duration).toEqual(0);
+      expect(testArea.points).toEqual(new Map());
+    });
   });
   describe('add', () => {
     it('Adds the player to the occupants list', () => {
       expect(testArea.occupantsByID).toEqual([newPlayer.id]);
+      expect(testArea.points).toEqual(points);
     });
     it("Sets the player's interactableID and emits an update for their location", () => {
       expect(newPlayer.location.interactableID).toEqual(id);
@@ -121,7 +135,6 @@ describe('DanceArea', () => {
         { x, y, width, height, name, id: 10, visible: true },
         townEmitter,
       );
-      // TODO: check implementaion for expected initialization
       expect(val.boundingBox).toEqual({ x, y, width, height });
       expect(val.id).toEqual(name);
       expect(val.music).toBeUndefined();
