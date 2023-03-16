@@ -87,13 +87,12 @@ export default class DanceArea extends InteractableArea {
   }
 
   /**
-   * Increase a players points
+   * Increments the points of the given player in the area by the given number
    *
-   * @param player
-   * @param pointInc
+   * @param player player in the area
+   * @param pointInc number of points to increment by
    */
   public addPoints(player: Player, pointInc: number): void {
-    super.add(player);
     const curPoints = this.points.get(player.id);
     const newPoints = curPoints ? curPoints + pointInc : pointInc;
     this._points.set(player.id, newPoints);
