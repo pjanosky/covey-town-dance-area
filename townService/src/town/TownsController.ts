@@ -225,7 +225,7 @@ export class TownsController extends Controller {
     }
     // add viewing area to the town, throw error if it fails
     if (!curTown.addDanceArea(requestBody)) {
-      throw new InvalidParametersError('Invalid poster session area');
+      throw new InvalidParametersError('Invalid dance area');
     }
   }
 

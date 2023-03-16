@@ -171,6 +171,57 @@
 				],
 				"type": "object",
 				"additionalProperties": false
+			},
+			"KeySequence": {
+				"items": {
+					"type": "number",
+					"format": "double"
+				},
+				"type": "array",
+				"description": "Represents a sequence of keys that the user needs to press to\nperform a dance sequence."
+			},
+			"Record_string.number_": {
+				"properties": {},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"DanceArea": {
+				"description": "DanceArea is the data model used to communicate the state of a DanceInteractableArea.",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"music": {
+						"type": "string",
+						"description": "The url or song id of the current song"
+					},
+					"roundId": {
+						"type": "string",
+						"description": "An ID representing the current round"
+					},
+					"keySequence": {
+						"$ref": "#/components/schemas/KeySequence",
+						"description": "The current number of"
+					},
+					"duration": {
+						"type": "number",
+						"format": "double",
+						"description": "The duration of the current round in seconds"
+					},
+					"points": {
+						"$ref": "#/components/schemas/Record_string.number_",
+						"description": "A map from each player's ID to the number of points they have"
+					}
+				},
+				"required": [
+					"id",
+					"roundId",
+					"keySequence",
+					"duration",
+					"points"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -523,6 +574,63 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/PosterSessionArea",
+								"description": "The new poster session area to create"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/towns/{townID}/danceArea": {
+			"post": {
+				"operationId": "CreateDanceArea",
+				"responses": {
+					"204": {
+						"description": "No content"
+					},
+					"400": {
+						"description": "Invalid values specified",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InvalidParametersError"
+								}
+							}
+						}
+					}
+				},
+				"description": "Creates a dance area in a given town",
+				"tags": [
+					"towns"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "ID of the town in which to create the new poster session area",
+						"in": "path",
+						"name": "townID",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "session token of the player making the request, must\nmatch the session token returned when the player joined the town",
+						"in": "header",
+						"name": "X-Session-Token",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "The new poster session area to create",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/DanceArea",
 								"description": "The new poster session area to create"
 							}
 						}

@@ -21,7 +21,7 @@ import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
 import PosterSessionArea from './PosterSessionArea';
-import DanceArea from './DanceFloorArea';
+import DanceArea from './DanceArea';
 
 /**
  * The Town class implements the logic for each town: managing the various events that

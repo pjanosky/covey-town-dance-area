@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
 import { TownEmitter } from '../types/CoveyTownSocket';
-import DanceArea from './DanceFloorArea';
+import DanceArea from './DanceArea';
 
 describe('DanceArea', () => {
   const testAreaBox = { x: 100, y: 100, width: 100, height: 100 };
@@ -16,7 +16,7 @@ describe('DanceArea', () => {
   const roundId = nanoid();
   const keySequence: number[] = [];
   const duration = 20;
-  const points = new Map<string, number>();
+  const points = {};
 
   beforeEach(() => {
     mockClear(townEmitter);
@@ -89,7 +89,7 @@ describe('DanceArea', () => {
     const newRoundId = nanoid();
     const newKeySequence = [0, 1, 2];
     const newDuration = 45;
-    const newPoints = new Map([[newPlayer.id, 23]]);
+    const newPoints = { [newPlayer.id]: 23 };
     testArea.updateModel({
       id: newId,
       music: newMusic,
