@@ -17,12 +17,21 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
+  DanceArea,
+  DanceMoveResult,
+  DanceRating,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea, isPosterSessionArea } from '../types/TypeUtils';
+import {
+  isConversationArea,
+  isViewingArea,
+  isPosterSessionArea,
+  isDanceArea,
+} from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
 import PosterSessionAreaController from './PosterSessionAreaController';
+import { DanceAreaController } from './DanceAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 
@@ -78,6 +87,11 @@ export type TownEvents = {
    */
   posterSessionAreasChanged: (newPosterSessionAreas: PosterSessionAreaController[]) => void;
   /**
+   * An event that indicates that the set of dance areas has changed. This event is emitted after updating
+   * the town controller's record of dance session areas.
+   */
+  danceAreasChanged: (newDanceAreas: DanceAreaController[]) => void;
+  /**
    * An event that indicates that a new chat message has been received, which is the parameter passed to the listener
    */
   chatMessage: (message: ChatMessage) => void;
@@ -96,6 +110,20 @@ export type TownEvents = {
    * @param obj the interactable that is being interacted with
    */
   interact: <T extends Interactable>(typeName: T['name'], obj: T) => void;
+
+  /**
+   * An event that indicates that another player has successfully or unsuccessfully performed
+   * dance move.
+   *
+   * @param result: The result of the dance move that the other user performed
+   */
+  danceMove: (result: DanceMoveResult) => void;
+
+  /**
+   * An event that indicates that another player has rated our player's dancing.
+   * @param rating the rating that the other player gave.
+   */
+  danceRating: (rating: DanceRating) => void;
 };
 
 /**
@@ -199,6 +227,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   private _viewingAreas: ViewingAreaController[] = [];
 
   private _posterSessionAreas: PosterSessionAreaController[] = [];
+
+  private _danceAreas: DanceAreaController[] = [];
 
   public constructor({ userName, townID, loginController }: ConnectionProperties) {
     super();
@@ -329,6 +359,22 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Returns the set of dance areas that are a part of this town.
+   */
+  public get danceAreas() {
+    return this._danceAreas;
+  }
+
+  /**
+   * Updates the set of dance areas that are a part of this town and
+   * emits and update to the towns listenders.
+   */
+  public set danceAreas(newDanceAreas: DanceAreaController[]) {
+    this._danceAreas = newDanceAreas;
+    this.emit('danceAreasChanged', newDanceAreas);
+  }
+
+  /**
    * Begin interacting with an interactable object. Emits an event to all listeners.
    * @param interactedObj
    */
@@ -451,6 +497,33 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         if (relArea) {
           relArea.updateFrom(interactable);
         }
+      } else if (isDanceArea(interactable)) {
+        const relAre = this._danceAreas.find(area => area.id == interactable.id);
+        if (relAre) {
+          relAre.updateFrom(interactable);
+        }
+      }
+    });
+
+    /**
+     * When a dance move event is received, forward the event to the town's listeners if
+     * the dance move came from the same interactable that the player is currently in.
+     */
+    this._socket.on('danceMove', danceMoveResult => {
+      const curInteractableID = this._ourPlayer?.location.interactableID;
+      if (curInteractableID == danceMoveResult.interactableID) {
+        this.emit('danceMove', danceMoveResult);
+      }
+    });
+
+    /**
+     * When a dance rating event is receieved, forward the event the town's listeners if
+     * the dance rating came from the same interactable that the player is currently in.
+     */
+    this._socket.on('danceRating', danceRating => {
+      const curInteractableID = this._ourPlayer?.location.interactableID;
+      if (curInteractableID === danceRating.interactableID) {
+        this.emit('danceRating', danceRating);
       }
     });
   }
@@ -479,6 +552,24 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public emitChatMessage(message: ChatMessage) {
     this._socket.emit('chatMessage', message);
+  }
+
+  /**
+   * Emits the result of performing a dance move to the townService.
+   *
+   * @param danceMoveResult the result to emit
+   */
+  public emitDanceMove(danceMoveResult: DanceMoveResult) {
+    this._socket.emit('danceMove', danceMoveResult);
+  }
+
+  /**
+   * Emits a rating of another player's dance moves to the townService.
+   *
+   * @param danceRating the rating to emit
+   */
+  public emitDanceRating(danceRating: DanceRating) {
+    this._socket.emit('danceRating', danceRating);
   }
 
   /**
@@ -578,6 +669,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         this._conversationAreas = [];
         this._viewingAreas = [];
         this._posterSessionAreas = [];
+        this._danceAreas = [];
         initialData.interactables.forEach(eachInteractable => {
           if (isConversationArea(eachInteractable)) {
             this._conversationAreasInternal.push(
@@ -590,6 +682,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             this._viewingAreas.push(new ViewingAreaController(eachInteractable));
           } else if (isPosterSessionArea(eachInteractable)) {
             this._posterSessionAreas.push(new PosterSessionAreaController(eachInteractable));
+          } else if (isDanceArea(eachInteractable)) {
+            this._danceAreas.push(new DanceAreaController(eachInteractable));
           }
         });
         this._userID = initialData.userID;
@@ -649,6 +743,25 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         imageContents: undefined,
       });
       this._posterSessionAreas.push(newController);
+      return newController;
+    }
+  }
+
+  /**
+   * Retrieve the poster session area controller that corresponds to a posterSessionAreaModel, creating one if necessary
+   *
+   * @param posterSessionArea
+   * @returns
+   */
+  public getDanceAreaController(danceArea: DanceArea): DanceAreaController {
+    const existingController = this._danceAreas.find(
+      eachExistingArea => eachExistingArea.id === danceArea.id,
+    );
+    if (existingController) {
+      return existingController;
+    } else {
+      const newController = new DanceAreaController(danceArea);
+      this._danceAreas.push(newController);
       return newController;
     }
   }
@@ -850,6 +963,26 @@ export function usePosterSessionAreaController(
   );
   if (!ret) {
     throw new Error(`Unable to locate poster session area id ${posterSessionAreaID}`);
+  }
+  return ret;
+}
+
+/**
+ * A react hook to retrieve a dance area controller.
+ *
+ * This function will throw an error if the dance area controller does not exist.
+ *
+ * This hook relies on the TownControllerContext.
+ *
+ * @param posterSessionAreaID The ID of the dance area to retrieve the controller for
+ *
+ * @throws Error if there is no dance area controller matching the specifeid ID
+ */
+export function useDanceAreaController(danceAreaID: string): DanceAreaController {
+  const townController = useTownController();
+  const ret = townController.danceAreas.find(eachArea => eachArea.id === danceAreaID);
+  if (!ret) {
+    throw new Error(`Unable to locate poster session area id ${danceAreaID}`);
   }
   return ret;
 }
