@@ -8,13 +8,44 @@ import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
  * The events that a DanceAreaController can emit
  */
 export type DanceAreaEvents = {
-  // The only client to server communication would be changing the music
-
   /**
    * A musicChanged event indicates that a new song is playing in the DanceArea.
    * @param music the title of the new song
    */
   musicChanged: (music: string | undefined) => void;
+
+  /**
+   * A roundChanged event indicates that a new round has begun, with a new
+   * unique ID.
+   *
+   * @param roundId the new unique ID
+   */
+  roundIdChanged: (roundId: string) => void;
+
+  /**
+   * A newKeySequence event indicates that there is a new key sequence for
+   * the players to follow.
+   *
+   * @param keySequence the new list of numbers representing the sequence
+   */
+  newKeySequence: (keySequence: KeySequence) => void;
+
+  /**
+   * A durationChanged event indicates that a new round has begun with a set
+   * duration.
+   *
+   * @param duration the set length of the round (in seconds)
+   */
+  durationChanged: (duration: number) => void;
+
+  /**
+   * A addPointsForPlayer event indicates that a specific player has gained
+   * a specified amount of points.
+   *
+   * @param playerId the id of the player who won the points
+   * @param pointsToAdd the number of points won
+   */
+  pointsChanged: (points: Map<string, number>) => void;
 };
 
 /**
@@ -30,14 +61,6 @@ export type DanceAreaEvents = {
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _model: DanceAreaModel;
 
-  private _roundId: string;
-
-  private _keySequnce: KeySequence;
-
-  private _duration: number;
-
-  private _points: Map<string, number>;
-
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
    * provided danceAreaModel.
@@ -47,10 +70,6 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   constructor(danceAreaModel: DanceAreaModel) {
     super();
     this._model = danceAreaModel;
-    this._roundId = '';
-    this._keySequnce = [];
-    this._duration = 0;
-    this._points = new Map();
   }
 
   /**
@@ -87,10 +106,31 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * If a new round has begun then we create a new round ID associated with it
+   * and emit an update.
+   */
+  public set roundId(roundId: string) {
+    if (this._model.roundId !== roundId) {
+      this._model.roundId = roundId;
+      this.emit('roundIdChanged', roundId);
+    }
+  }
+
+  /**
    * The current key sequence that the player must follow.
    */
   public get keySequence(): KeySequence {
     return this._model.keySequence;
+  }
+
+  /**
+   * If there is a new key sequence then we change it and emit an update.
+   */
+  public set keySequence(keySequence: KeySequence) {
+    if (this._model.keySequence !== keySequence) {
+      this._model.keySequence = keySequence;
+      this.emit('newKeySequence', keySequence);
+    }
   }
 
   /**
@@ -101,10 +141,32 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * If the duration of a round changes, then we make the change and emit
+   * an update.
+   */
+  public set duration(duration: number) {
+    if (this._model.duration !== duration) {
+      this._model.duration = duration;
+      this.emit('durationChanged', duration);
+    }
+  }
+
+  /**
    * The amount points of each player currently in the dance area.
    */
   public get points(): Map<string, number> {
     return this._model.points;
+  }
+
+  /**
+   * If the points change for any player(s), then we make the change and emit
+   * an update.
+   */
+  public set points(points: Map<string, number>) {
+    if (this._model.points !== points) {
+      this._model.points = points;
+      this.emit('pointsChanged', points);
+    }
   }
 
   /**
@@ -122,10 +184,10 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
-    this._roundId = updatedModel.roundId;
-    this._keySequnce = updatedModel.keySequence;
-    this._duration = updatedModel.duration;
-    this._points = updatedModel.points;
+    this.roundId = updatedModel.roundId;
+    this.keySequence = updatedModel.keySequence;
+    this.duration = updatedModel.duration;
+    this.points = updatedModel.points;
   }
 }
 
