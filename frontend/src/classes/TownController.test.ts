@@ -11,14 +11,25 @@ import {
 } from '../TestUtils';
 import {
   ChatMessage,
+  ConversationArea,
   ConversationArea as ConversationAreaModel,
   CoveyTownSocket,
+  DanceArea,
+  DanceMoveResult,
+  DanceRating,
   Player as PlayerModel,
   PlayerLocation,
+  Rating,
   ServerToClientEvents,
   TownJoinResponse,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isPosterSessionArea, isViewingArea } from '../types/TypeUtils';
+import {
+  isConversationArea,
+  isDanceArea,
+  isPosterSessionArea,
+  isViewingArea,
+} from '../types/TypeUtils';
+import DanceAreaController from './DanceAreaController';
 import PlayerController from './PlayerController';
 import PosterSessionAreaController from './PosterSessionAreaController';
 import TownController, { TownEvents } from './TownController';
@@ -81,6 +92,33 @@ describe('TownController', () => {
     }
     return mockListener;
   };
+  /**
+   * Testing harness that mocks the arrival of an event from the CoveyTownSocket and expects that
+   * a given listener is not invoked.
+   *
+   * Returns a mock listener callback that represents the listener under expectation
+   *
+   * @param receivedEvent
+   * @param receivedParameter
+   * @param listenerToExpect
+   * @param expectedListenerParam
+   * @returns mock listener mock
+   */
+  const emitEventAndExpectListenerNotFiring = <
+    ReceivedEventFromSocket extends EventNames<ServerToClientEvents>,
+    ExpectedListenerName extends EventNames<TownEvents>,
+  >(
+    receivedEvent: ReceivedEventFromSocket,
+    receivedParameter: ReceivedEventParameter<ReceivedEventFromSocket>,
+    listenerToExpect: ExpectedListenerName,
+  ): jest.MockedFunction<TownEvents[ExpectedListenerName]> => {
+    const eventListener = getEventListener(mockSocket, receivedEvent);
+    const mockListener = jest.fn() as jest.MockedFunction<TownEvents[ExpectedListenerName]>;
+    testController.addListener(listenerToExpect, mockListener);
+    eventListener(receivedParameter);
+    expect(mockListener).toHaveBeenCalledTimes(0);
+    return mockListener;
+  };
 
   beforeEach(() => {
     mockClear(mockSocket);
@@ -114,7 +152,37 @@ describe('TownController', () => {
       expect(testController.sessionToken).toEqual(townJoinResponse.sessionToken);
       expect(testController.userID).toEqual(townJoinResponse.userID);
     });
+    it('initializes the interactables in the controller', () => {
+      const conversationAreas = townJoinResponse.interactables.filter(area =>
+        isConversationArea(area),
+      ) as ConversationArea[];
+      const viewingAreas = townJoinResponse.interactables.filter(area =>
+        isViewingArea(area),
+      ) as ViewingArea[];
+      const posterSessionAreas = townJoinResponse.interactables.filter(area =>
+        isPosterSessionArea(area),
+      ) as PosterSessionArea[];
+      const danceAreas = townJoinResponse.interactables.filter(area =>
+        isDanceArea(area),
+      ) as DanceArea[];
 
+      conversationAreas.forEach(conversationArea =>
+        expect(
+          testController.conversationAreas.find(area => area.id == conversationArea.id),
+        ).toBeDefined(),
+      );
+      viewingAreas.forEach(viewingArea =>
+        expect(testController.viewingAreas.find(area => area.id == viewingArea.id)).toBeDefined(),
+      );
+      posterSessionAreas.forEach(posterSessionArea =>
+        expect(
+          testController.posterSessionAreas.find(area => area.id == posterSessionArea.id),
+        ).toBeDefined(),
+      );
+      danceAreas.forEach(danceArea =>
+        expect(testController.danceAreas.find(area => area.id == danceArea.id)).toBeDefined(),
+      );
+    });
     it('Forwards update town calls to local CoveyTownEvents listeners', () => {
       const newFriendlyName = nanoid();
       emitEventAndExpectListenerFiring(
@@ -183,6 +251,26 @@ describe('TownController', () => {
       } else {
         fail('Did not find an existing, empty conversation area in the town join response');
       }
+    });
+    it('Emits locally created dance move result to the socket, and dispatches no other events', () => {
+      const testDanceMoveResult: DanceMoveResult = {
+        interactableID: nanoid(),
+        playerId: nanoid(),
+        roundId: nanoid(),
+        success: true,
+      };
+      testController.emitDanceMove(testDanceMoveResult);
+      expect(mockSocket.emit).toBeCalledWith('danceMove', testDanceMoveResult);
+    });
+    it('Emits locally created dance rating to the socket, and dispatches no other events', () => {
+      const testDanceRating: DanceRating = {
+        interactableID: nanoid(),
+        sender: nanoid(),
+        recipient: nanoid(),
+        rating: 5,
+      };
+      testController.emitDanceRating(testDanceRating);
+      expect(mockSocket.emit).toBeCalledWith('danceRating', testDanceRating);
     });
     describe('[T2] interactableUpdate events', () => {
       describe('Conversation Area updates', () => {
@@ -513,6 +601,100 @@ describe('TownController', () => {
         'playerMoved',
         PlayerController.fromPlayerModel(testPlayer),
       );
+    });
+    describe('Dance move events', () => {
+      it('Emits danceMove event when a dance move result is received', async () => {
+        mockTownControllerConnection(testController, mockSocket);
+        const testInteractableID = nanoid();
+        testController.ourPlayer.location.interactableID = testInteractableID;
+        const testDanceMoveResult = {
+          interactableID: testInteractableID,
+          playerId: nanoid(),
+          roundId: nanoid(),
+          success: true,
+        };
+        emitEventAndExpectListenerFiring(
+          'danceMove',
+          testDanceMoveResult,
+          'danceMove',
+          testDanceMoveResult,
+        );
+      });
+      it('Does not emit a danceMove event when a dance move result is received with a different interactable ID', async () => {
+        await mockTownControllerConnection(testController, mockSocket);
+        const testInteractableID = nanoid();
+        testController.ourPlayer.location.interactableID = testInteractableID;
+        const testDanceMoveResult = {
+          interactableID: nanoid(),
+          playerId: nanoid(),
+          roundId: nanoid(),
+          success: true,
+        };
+        emitEventAndExpectListenerNotFiring('danceMove', testDanceMoveResult, 'danceMove');
+      });
+    });
+
+    describe('Dance rating events', () => {
+      it('Emits danceRating event when a dance rating is received', async () => {
+        await mockTownControllerConnection(testController, mockSocket);
+        const testInteractableID = nanoid();
+        testController.ourPlayer.location.interactableID = testInteractableID;
+        const rating: Rating = 3;
+        const testDanceRating = {
+          interactableID: testInteractableID,
+          sender: nanoid(),
+          recipient: nanoid(),
+          rating: rating,
+        };
+        emitEventAndExpectListenerFiring(
+          'danceRating',
+          testDanceRating,
+          'danceRating',
+          testDanceRating,
+        );
+      });
+      it('Does not emit a danceRating event when a dance rating is received with a different interactable ID', async () => {
+        await mockTownControllerConnection(testController, mockSocket);
+        const testInteractableID = nanoid();
+        testController.ourPlayer.location.interactableID = testInteractableID;
+        const rating: Rating = 3;
+        const testDanceRating = {
+          interactableID: nanoid(),
+          sender: nanoid(),
+          recipient: nanoid(),
+          rating: rating,
+        };
+        emitEventAndExpectListenerNotFiring('danceRating', testDanceRating, 'danceRating');
+      });
+    });
+  });
+  describe('Dance Area Tests', () => {
+    it('danceAreas setter update the dance areas', async () => {
+      const townJoinResponse = await mockTownControllerConnection(testController, mockSocket);
+      const newArea = {
+        id: nanoid(),
+        music: nanoid(),
+        roundId: nanoid(),
+        keySequence: [],
+        duration: 0,
+        points: new Map<string, number>(),
+      };
+      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeUndefined();
+      testController.danceAreas.push(new DanceAreaController(newArea));
+      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeDefined();
+    });
+    it('getDanceAreaController creates a new dance area', () => {
+      const newArea = {
+        id: nanoid(),
+        music: nanoid(),
+        roundId: nanoid(),
+        keySequence: [],
+        duration: 0,
+        points: new Map<string, number>(),
+      };
+      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeUndefined();
+      testController.getDanceAreaController(newArea);
+      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeDefined();
     });
   });
   it('Disconnects the socket and clears the coveyTownController when disconnection', async () => {
