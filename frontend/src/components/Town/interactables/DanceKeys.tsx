@@ -14,42 +14,38 @@ import { useDanceAreaController, useInteractable } from '../../../classes/TownCo
 import useTownController from '../../../hooks/useTownController';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import DanceAreaInteractable from './DanceArea';
-import { KeySequence } from '../../../types/CoveyTownSocket';
+import { DanceMoveResult, KeySequence, NumberKey } from '../../../types/CoveyTownSocket';
 
-export function DanceKeys({ controller }: { controller: DanceAreaController }): JSX.Element {
-  const keySequence = controller.keySequence;
-  const keysPressed = controller.keysPressed;
-  const townController = useTownController();
-
-  /**
-   * If the keys in keysPressed match the order of keys in keySequence then
-   * we can emit a success dance move result.
-   * - Are we checking that the entirety of both lists are the same (i.e., their
-   * lengths are the same)?
-   * - Are we checking that a new key pressed (added to the keysPressed list)
-   * matches the next key in the keySequence? (i.e., assuming that the keys
-   * so far in the lists are matching)?
-   */
-  return <></>;
-}
+/**
+ * If the keys in keysPressed match the order of keys in keySequence then
+ * we can emit a success dance move result.
+ * - Are we checking that the entirety of both lists are the same (i.e., their
+ * lengths are the same)?
+ * - Are we checking that a new key pressed (added to the keysPressed list)
+ * matches the next key in the keySequence? (i.e., assuming that the keys
+ * so far in the lists are matching)? --> this one
+ */
 
 export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const townController = useTownController();
+  const curPlayerId = townController.ourPlayer.id;
   const danceAreaController = useDanceAreaController(danceArea.name);
-  const [keysPressed, setKeysPressed] = useState(danceAreaController.keysPressed);
-  useEffect(() => {
-    const setKeys = (keys: KeySequence) => {
-      setKeysPressed(keys);
-    };
-    danceAreaController.addListener('newKeyPressed', setKeys);
-    return () => {
-      danceAreaController.removeListener('newKeyPressed', setKeys);
-    };
-  }, [danceAreaController, townController]);
-
-  if (!keysPressed) {
-    return <></>;
-  }
+  const keysPressed = danceAreaController.keysPressed;
+  const keySequence = danceAreaController.keySequence;
+  const danceMoveResult: DanceMoveResult = {
+    interactableID: danceAreaController.id,
+    playerId: curPlayerId,
+    roundId: danceAreaController.roundId,
+    success: true,
+  };
+  const newKey = (key: NumberKey) => {
+    const currentIndex = keysPressed.length;
+    if (key == keySequence[currentIndex + 1]) {
+      danceAreaController.emit('numberPressed', key);
+      danceAreaController.emit('danceMove', danceMoveResult);
+    }
+  };
+  danceAreaController.addListener('numberPressed', newKey);
   return <></>;
 }
 

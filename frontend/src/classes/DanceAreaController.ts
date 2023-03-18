@@ -67,6 +67,13 @@ export type DanceAreaEvents = {
    * @param key the key that was pressed
    */
   numberPressed: (key: NumberKey) => void;
+
+  /**
+   * A keysPressed event indicates that the keysPressed field has been updated/changed.
+   *
+   * @param keysPressed the updated list of keys pressed
+   */
+  keysPressed: (keysPressed: KeySequence) => void;
 };
 
 /**
@@ -205,7 +212,10 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
   public set keysPressed(keysPressed: KeySequence) {
-    this._keysPressed = keysPressed;
+    if (this._keysPressed !== keysPressed) {
+      this._keysPressed = keysPressed;
+      this.emit('keysPressed', keysPressed);
+    }
   }
 
   /**
@@ -263,4 +273,22 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
     };
   }, [controller]);
   return keySequence;
+}
+
+/**
+ * A hook that returns the current keys pressed that the player has pressed for the
+ * given dance area with the given controller.
+ *
+ * @param controller the given controller
+ * @returns the list of numbers corresponding to the keys the user has pressed
+ */
+export function useKeyPressed(controller: DanceAreaController): KeySequence {
+  const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
+  useEffect(() => {
+    controller.addListener('keysPressed', setKeysPressed);
+    return () => {
+      controller.removeListener('keysPressed', setKeysPressed);
+    };
+  }, [controller]);
+  return keysPressed;
 }

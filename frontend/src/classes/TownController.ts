@@ -378,14 +378,6 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
-   * Emits an event to all dance area listeners that a new key has been pressed.
-   * @param danceMoveResult the dance move resulting from the key press
-   */
-  public keyPress(danceMoveResult: DanceMoveResult) {
-    this._interactableEmitter.emit('danceMove', danceMoveResult);
-  }
-
-  /**
    * Registers listeners for the events that can come from the server to our socket
    */
   registerSocketListeners() {

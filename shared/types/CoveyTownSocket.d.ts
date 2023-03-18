@@ -66,7 +66,7 @@ export type DanceMoveResult = {
   /** The id of the player that completed the move */
   playerId: string;
   /** The round that the player completed the move */
-  roundId: string;
+  roundId: string | undefined;
   /** Whether the move was completed successfully */
   success: boolean;
 };
