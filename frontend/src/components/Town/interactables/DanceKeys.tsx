@@ -24,6 +24,11 @@ export function DanceKeys({ controller }: { controller: DanceAreaController }): 
   /**
    * If the keys in keysPressed match the order of keys in keySequence then
    * we can emit a success dance move result.
+   * - Are we checking that the entirety of both lists are the same (i.e., their
+   * lengths are the same)?
+   * - Are we checking that a new key pressed (added to the keysPressed list)
+   * matches the next key in the keySequence? (i.e., assuming that the keys
+   * so far in the lists are matching)?
    */
   return <></>;
 }
