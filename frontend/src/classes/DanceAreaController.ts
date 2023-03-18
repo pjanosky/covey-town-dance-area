@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { KeySequence } from '../types/CoveyTownSocket';
+import { KeySequence, NumberKey } from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
 
 /**
@@ -46,6 +46,13 @@ export type DanceAreaEvents = {
    * @param pointsToAdd the number of points won
    */
   pointsChanged: (points: Map<string, number>) => void;
+
+  /**
+   * A newKeyPressed event indicates that a player has pressed a new key.
+   *
+   * @param keyPressed the key pressed by the player
+   */
+  newKeyPressed: (keysPressed: KeySequence) => void;
 };
 
 /**
@@ -62,7 +69,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   private _model: DanceAreaModel;
 
   // this list holds the keys the user has pressed
-  private _keysPressed: number[];
+  private _keysPressed: KeySequence;
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -176,14 +183,14 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The keys the user has pressed so far.
    */
-  public get keysPressed(): number[] {
+  public get keysPressed(): KeySequence {
     return this._keysPressed;
   }
 
   /**
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
-  public set keysPressed(keysPressed: number[]) {
+  public set keysPressed(keysPressed: KeySequence) {
     this._keysPressed = keysPressed;
   }
 
