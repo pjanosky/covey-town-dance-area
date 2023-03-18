@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
-import TownController, { NumberKey } from '../../classes/TownController';
-import { PlayerLocation } from '../../types/CoveyTownSocket';
+import TownController from '../../classes/TownController';
+import { NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';

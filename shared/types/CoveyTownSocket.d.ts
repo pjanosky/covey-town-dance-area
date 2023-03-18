@@ -119,11 +119,14 @@ export interface PosterSessionArea {
   title?: string;
 }
 
+/** All the possible number keys that we will detect. */
+export type NumberKey = "one" | "two" | "three" | "four";
+
 /**
  * Represents a sequence of keys that the user needs to press to
  * perform a dance sequence.
  */
-export type KeySequence = number[];
+export type KeySequence = NumberKey[];
 
 /**
  * DanceArea is the data model used to communicate the state of a DanceInteractableArea.

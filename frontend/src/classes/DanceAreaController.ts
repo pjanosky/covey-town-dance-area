@@ -233,7 +233,7 @@ export function useMusic(controller: DanceAreaController): string | undefined {
  * @param controller the given controller
  * @returns a list of numbers corresponding to the keys
  */
-export function useKeySequence(controller: DanceAreaController): number[] {
+export function useKeySequence(controller: DanceAreaController): KeySequence {
   const [keySequence, setKeySequence] = useState(controller.keySequence);
   useEffect(() => {
     controller.addListener('newKeySequence', setKeySequence);

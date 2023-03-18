@@ -20,6 +20,7 @@ import {
   PosterSessionArea as PosterSessionAreaModel,
   DanceMoveResult,
   DanceRating,
+  NumberKey,
 } from '../types/CoveyTownSocket';
 import {
   isConversationArea,
@@ -40,9 +41,6 @@ export type ConnectionProperties = {
   townID: string;
   loginController: LoginController;
 };
-
-/** All the possible number keys that we will detect. */
-export type NumberKey = 'one' | 'two' | 'three' | 'four';
 
 /**
  * The TownController emits these events. Components may subscribe to these events

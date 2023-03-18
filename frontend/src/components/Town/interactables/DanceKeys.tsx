@@ -18,6 +18,7 @@ import PosterSessionAreaController, {
 } from '../../../classes/PosterSessionAreaController';
 import useTownController from '../../../hooks/useTownController';
 import DanceAreaController from '../../../classes/DanceAreaController';
+import DanceArea from './DanceArea';
 
 export function keyPressedLogic({ controller }: { controller: DanceAreaController }): JSX.Element {
   const keySequence = controller.keySequence;
