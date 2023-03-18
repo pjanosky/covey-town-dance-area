@@ -41,7 +41,10 @@ export default class DanceArea extends Interactable {
 
     const pressedNum = this._scene.getPressedNumber();
     if (pressedNum) {
-      this.townController.emit('numberPressed', pressedNum);
+      const danceController = this.townController.danceAreas.find(area => area.id === this.name);
+      if (danceController) {
+        danceController.emit('numberPressed', pressedNum);
+      }
     }
   }
 

@@ -111,27 +111,6 @@ export type TownEvents = {
    * @param obj the interactable that is being interacted with
    */
   interact: <T extends Interactable>(typeName: T['name'], obj: T) => void;
-
-  /**
-   * An event that indicates that another player has successfully or unsuccessfully performed
-   * dance move.
-   *
-   * @param result: The result of the dance move that the other user performed
-   */
-  danceMove: (result: DanceMoveResult) => void;
-
-  /**
-   * An event that indicates that another player has rated our player's dancing.
-   * @param rating the rating that the other player gave.
-   */
-  danceRating: (rating: DanceRating) => void;
-
-  /**
-   * An event that indicates that a number key has been pressed.
-   *
-   * @param key the key that was pressed
-   */
-  numberPressed: (key: NumberKey) => void;
 };
 
 /**
@@ -526,9 +505,11 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * the dance move came from the same interactable that the player is currently in.
      */
     this._socket.on('danceMove', danceMoveResult => {
-      const curInteractableID = this._ourPlayer?.location.interactableID;
-      if (curInteractableID == danceMoveResult.interactableID) {
-        this.emit('danceMove', danceMoveResult);
+      const danceController = this._danceAreas.find(
+        area => area.id == danceMoveResult.interactableID,
+      );
+      if (danceController) {
+        danceController.emit('danceMove', danceMoveResult);
       }
     });
 
@@ -537,9 +518,9 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * the dance rating came from the same interactable that the player is currently in.
      */
     this._socket.on('danceRating', danceRating => {
-      const curInteractableID = this._ourPlayer?.location.interactableID;
-      if (curInteractableID === danceRating.interactableID) {
-        this.emit('danceRating', danceRating);
+      const danceController = this._danceAreas.find(area => area.id == danceRating.interactableID);
+      if (danceController) {
+        danceController.emit('danceRating', danceRating);
       }
     });
   }

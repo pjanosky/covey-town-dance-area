@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { KeySequence, NumberKey } from '../types/CoveyTownSocket';
+import { DanceMoveResult, DanceRating, KeySequence, NumberKey } from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
 
 /**
@@ -48,11 +48,25 @@ export type DanceAreaEvents = {
   pointsChanged: (points: Map<string, number>) => void;
 
   /**
-   * A newKeyPressed event indicates that a player has pressed a new key.
+   * An event that indicates that another player has successfully or unsuccessfully performed
+   * dance move.
    *
-   * @param keyPressed the key pressed by the player
+   * @param result: The result of the dance move that the other user performed
    */
-  newKeyPressed: (keysPressed: KeySequence) => void;
+  danceMove: (result: DanceMoveResult) => void;
+
+  /**
+   * An event that indicates that another player has rated our player's dancing.
+   * @param rating the rating that the other player gave.
+   */
+  danceRating: (rating: DanceRating) => void;
+
+  /**
+   * An event that indicates that a number key has been pressed.
+   *
+   * @param key the key that was pressed
+   */
+  numberPressed: (key: NumberKey) => void;
 };
 
 /**
