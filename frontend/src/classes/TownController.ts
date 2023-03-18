@@ -7,6 +7,7 @@ import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import PosterSesssionArea from '../components/Town/interactables/PosterSessionArea';
+import DanceArea from '../components/Town/interactables/DanceArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
 import useTownController from '../hooks/useTownController';
@@ -17,7 +18,6 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
-  DanceArea,
   DanceMoveResult,
   DanceRating,
 } from '../types/CoveyTownSocket';
@@ -40,6 +40,9 @@ export type ConnectionProperties = {
   townID: string;
   loginController: LoginController;
 };
+
+/** All the possible number keys that we will detect. */
+export type NumberKey = 'one' | 'two' | 'three' | 'four';
 
 /**
  * The TownController emits these events. Components may subscribe to these events
@@ -124,6 +127,13 @@ export type TownEvents = {
    * @param rating the rating that the other player gave.
    */
   danceRating: (rating: DanceRating) => void;
+
+  /**
+   * An event that indicates that a number key has been pressed.
+   *
+   * @param key the key that was pressed
+   */
+  numberPressed: (key: NumberKey) => void;
 };
 
 /**
@@ -760,7 +770,14 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     if (existingController) {
       return existingController;
     } else {
-      const newController = new DanceAreaController(danceArea);
+      const newController = new DanceAreaController({
+        id: danceArea.name,
+        music: undefined,
+        roundId: undefined,
+        keySequence: [],
+        duration: 0,
+        points: new Map<string, number>(),
+      });
       this._danceAreas.push(newController);
       return newController;
     }
