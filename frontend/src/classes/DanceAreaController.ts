@@ -20,7 +20,7 @@ export type DanceAreaEvents = {
    *
    * @param roundId the new unique ID
    */
-  roundIdChanged: (roundId: string) => void;
+  roundIdChanged: (roundId: string | undefined) => void;
 
   /**
    * A newKeySequence event indicates that there is a new key sequence for
@@ -105,7 +105,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The round that is ongoing in the dance area.
    */
-  public get roundId(): string {
+  public get roundId(): string | undefined {
     return this._model.roundId;
   }
 
@@ -113,7 +113,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * If a new round has begun then we create a new round ID associated with it
    * and emit an update.
    */
-  public set roundId(roundId: string) {
+  public set roundId(roundId: string | undefined) {
     if (this._model.roundId !== roundId) {
       this._model.roundId = roundId;
       this.emit('roundIdChanged', roundId);

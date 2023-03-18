@@ -130,12 +130,14 @@ export type KeySequence = number[];
  */
 export interface DanceArea {
   id: string;
-  /** The url or song id of the current song. There will be no music playing 
+  /** The url or song id of the current song. There will be no music playing
    * when the player joins the area (which is why music can be undefined).
    */
   music: string | undefined;
-  /** An ID representing the current round */
-  roundId: string;
+  /** An ID representing the current round. This will be undefined if there
+   * is no active round.
+   */
+  roundId: string | undefined;
   /** The current number of  */
   keySequence: KeySequence;
   /** The duration of the current round in seconds */
