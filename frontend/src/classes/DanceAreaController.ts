@@ -61,6 +61,9 @@ export type DanceAreaEvents = {
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _model: DanceAreaModel;
 
+  // this list holds the keys the user has pressed
+  private _keysPressed: number[];
+
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
    * provided danceAreaModel.
@@ -70,6 +73,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   constructor(danceAreaModel: DanceAreaModel) {
     super();
     this._model = danceAreaModel;
+    this._keysPressed = [];
   }
 
   /**
@@ -170,6 +174,20 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * The keys the user has pressed so far.
+   */
+  public get keysPressed(): number[] {
+    return this._keysPressed;
+  }
+
+  /**
+   * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
+   */
+  public set keysPressed(keysPressed: number[]) {
+    this._keysPressed = keysPressed;
+  }
+
+  /**
    * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
@@ -206,4 +224,22 @@ export function useMusic(controller: DanceAreaController): string | undefined {
     };
   }, [controller]);
   return music;
+}
+
+/**
+ * A hook that returns the current key sequence that the user must follow for the
+ * dance area with the given controller.
+ *
+ * @param controller the given controller
+ * @returns a list of numbers corresponding to the keys
+ */
+export function useKeySequence(controller: DanceAreaController): number[] {
+  const [keySequence, setKeySequence] = useState(controller.keySequence);
+  useEffect(() => {
+    controller.addListener('newKeySequence', setKeySequence);
+    return () => {
+      controller.removeListener('newKeySequence', setKeySequence);
+    };
+  }, [controller]);
+  return keySequence;
 }
