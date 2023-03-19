@@ -1,31 +1,17 @@
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  useToast,
-} from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
+
 import { useDanceAreaController, useInteractable } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
-import DanceAreaController from '../../../classes/DanceAreaController';
+
 import DanceAreaInteractable from './DanceArea';
-import { DanceMoveResult, KeySequence, NumberKey } from '../../../types/CoveyTownSocket';
+import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 
 /**
- * If the keys in keysPressed match the order of keys in keySequence then
- * we can emit a success dance move result.
- * - Are we checking that the entirety of both lists are the same (i.e., their
- * lengths are the same)?
- * - Are we checking that a new key pressed (added to the keysPressed list)
- * matches the next key in the keySequence? (i.e., assuming that the keys
- * so far in the lists are matching)? --> this one
+ *  The DanceArea monitors player's interactions in a DanceArea on the map. Specifically,
+ * handling the key press logic.
+ *
+ * @param props the dance aera interactable that is being interacted with
  */
-
 export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const townController = useTownController();
   const curPlayerId = townController.ourPlayer.id;
