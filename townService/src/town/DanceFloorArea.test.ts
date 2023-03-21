@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
 import { TownEmitter } from '../types/CoveyTownSocket';
-import DanceArea from './DanceArea';
+import DanceArea from './DanceFloorArea';
 
 describe('DanceArea', () => {
   const testAreaBox = { x: 100, y: 100, width: 100, height: 100 };
