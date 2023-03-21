@@ -205,6 +205,14 @@ export async function mockTownControllerConnection(
         imageContents: nanoid(),
         stars: 0,
       });
+      responseToSendController.interactables.push({
+        id: nanoid(),
+        music: nanoid(),
+        roundId: nanoid(),
+        keySequence: [],
+        duration: 0,
+        points: new Map<string, number>(),
+      });
     }
   }
   mockSocket.on.mockImplementationOnce((eventName, eventListener) => {

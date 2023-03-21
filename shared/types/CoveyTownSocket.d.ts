@@ -56,9 +56,18 @@ export type ChatMessage = {
   interactableId?: string;
 };
 
+/**
+ * DanceMoveResult is a data type that store information about a dance
+ * move that was successfully or unsuccessfully completed by a player.
+ */
 export type DanceMoveResult = {
+  /** The id of the dance area that the player performed that dance move in */
+  interactableID?: string;
+  /** The id of the player that completed the move */
   playerId: string;
+  /** The round that the player completed the move */
   roundId: string;
+  /** Whether the move was completed successfully */
   success: boolean;
 };
 
@@ -73,6 +82,8 @@ export type Rating = 1 | 2 | 3 | 4 | 5;
  * user can give to another user in a DanceInteractableArea.
  */
 export type DanceRating = {
+  /** The id of the dance area that the player performed that dance move in */
+  interactableID?: string;
   /** The player ID of the sender */
   sender: string;
   /** The player ID of the recipient */
@@ -119,8 +130,10 @@ export type KeySequence = number[];
  */
 export interface DanceArea {
   id: string;
-  /** The url or song id of the current song */
-  music?: string;
+  /** The url or song id of the current song. There will be no music playing 
+   * when the player joins the area (which is why music can be undefined).
+   */
+  music: string | undefined;
   /** An ID representing the current round */
   roundId: string;
   /** The current number of  */
