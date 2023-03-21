@@ -97,7 +97,7 @@ describe('DanceArea', () => {
   describe('add', () => {
     it('Adds the player to the occupants list', () => {
       expect(testArea.occupantsByID).toEqual([newPlayer.id]);
-      expect(testArea.points).toEqual(points);
+      expect(Object.fromEntries(testArea.points)).toEqual(points);
     });
     it("Sets the player's interactableID and emits an update for their location", () => {
       expect(newPlayer.location.interactableID).toEqual(id);
