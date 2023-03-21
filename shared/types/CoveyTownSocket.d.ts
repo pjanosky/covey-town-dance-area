@@ -128,7 +128,7 @@ export interface DanceArea {
   /** The duration of the current round in seconds */
   duration: number;
   /** A map from each player's ID to the number of points they have */
-  points: Map<string, number>;
+  points: Record<string, number>;
 }
 
 export interface ServerToClientEvents {

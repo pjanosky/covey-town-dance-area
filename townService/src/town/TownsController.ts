@@ -200,10 +200,10 @@ export class TownsController extends Controller {
   /**
    * Creates a dance area in a given town
    *
-   * @param townID ID of the town in which to create the new poster session area
+   * @param townID ID of the town in which to create the new dance area
    * @param sessionToken session token of the player making the request, must
    *        match the session token returned when the player joined the town
-   * @param requestBody The new poster session area to create
+   * @param requestBody The new dance area to create
    *
    * @throws InvalidParametersError if the session token is not valid, or if the
    *          dance area could not be created
@@ -225,7 +225,7 @@ export class TownsController extends Controller {
     }
     // add viewing area to the town, throw error if it fails
     if (!curTown.addDanceArea(requestBody)) {
-      throw new InvalidParametersError('Invalid poster session area');
+      throw new InvalidParametersError('Invalid dance area');
     }
   }
 

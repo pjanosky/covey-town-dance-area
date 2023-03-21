@@ -16,18 +16,36 @@ describe('DanceArea', () => {
   const roundId = nanoid();
   const keySequence: number[] = [];
   const duration = 20;
-  let points: Map<string, number>;
+  let points: Record<string, number>;
 
   beforeEach(() => {
     mockClear(townEmitter);
     testArea = new DanceArea(
-      { id, music, roundId, keySequence, duration, points: new Map() },
+      { id, music, roundId, keySequence, duration, points: {} },
       testAreaBox,
       townEmitter,
     );
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
-    points = new Map([[newPlayer.id, 0]]);
+    points = { [newPlayer.id]: 0 };
+  });
+
+  describe('Getters', () => {
+    it('Gets current music', () => {
+      expect(testArea.music).toEqual(music);
+    });
+    it('Gets current round ID', () => {
+      expect(testArea.roundId).toEqual(roundId);
+    });
+    it('Gets current key sequence', () => {
+      expect(testArea.keySequence).toEqual(keySequence);
+    });
+    it('Gets current duration', () => {
+      expect(testArea.duration).toEqual(duration);
+    });
+    it('Gets current points', () => {
+      expect(Object.fromEntries(testArea.points)).toEqual(points);
+    });
   });
 
   describe('[OMG2 remove]', () => {
@@ -47,7 +65,7 @@ describe('DanceArea', () => {
         roundId,
         keySequence,
         duration,
-        points: extraPoints,
+        points: { [extraPlayer.id]: 0 },
       });
     });
     it("Clears the player's interactableID and emits an update for their location", () => {
@@ -56,7 +74,8 @@ describe('DanceArea', () => {
       const lastEmittedMovement = getLastEmittedEvent(townEmitter, 'playerMoved');
       expect(lastEmittedMovement.location.interactableID).toBeUndefined();
     });
-    it('Clears the music and resets fields when the last occupant leaves', () => {
+
+    it('Clears all parameters when the last occupant leaves', () => {
       testArea.remove(newPlayer);
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
@@ -65,13 +84,14 @@ describe('DanceArea', () => {
         roundId: '',
         keySequence: [],
         duration: 0,
-        points: new Map(),
+        points: {},
       });
+
       expect(testArea.music).toBeUndefined();
       expect(testArea.roundId).toEqual('');
       expect(testArea.keySequence).toEqual([]);
       expect(testArea.duration).toEqual(0);
-      expect(testArea.points).toEqual(new Map());
+      expect(testArea.points.keys.length).toEqual(0);
     });
   });
   describe('add', () => {
@@ -103,7 +123,7 @@ describe('DanceArea', () => {
     const newRoundId = nanoid();
     const newKeySequence = [0, 1, 2];
     const newDuration = 45;
-    const newPoints = new Map([[newPlayer.id, 23]]);
+    const newPoints = { [newPlayer.id]: 23 };
     testArea.updateModel({
       id: newId,
       music: newMusic,
@@ -117,7 +137,7 @@ describe('DanceArea', () => {
     expect(testArea.roundId).toBe(newRoundId);
     expect(testArea.keySequence).toBe(newKeySequence);
     expect(testArea.duration).toBe(newDuration);
-    expect(testArea.points).toBe(newPoints);
+    expect(Object.fromEntries(testArea.points)).toEqual(newPoints);
   });
   describe('[OMG2 fromMapObject]', () => {
     it('Throws an error if the width or height are missing', () => {
@@ -135,6 +155,7 @@ describe('DanceArea', () => {
         { x, y, width, height, name, id: 10, visible: true },
         townEmitter,
       );
+      // TODO: check implementation for expected initialization
       expect(val.boundingBox).toEqual({ x, y, width, height });
       expect(val.id).toEqual(name);
       expect(val.music).toBeUndefined();

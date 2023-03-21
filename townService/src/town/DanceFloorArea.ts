@@ -52,7 +52,7 @@ export default class DanceArea extends InteractableArea {
     this._roundId = roundId;
     this._keySequence = keySequence;
     this._duration = duration;
-    this._points = points;
+    this._points = new Map(Object.entries(points));
   }
 
   /**
@@ -87,13 +87,12 @@ export default class DanceArea extends InteractableArea {
   }
 
   /**
-   * Increase a players points
+   * Increments the points of the given player in the area by the given number
    *
-   * @param player
-   * @param pointInc
+   * @param player player in the area
+   * @param pointInc number of points to increment by
    */
   public addPoints(player: Player, pointInc: number): void {
-    super.add(player);
     const curPoints = this.points.get(player.id);
     const newPoints = curPoints ? curPoints + pointInc : pointInc;
     this._points.set(player.id, newPoints);
@@ -110,7 +109,7 @@ export default class DanceArea extends InteractableArea {
     this._roundId = updatedModel.roundId;
     this._keySequence = updatedModel.keySequence;
     this._duration = updatedModel.duration;
-    this._points = updatedModel.points;
+    this._points = new Map(Object.entries(updatedModel.points));
   }
 
   /**
@@ -124,7 +123,7 @@ export default class DanceArea extends InteractableArea {
       roundId: this.roundId,
       keySequence: this.keySequence,
       duration: this.duration,
-      points: this.points,
+      points: Object.fromEntries(this.points),
     };
   }
 
@@ -152,7 +151,7 @@ export default class DanceArea extends InteractableArea {
         keySequence: [],
         // TODO: set initial values.... or make them undefined?
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       },
       box,
       townEmitter,
