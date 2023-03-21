@@ -606,7 +606,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "ID of the town in which to create the new poster session area",
+						"description": "ID of the town in which to create the new dance area",
 						"in": "path",
 						"name": "townID",
 						"required": true,
@@ -625,13 +625,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "The new poster session area to create",
+					"description": "The new dance area to create",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/DanceArea",
-								"description": "The new poster session area to create"
+								"description": "The new dance area to create"
 							}
 						}
 					}
