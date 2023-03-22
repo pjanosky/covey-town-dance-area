@@ -8,6 +8,14 @@ import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import { useKeyPressed, useKeySequence } from '../../../classes/DanceAreaController';
 
 /**
+ * DanceKeyViewer displays the keystrokes the user has to press for the current round.
+ * It animates a bar that crosses the keys to show the user when to press each key.
+ */
+function DanceKeyViewer(): JSX.Element {
+  return <span> dance key viewer here </span>;
+}
+
+/**
  *  The DanceArea monitors player's interactions in a DanceArea on the map. Specifically,
  * handling the key press logic.
  *
@@ -38,7 +46,7 @@ export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): 
     };
   }, [danceAreaController, townController]);
 
-  return <></>;
+  return <DanceKeyViewer></DanceKeyViewer>;
 }
 
 /**

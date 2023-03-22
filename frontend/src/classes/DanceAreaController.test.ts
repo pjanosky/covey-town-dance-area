@@ -2,7 +2,8 @@ import { mock, mockClear, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import TownController from './TownController';
 import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
-import { DanceArea } from '../types/CoveyTownSocket';
+import { DanceArea, KeySequence } from '../types/CoveyTownSocket';
+import { keys } from 'lodash';
 
 describe('DanceAreaController', () => {
   let testArea: DanceAreaController;
@@ -58,9 +59,9 @@ describe('DanceAreaController', () => {
   });
   describe('Tests get and set for the keySequence property', () => {
     test('updates the key sequence and emits a newKeySequence event if the property changes', () => {
-      const newKeySequence = [1, 2, 3];
+      const newKeySequence: KeySequence = ['one', 'two', 'three'];
       testArea.keySequence = newKeySequence;
-      expect(testArea.keySequence).toStrictEqual([1, 2, 3]);
+      expect(testArea.keySequence).toStrictEqual(newKeySequence);
       expect(mockListeners.newKeySequence).toBeCalledWith(newKeySequence);
     });
     test('does not emit an update if the key sequence does not change', () => {
@@ -105,11 +106,12 @@ describe('DanceAreaController', () => {
     test('Updates the music, roundId, keySequence, duration, and points properties', () => {
       const newPoints = new Map<string, number>();
       newPoints.set('player1', 10);
+      const keySequence: KeySequence = ['four', 'four'];
       const newDanceAreaModel = {
         id: testAreaModel.id,
         music: 'Gaddi Red Challenger',
         roundId: 'round 2',
-        keySequence: [1, 2],
+        keySequence: keySequence,
         duration: 60,
         points: newPoints,
       };
@@ -124,11 +126,12 @@ describe('DanceAreaController', () => {
       const existingId = testArea.id;
       const newPoints = new Map<string, number>();
       newPoints.set('player1', 10);
+      const keySequence: KeySequence = ['one', 'two'];
       const newDanceAreaModel = {
         id: nanoid(),
         music: 'Gaddi Red Challenger',
         roundId: 'round 2',
-        keySequence: [1, 2],
+        keySequence: keySequence,
         duration: 60,
         points: newPoints,
       };
