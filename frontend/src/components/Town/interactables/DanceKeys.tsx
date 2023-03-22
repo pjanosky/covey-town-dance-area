@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { useDanceAreaController, useInteractable } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 
 import DanceAreaInteractable from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
+import { useKeyPressed, useKeySequence } from '../../../classes/DanceAreaController';
 
 /**
  *  The DanceArea monitors player's interactions in a DanceArea on the map. Specifically,
@@ -14,24 +15,29 @@ import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
  */
 export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const townController = useTownController();
-  const curPlayerId = townController.ourPlayer.id;
   const danceAreaController = useDanceAreaController(danceArea.name);
-  const keysPressed = danceAreaController.keysPressed;
-  const keySequence = danceAreaController.keySequence;
-  const danceMoveResult: DanceMoveResult = {
-    interactableID: danceAreaController.id,
-    playerId: curPlayerId,
-    roundId: danceAreaController.roundId,
-    success: true,
-  };
-  const newKey = (key: NumberKey) => {
-    const currentIndex = keysPressed.length;
-    if (key == keySequence[currentIndex + 1]) {
-      danceAreaController.emit('numberPressed', key);
+
+  useEffect(() => {
+    const newKey = (key: NumberKey) => {
+      const keySequence = danceAreaController.keySequence;
+      const nextKeyIndex = danceAreaController.keysPressed.length;
+      const danceMoveResult: DanceMoveResult = {
+        interactableID: danceAreaController.id,
+        playerId: townController.ourPlayer.id,
+        roundId: danceAreaController.roundId,
+        success: nextKeyIndex < keySequence.length && key == keySequence[nextKeyIndex],
+      };
       danceAreaController.emit('danceMove', danceMoveResult);
-    }
-  };
-  danceAreaController.addListener('numberPressed', newKey);
+      townController.emitDanceMove(danceMoveResult);
+      danceAreaController.keysPressed.push(key);
+    };
+
+    danceAreaController.addListener('numberPressed', newKey);
+    return () => {
+      danceAreaController.removeListener('numberPressed', newKey);
+    };
+  }, [danceAreaController, townController]);
+
   return <></>;
 }
 
