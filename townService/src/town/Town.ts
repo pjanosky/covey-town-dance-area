@@ -18,7 +18,6 @@ import {
   DanceArea as DanceAreaModel,
   DanceMoveResult,
   DanceRating,
-  Rating,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
