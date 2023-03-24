@@ -2,14 +2,8 @@ import { mock, mockClear, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import TownController from './TownController';
 import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
-import {
-  DanceArea,
-  DanceMoveResult,
-  NumberKey,
-  Player,
-  PlayerLocation,
-} from '../types/CoveyTownSocket';
-import { mockTownControllerConnection } from '../TestUtils';
+import { DanceArea, KeySequence } from '../types/CoveyTownSocket';
+
 describe('DanceAreaController', () => {
   let testArea: DanceAreaController;
   let testAreaModel: DanceArea;
@@ -68,7 +62,7 @@ describe('DanceAreaController', () => {
   });
   describe('Tests get and set for the keySequence property', () => {
     test('updates the key sequence and emits a newKeySequence event if the property changes', () => {
-      const newKeySequence: NumberKey[] = ['one', 'two', 'three'];
+      const newKeySequence: KeySequence = ['one', 'two', 'three'];
       testArea.keySequence = newKeySequence;
       expect(testArea.keySequence).toStrictEqual(['one', 'two', 'three']);
       expect(mockListeners.newKeySequence).toBeCalledWith(newKeySequence);
@@ -107,7 +101,7 @@ describe('DanceAreaController', () => {
   });
   describe('Test get and set for the keysPressed property', () => {
     test('updates the keysPressed property and emits a keysPressed event if the property changes', () => {
-      const newKeysPressed: NumberKey[] = ['three', 'one', 'two'];
+      const newKeysPressed: KeySequence = ['three', 'one', 'two'];
       testArea.keysPressed = newKeysPressed;
       expect(testArea.keysPressed).toStrictEqual(['three', 'one', 'two']);
       expect(mockListeners.keysPressed).toBeCalledWith(['three', 'one', 'two']);
@@ -126,7 +120,7 @@ describe('DanceAreaController', () => {
   });
   describe('updateFrom', () => {
     test('Updates the music, roundId, keySequence, duration, and points properties', () => {
-      const keySeq: NumberKey[] = ['one', 'two'];
+      const keySeq: KeySequence = ['one', 'two'];
       const newPoints = new Map<string, number>();
       newPoints.set('player1', 10);
       const newDanceAreaModel = {
@@ -145,7 +139,7 @@ describe('DanceAreaController', () => {
       expect(testArea.points).toBe(newPoints);
     });
     test('does not update the id property as it is readonly', () => {
-      const keySeq: NumberKey[] = ['one', 'two'];
+      const keySeq: KeySequence = ['one', 'two'];
       const existingId = testArea.id;
       const newPoints = new Map<string, number>();
       newPoints.set('player1', 10);
