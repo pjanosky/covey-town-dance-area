@@ -3,15 +3,14 @@ import React, { useEffect } from 'react';
 import { useDanceAreaController, useInteractable } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 
-import DanceAreaInteractable from './DanceArea';
+import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { useKeyPressed, useKeySequence } from '../../../classes/DanceAreaController';
 
 /**
  *  The DanceArea monitors player's interactions in a DanceArea on the map. Specifically,
  * handling the key press logic.
  *
- * @param props the dance aera interactable that is being interacted with
+ * @param props the dance area interactable that is being interacted with
  */
 export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const townController = useTownController();
@@ -25,7 +24,7 @@ export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): 
         interactableID: danceAreaController.id,
         playerId: townController.ourPlayer.id,
         roundId: danceAreaController.roundId,
-        success: nextKeyIndex < keySequence.length && key == keySequence[nextKeyIndex],
+        success: nextKeyIndex < keySequence.length && key === keySequence[nextKeyIndex],
       };
       danceAreaController.emit('danceMove', danceMoveResult);
       townController.emitDanceMove(danceMoveResult);

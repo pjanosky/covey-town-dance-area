@@ -7,7 +7,7 @@ import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
 import ViewingArea from '../components/Town/interactables/ViewingArea';
 import PosterSesssionArea from '../components/Town/interactables/PosterSessionArea';
-import DanceArea from '../components/Town/interactables/DanceArea';
+import { DanceArea } from '../components/Town/interactables/DanceArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
 import useTownController from '../hooks/useTownController';
@@ -20,7 +20,6 @@ import {
   PosterSessionArea as PosterSessionAreaModel,
   DanceMoveResult,
   DanceRating,
-  NumberKey,
 } from '../types/CoveyTownSocket';
 import {
   isConversationArea,
@@ -354,7 +353,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
   /**
    * Updates the set of dance areas that are a part of this town and
-   * emits and update to the towns listenders.
+   * emits and update to the towns listeners.
    */
   public set danceAreas(newDanceAreas: DanceAreaController[]) {
     this._danceAreas = newDanceAreas;
@@ -498,7 +497,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      */
     this._socket.on('danceMove', danceMoveResult => {
       const danceController = this._danceAreas.find(
-        area => area.id == danceMoveResult.interactableID,
+        area => area.id === danceMoveResult.interactableID,
       );
       if (danceController) {
         danceController.emit('danceMove', danceMoveResult);
@@ -510,7 +509,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      * the dance rating came from the same interactable that the player is currently in.
      */
     this._socket.on('danceRating', danceRating => {
-      const danceController = this._danceAreas.find(area => area.id == danceRating.interactableID);
+      const danceController = this._danceAreas.find(area => area.id === danceRating.interactableID);
       if (danceController) {
         danceController.emit('danceRating', danceRating);
       }
