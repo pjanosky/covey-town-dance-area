@@ -5,44 +5,65 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
+import DanceAreaController from '../../../classes/DanceAreaController';
 
 /**
- *  The DanceArea monitors player's interactions in a DanceArea on the map. Specifically,
- * handling the key press logic.
+ * DanceKeyHandler responds to keys pressed by the player while in a dance interactable area.
+ * It checks to see if the right key was pressed based on the key sequence of the current
+ * round, and emits a DanceMoveResult to the dance area controller and covey town socket.
  *
  * @param props the dance area interactable that is being interacted with
  */
-export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
+export function DanceKeyHandler({
+  danceController,
+}: {
+  danceController: DanceAreaController;
+}): JSX.Element {
   const townController = useTownController();
-  const danceAreaController = useDanceAreaController(danceArea.name);
 
   useEffect(() => {
     const newKey = (key: NumberKey) => {
-      const keySequence = danceAreaController.keySequence;
-      const nextKeyIndex = danceAreaController.keysPressed.length;
+      const keySequence = danceController.keySequence;
+      const nextKeyIndex = danceController.keysPressed.length;
       const danceMoveResult: DanceMoveResult = {
-        interactableID: danceAreaController.id,
+        interactableID: danceController.id,
         playerId: townController.ourPlayer.id,
-        roundId: danceAreaController.roundId,
+        roundId: danceController.roundId,
         success: nextKeyIndex < keySequence.length && key === keySequence[nextKeyIndex],
       };
-      danceAreaController.emit('danceMove', danceMoveResult);
+      danceController.emit('danceMove', danceMoveResult);
       townController.emitDanceMove(danceMoveResult);
-      danceAreaController.keysPressed.push(key);
+      danceController.keysPressed.push(key);
     };
 
-    danceAreaController.addListener('numberPressed', newKey);
+    danceController.addListener('numberPressed', newKey);
     return () => {
-      danceAreaController.removeListener('numberPressed', newKey);
+      danceController.removeListener('numberPressed', newKey);
     };
-  }, [danceAreaController, townController]);
+  }, [danceController, townController]);
 
   return <></>;
 }
 
 /**
- * The DanceKeysWrapper is suitable to be always rendered inside of a town, and
- * will activate only if the player begins interacting with a dance area.
+ * Dance overlay displays all of the overlay components for a dance interactable area
+ * including the keys the user needs to press, the leaderboard, and the music player.
+ * It also handles key presses made by the user while in the area.
+ */
+export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
+  const danceController = useDanceAreaController(danceArea.id);
+
+  return (
+    <>
+      <DanceKeyHandler danceController={danceController}></DanceKeyHandler>
+    </>
+  );
+}
+
+/**
+ * The DanceKeysWrapper is suitable to be always rendered inside of a town. It displays
+ * the overlays for the dance interactable area when the player is interacting with a
+ * dance area.
  */
 export default function DanceOverlayWrapper(): JSX.Element {
   const danceArea = useInteractable<DanceAreaInteractable>('danceArea');

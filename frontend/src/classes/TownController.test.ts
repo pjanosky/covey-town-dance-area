@@ -94,7 +94,6 @@ describe('TownController', () => {
   };
 
   beforeEach(() => {
-    console.log('🟥 init');
     mockClear(mockSocket);
     userName = nanoid();
     townID = nanoid();
