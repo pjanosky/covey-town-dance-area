@@ -52,7 +52,7 @@ export default class DanceArea extends InteractableArea {
     this._roundId = roundId;
     this._keySequence = keySequence;
     this._duration = duration;
-    this._points = points;
+    this._points = new Map(Object.entries(points));
   }
 
   /**
