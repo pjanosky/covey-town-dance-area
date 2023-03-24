@@ -12,7 +12,7 @@ import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
  *
  * @param props the dance area interactable that is being interacted with
  */
-export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
+export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const townController = useTownController();
   const danceAreaController = useDanceAreaController(danceArea.name);
 
@@ -44,10 +44,10 @@ export function DanceArea({ danceArea }: { danceArea: DanceAreaInteractable }): 
  * The DanceKeysWrapper is suitable to be always rendered inside of a town, and
  * will activate only if the player begins interacting with a dance area.
  */
-export default function DanceKeysWrapper(): JSX.Element {
+export default function DanceOverlayWrapper(): JSX.Element {
   const danceArea = useInteractable<DanceAreaInteractable>('danceArea');
   if (danceArea) {
-    return <DanceArea danceArea={danceArea} />;
+    return <DanceOverlay danceArea={danceArea} />;
   }
   return <></>;
 }
