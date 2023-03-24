@@ -23,8 +23,8 @@ import {
   SocketData,
   ViewingArea,
   PosterSessionArea,
+  DanceArea,
 } from './types/CoveyTownSocket';
-
 /**
  * Create a new conversation area using some random defaults
  * @param params
@@ -206,4 +206,8 @@ export function isPosterSessionArea(interactable: Interactable): interactable is
 
 export function isConversationArea(interactable: Interactable): interactable is ConversationArea {
   return 'topic' in interactable;
+}
+
+export function isDanceArea(interactable: Interactable): interactable is DanceArea {
+  return 'music' in interactable;
 }
