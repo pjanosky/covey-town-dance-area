@@ -250,6 +250,30 @@ export default class TownGameScene extends Phaser.Scene {
       // Stop any previous movement from the last frame
       body.setVelocity(0);
 
+      // corresponding each key press from NumberKey to a dance move --> for now these all use the same png
+      const primaryMove = this.getPressedNumber();
+      switch (primaryMove) {
+        case 'one':
+          body.setVelocityY(speed);
+          gameObjects.sprite.anims.play('misa-spin', true);
+          break;
+        // case 'two':
+        //   body.setVelocityX(speed);
+        //   gameObjects.sprite.anims.play('make-shift-anim', true);
+        //   break;
+        // case 'three':
+        //   body.setVelocityX(speed);
+        //   gameObjects.sprite.anims.play('make-shift-anim', true);
+        //   break;
+        // case 'four':
+        //   body.setVelocityX(speed);
+        //   gameObjects.sprite.anims.play('make-shift-anim', true);
+        //   break;
+        default:
+          // Not moving
+          gameObjects.sprite.anims.stop();
+      }
+
       const primaryDirection = this.getNewMovementDirection();
       switch (primaryDirection) {
         case 'left':
@@ -477,9 +501,9 @@ export default class TownGameScene extends Phaser.Scene {
       key: 'misa-left-walk',
       frames: anims.generateFrameNames('atlas', {
         prefix: 'misa-left-walk.',
-        start: 0,
-        end: 3,
-        zeroPad: 3,
+        start: 0, // specifies that the first frame should have index 0
+        end: 3, // specifies that the first frame should have index 3
+        zeroPad: 3, // the frame indices will be 000, 001, 002, 003
       }),
       frameRate: 10,
       repeat: -1,
@@ -512,6 +536,19 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-back-walk.',
         start: 0,
         end: 3,
+        zeroPad: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // create the anims for dance moves --> right now the animation is just the sprite being shortened
+    anims.create({
+      key: 'make-shift-anim',
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'make-shift-anim.',
+        start: 0,
+        end: 4,
         zeroPad: 3,
       }),
       frameRate: 10,
