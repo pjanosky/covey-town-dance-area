@@ -23,12 +23,12 @@ export type DanceAreaEvents = {
   roundIdChanged: (roundId: string | undefined) => void;
 
   /**
-   * A newKeySequence event indicates that there is a new key sequence for
+   * A keySequenceChanged event indicates that there is a new key sequence for
    * the players to follow.
    *
    * @param keySequence the new list of numbers representing the sequence
    */
-  newKeySequence: (keySequence: KeySequence) => void;
+  keySequenceChanged: (keySequence: KeySequence) => void;
 
   /**
    * A durationChanged event indicates that a new round has begun with a set
@@ -69,11 +69,11 @@ export type DanceAreaEvents = {
   numberPressed: (key: NumberKey) => void;
 
   /**
-   * A keysPressed event indicates that the keysPressed field has been updated/changed.
+   * A keysPressedChanged event indicates that the keysPressed field has been updated/changed.
    *
    * @param keysPressed the updated list of keys pressed
    */
-  keysPressed: (keysPressed: KeySequence) => void;
+  keysPressedChanged: (keysPressed: KeySequence) => void;
 };
 
 /**
@@ -161,7 +161,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   public set keySequence(keySequence: KeySequence) {
     if (this._model.keySequence !== keySequence) {
       this._model.keySequence = keySequence;
-      this.emit('newKeySequence', keySequence);
+      this.emit('keySequenceChanged', keySequence);
     }
   }
 
@@ -214,7 +214,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   public set keysPressed(keysPressed: KeySequence) {
     if (this._keysPressed !== keysPressed) {
       this._keysPressed = keysPressed;
-      this.emit('keysPressed', keysPressed);
+      this.emit('keysPressedChanged', keysPressed);
     }
   }
 
@@ -267,9 +267,9 @@ export function useMusic(controller: DanceAreaController): string | undefined {
 export function useKeySequence(controller: DanceAreaController): KeySequence {
   const [keySequence, setKeySequence] = useState(controller.keySequence);
   useEffect(() => {
-    controller.addListener('newKeySequence', setKeySequence);
+    controller.addListener('keySequenceChanged', setKeySequence);
     return () => {
-      controller.removeListener('newKeySequence', setKeySequence);
+      controller.removeListener('keySequenceChanged', setKeySequence);
     };
   }, [controller]);
   return keySequence;
@@ -285,33 +285,10 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
 export function useKeysPressed(controller: DanceAreaController): KeySequence {
   const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
   useEffect(() => {
-    controller.addListener('keysPressed', setKeysPressed);
+    controller.addListener('keysPressedChanged', setKeysPressed);
     return () => {
-      controller.removeListener('keysPressed', setKeysPressed);
+      controller.removeListener('keysPressedChanged', setKeysPressed);
     };
   }, [controller]);
   return keysPressed;
-}
-
-export function useKeyPressedAt(controller: DanceAreaController, index: number) {
-  let initialKey: NumberKey | undefined = undefined;
-  if (index < controller.keysPressed.length) {
-    initialKey = controller.keysPressed[index];
-  }
-  const [key, setKey] = useState<NumberKey | undefined>(initialKey);
-  useEffect(() => {
-    const onChange = (keysPressed: KeySequence) => {
-      let newKey: NumberKey | undefined = undefined;
-      if (index < keysPressed.length) {
-        newKey = keysPressed[index];
-      }
-      if (newKey !== key) {
-        setKey(newKey);
-      }
-    };
-    controller.addListener('keysPressed', onChange);
-    return () => {
-      controller.removeListener('keysPressed', onChange);
-    };
-  });
 }
