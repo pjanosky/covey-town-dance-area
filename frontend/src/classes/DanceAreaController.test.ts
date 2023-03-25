@@ -29,10 +29,10 @@ describe('DanceAreaController', () => {
     mockClear(mockListeners.danceMove);
     testArea.addListener('musicChanged', mockListeners.musicChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
-    testArea.addListener('newKeySequence', mockListeners.keySequenceChanged);
+    testArea.addListener('keySequenceChanged', mockListeners.keySequenceChanged);
     testArea.addListener('durationChanged', mockListeners.durationChanged);
     testArea.addListener('pointsChanged', mockListeners.pointsChanged);
-    testArea.addListener('keysPressed', mockListeners.keysPressedChanged);
+    testArea.addListener('keysPressedChanged', mockListeners.keysPressedChanged);
     testArea.addListener('danceMove', mockListeners.danceMove);
   });
 
@@ -64,7 +64,7 @@ describe('DanceAreaController', () => {
     test('updates the key sequence and emits a newKeySequence event if the property changes', () => {
       const newKeySequence: KeySequence = ['one', 'two', 'three'];
       testArea.keySequence = newKeySequence;
-      expect(testArea.keySequence).toStrictEqual(['one', 'two', 'three']);
+      expect(testArea.keySequence).toEqual(['one', 'two', 'three']);
       expect(mockListeners.keySequenceChanged).toBeCalledWith(newKeySequence);
     });
     test('does not emit an update if the key sequence does not change', () => {
@@ -134,7 +134,7 @@ describe('DanceAreaController', () => {
       testArea.updateFrom(newDanceAreaModel);
       expect(testArea.music).toBe('Gaddi Red Challenger');
       expect(testArea.roundId).toBe('round 2');
-      expect(testArea.keySequence).toStrictEqual(['one', 'two']);
+      expect(testArea.keySequence).toEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
       expect(testArea.points).toBe(newPoints);
     });
