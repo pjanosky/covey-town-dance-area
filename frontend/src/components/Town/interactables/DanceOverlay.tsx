@@ -1,78 +1,33 @@
 import React, { useEffect } from 'react';
-
 import { useDanceAreaController, useInteractable } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import DanceAreaController from '../../../classes/DanceAreaController';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { DanceKeyViewer } from './DanceKeyView';
+import DanceAreaController from '../../../classes/DanceAreaController';
+
+export type DanceControllerProps = { danceController: DanceAreaController };
 
 /**
  * useBoxClass is a hook that generates the styling for a overlay component.
  */
-function useOverlayComponentStyle() {
-  const padding = '25px';
+export function useOverlayComponentStyle(padding = 25) {
   const useStyles = makeStyles({
     overlayComponent: {
-      margin: `${padding} ${padding} ${padding} ${padding}`,
-      padding: `${padding} ${padding} ${padding} ${padding}`,
+      margin: '25px',
+      padding: `${padding}px`,
       borderRadius: '15px',
       backgroundColor: 'white',
-      width: 250,
+      width: '300px',
     },
   });
 
   return useStyles().overlayComponent;
 }
 
-/**
- * DanceKeyViewer displays the keystrokes the user has to press for the current round.
- * It animates a bar that crosses the keys to show the user when to press each key.
- */
-function DanceKeyViewer({
-  danceController,
-}: {
-  danceController: DanceAreaController;
-}): JSX.Element {
-  const useStyles = makeStyles({
-    keyBox: {
-      width: 75,
-      height: 75,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-  });
-  const classes = useStyles();
-  const overlayComponent = useOverlayComponentStyle();
-  return (
-    <Box className={overlayComponent}>
-      <Typography> Key viewer here</Typography>
-      <Box className={classes.keyBox} bgcolor='purple'>
-        <Typography> 1</Typography>
-      </Box>
-      <Box height={25}></Box>
-      <Box className={classes.keyBox} bgcolor='purple'>
-        <Typography> 2</Typography>
-      </Box>
-      <Box height={25}></Box>
-      <Box className={classes.keyBox} bgcolor='purple'>
-        <Typography> 3</Typography>
-      </Box>
-      <Box height={25}></Box>
-      <Box className={classes.keyBox} bgcolor='purple'>
-        <Typography> 4</Typography>
-      </Box>
-    </Box>
-  );
-}
-
-function DanceLeaderboard({
-  danceController,
-}: {
-  danceController: DanceAreaController;
-}): JSX.Element {
+export function DanceLeaderboard({ danceController }: DanceControllerProps): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
   return (
     <Box className={overlayComponent}>
@@ -86,11 +41,7 @@ function DanceLeaderboard({
   );
 }
 
-function DanceMusicPlayer({
-  danceController,
-}: {
-  danceController: DanceAreaController;
-}): JSX.Element {
+function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
   return (
     <Box className={overlayComponent}>
@@ -120,7 +71,7 @@ export function useHandleKeys(danceController: DanceAreaController) {
       };
       danceController.emit('danceMove', danceMoveResult);
       townController.emitDanceMove(danceMoveResult);
-      danceController.keysPressed.push(key);
+      danceController.keysPressed = [...danceController.keysPressed, key];
     };
 
     danceController.addListener('numberPressed', newKey);

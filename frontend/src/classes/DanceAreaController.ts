@@ -292,3 +292,26 @@ export function useKeysPressed(controller: DanceAreaController): KeySequence {
   }, [controller]);
   return keysPressed;
 }
+
+export function useKeyPressedAt(controller: DanceAreaController, index: number) {
+  let initialKey: NumberKey | undefined = undefined;
+  if (index < controller.keysPressed.length) {
+    initialKey = controller.keysPressed[index];
+  }
+  const [key, setKey] = useState<NumberKey | undefined>(initialKey);
+  useEffect(() => {
+    const onChange = (keysPressed: KeySequence) => {
+      let newKey: NumberKey | undefined = undefined;
+      if (index < keysPressed.length) {
+        newKey = keysPressed[index];
+      }
+      if (newKey !== key) {
+        setKey(newKey);
+      }
+    };
+    controller.addListener('keysPressed', onChange);
+    return () => {
+      controller.removeListener('keysPressed', onChange);
+    };
+  });
+}

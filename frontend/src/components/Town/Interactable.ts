@@ -85,6 +85,7 @@ export default abstract class Interactable extends Phaser.GameObjects.Sprite {
         this.townController.interact(this);
         this.interact();
       }
+      this.whileOverlapping();
     });
   }
 
@@ -102,6 +103,11 @@ export default abstract class Interactable extends Phaser.GameObjects.Sprite {
    * Invoked when the player no longer overlaps with this interactable
    */
   overlapExit(): void {}
+
+  /**
+   * Invoked each frame that the player is interacting with the interactable.
+   */
+  whileOverlapping(): void {}
 
   /**
    * Invoked when the player is overlapping with this interactable and first
