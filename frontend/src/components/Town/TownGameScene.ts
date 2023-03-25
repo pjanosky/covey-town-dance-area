@@ -252,10 +252,12 @@ export default class TownGameScene extends Phaser.Scene {
 
       // corresponding each key press from NumberKey to a dance move --> for now these all use the same png
       const primaryMove = this.getPressedNumber();
+      console.log(primaryMove);
       switch (primaryMove) {
         case 'one':
-          body.setVelocityY(speed);
-          gameObjects.sprite.anims.play('misa-spin', true);
+          // body.setVelocityX(speed);
+          // body.setVelocityX(speed);
+          gameObjects.sprite.anims.play('misa-flip', true);
           break;
         // case 'two':
         //   body.setVelocityX(speed);
@@ -272,6 +274,15 @@ export default class TownGameScene extends Phaser.Scene {
         default:
           // Not moving
           gameObjects.sprite.anims.stop();
+          // If we were moving, pick and idle frame to use
+          if (prevVelocity.x < 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-left');
+          } else if (prevVelocity.x > 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-right');
+          } else if (prevVelocity.y < 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-back');
+          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
+          break;
       }
 
       const primaryDirection = this.getNewMovementDirection();
@@ -542,14 +553,14 @@ export default class TownGameScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    // create the anims for dance moves --> right now the animation is just the sprite being shortened
+    // create the anims for dance moves
     anims.create({
-      key: 'make-shift-anim',
+      key: 'misa-flip', // name of the animation
       frames: anims.generateFrameNames('atlas', {
-        prefix: 'make-shift-anim.',
-        start: 0,
-        end: 4,
-        zeroPad: 3,
+        prefix: 'misa-flip.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 1, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
       repeat: -1,
