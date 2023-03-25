@@ -9,6 +9,24 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 
 /**
+ * useBoxClass is a hook that generates the styling for a overlay component.
+ */
+function useOverlayComponentStyle() {
+  const padding = '25px';
+  const useStyles = makeStyles({
+    overlayComponent: {
+      margin: `${padding} ${padding} ${padding} ${padding}`,
+      padding: `${padding} ${padding} ${padding} ${padding}`,
+      borderRadius: '15px',
+      backgroundColor: 'white',
+      width: 250,
+    },
+  });
+
+  return useStyles().overlayComponent;
+}
+
+/**
  * DanceKeyViewer displays the keystrokes the user has to press for the current round.
  * It animates a bar that crosses the keys to show the user when to press each key.
  */
@@ -27,8 +45,9 @@ function DanceKeyViewer({
     },
   });
   const classes = useStyles();
+  const overlayComponent = useOverlayComponentStyle();
   return (
-    <Box width={200} bgcolor='white'>
+    <Box className={overlayComponent}>
       <Typography> Key viewer here</Typography>
       <Box className={classes.keyBox} bgcolor='purple'>
         <Typography> 1</Typography>
@@ -54,14 +73,28 @@ function DanceLeaderboard({
 }: {
   danceController: DanceAreaController;
 }): JSX.Element {
+  const overlayComponent = useOverlayComponentStyle();
   return (
-    <Box width={200} bgcolor='white'>
+    <Box className={overlayComponent}>
       <Typography> Leaderboard (this is some mock data)</Typography>
       <Typography> 1. Slaytie</Typography>
       <Typography> 2. Slayleen</Typography>
       <Typography> 3. Slayter</Typography>
       <Typography> 4. Slayssie</Typography>
       <Typography> 5. Slaymud</Typography>
+    </Box>
+  );
+}
+
+function DanceMusicPlayer({
+  danceController,
+}: {
+  danceController: DanceAreaController;
+}): JSX.Element {
+  const overlayComponent = useOverlayComponentStyle();
+  return (
+    <Box className={overlayComponent}>
+      <Typography> This is where the music player will be</Typography>
     </Box>
   );
 }
@@ -109,15 +142,22 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   return (
     <Grid
       container
+      direction='row'
       justifyContent='space-between'
       alignItems='flex-end'
       alignContent='flex-end'
-      style={{ minHeight: '100%' }}>
+      wrap='nowrap'
+      style={{ minHeight: '100%', minWidth: '100%' }}>
       <Grid item>
         <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
       </Grid>
-      <Grid item>
-        <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
+      <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
+        <Grid item>
+          <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+        </Grid>
+        <Grid item>
+          <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
+        </Grid>
       </Grid>
     </Grid>
   );
@@ -131,7 +171,11 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
 export default function DanceOverlayWrapper(): JSX.Element {
   const danceArea = useInteractable<DanceAreaInteractable>('danceArea');
   if (danceArea) {
-    return <DanceOverlay danceArea={danceArea} />;
+    return (
+      <Box position='absolute' top={0} bottom={0} left={0} right={0}>
+        <DanceOverlay danceArea={danceArea} />
+      </Box>
+    );
   }
   return <></>;
 }
