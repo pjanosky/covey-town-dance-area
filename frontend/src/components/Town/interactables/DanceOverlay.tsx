@@ -8,17 +8,12 @@ import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import DanceAreaController from '../../../classes/DanceAreaController';
 
 /**
- * DanceKeyHandler responds to keys pressed by the player while in a dance interactable area.
- * It checks to see if the right key was pressed based on the key sequence of the current
- * round, and emits a DanceMoveResult to the dance area controller and covey town socket.
- *
- * @param props the dance area interactable that is being interacted with
+ * DanceKeyHandler is a hook that responds to keys pressed by the player while in a
+ * dance interactable area. It checks to see if the right key was pressed based on
+ * the key sequence of the current round, and emits a DanceMoveResult to the dance
+ * area controller and covey town socket.
  */
-export function DanceKeyHandler({
-  danceController,
-}: {
-  danceController: DanceAreaController;
-}): JSX.Element {
+export function useHandleKeys(danceController: DanceAreaController) {
   const townController = useTownController();
 
   useEffect(() => {
@@ -41,8 +36,6 @@ export function DanceKeyHandler({
       danceController.removeListener('numberPressed', newKey);
     };
   }, [danceController, townController]);
-
-  return <></>;
 }
 
 /**
@@ -52,12 +45,8 @@ export function DanceKeyHandler({
  */
 export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const danceController = useDanceAreaController(danceArea.id);
-
-  return (
-    <>
-      <DanceKeyHandler danceController={danceController}></DanceKeyHandler>
-    </>
-  );
+  useHandleKeys(danceController);
+  return <></>;
 }
 
 /**

@@ -11,7 +11,7 @@ import DanceAreaController, {
   useMusic,
 } from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
-import { DeepMockProxy, mockClear } from 'jest-mock-extended';
+import { DeepMockProxy } from 'jest-mock-extended';
 import { cleanup, render, RenderResult } from '@testing-library/react';
 
 function HookComponents({ danceController }: { danceController: DanceAreaController }) {
@@ -41,7 +41,6 @@ function RenderDanceAreaHooks(
 }
 
 describe('DanceAreaController Hooks', () => {
-  const mockToast = jest.fn();
   let danceController: DanceAreaController;
   type DanceControllerEventName = keyof DanceAreaEvents;
   let addListenerSpy: jest.SpyInstance<
@@ -58,7 +57,6 @@ describe('DanceAreaController Hooks', () => {
 
   let renderData: RenderResult;
   beforeEach(() => {
-    mockClear(mockToast);
     danceController = new DanceAreaController({
       id: `id-${nanoid()}`,
       music: `music-${nanoid()}`,
@@ -92,7 +90,7 @@ describe('DanceAreaController Hooks', () => {
     return addedListeners[0][1] as unknown as DanceAreaEvents[Ev];
   }
   /**
-   * Retrieve the listener pased to "removeListener" for a given eventName
+   * Retrieve the listener passed to "removeListener" for a given eventName
    * @throws Error if the removeListener method was not invoked exactly once for the given eventName
    */
   function getSingleListenerRemoved<Ev extends EventNames<DanceAreaEvents>>(

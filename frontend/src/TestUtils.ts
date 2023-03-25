@@ -89,6 +89,7 @@ type MockedTownControllerProperties = {
   viewingAreas?: ViewingAreaController[];
   posterSessionAreas?: PosterSessionAreaController[];
   danceAreas?: DanceAreaController[];
+  ourPlayer?: PlayerController;
 };
 export function mockTownController({
   friendlyName,
@@ -101,6 +102,7 @@ export function mockTownController({
   viewingAreas,
   posterSessionAreas,
   danceAreas,
+  ourPlayer,
 }: MockedTownControllerProperties) {
   const mockedController = mockDeep<TownController>();
   if (friendlyName) {
@@ -144,6 +146,11 @@ export function mockTownController({
   }
   if (danceAreas) {
     Object.defineProperty(mockedController, 'danceAreas', { value: danceAreas });
+    mockedController.emitDanceMove.mockImplementation(() => {});
+    mockedController.emitDanceRating.mockImplementation(() => {});
+  }
+  if (ourPlayer) {
+    Object.defineProperty(mockedController, 'ourPlayer', { value: ourPlayer });
   }
   return mockedController;
 }
