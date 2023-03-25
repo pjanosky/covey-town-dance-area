@@ -1,5 +1,8 @@
 import React, { useEffect } from 'react';
-import { useDanceAreaController, useInteractable } from '../../../classes/TownController';
+import TownController, {
+  useDanceAreaController,
+  useInteractable,
+} from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
@@ -56,9 +59,10 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
  * the key sequence of the current round, and emits a DanceMoveResult to the dance
  * area controller and covey town socket.
  */
-export function useHandleKeys(danceController: DanceAreaController) {
-  const townController = useTownController();
-
+export function useHandleKeys(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
   useEffect(() => {
     const newKey = (key: NumberKey) => {
       const keySequence = danceController.keySequence;
@@ -88,7 +92,8 @@ export function useHandleKeys(danceController: DanceAreaController) {
  */
 export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const danceController = useDanceAreaController(danceArea.id);
-  useHandleKeys(danceController);
+  const townController = useTownController();
+  useHandleKeys(danceController, townController);
 
   return (
     <Grid

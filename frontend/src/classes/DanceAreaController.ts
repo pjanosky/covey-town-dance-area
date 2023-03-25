@@ -90,7 +90,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   private _model: DanceAreaModel;
 
   // this list holds the keys the user has pressed
-  private _keysPressed: KeySequence;
+  private _keysPressed: readonly NumberKey[];
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -100,8 +100,19 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    */
   constructor(danceAreaModel: DanceAreaModel) {
     super();
-    this._model = danceAreaModel;
+    this._model = this._copyModel(danceAreaModel);
     this._keysPressed = [];
+  }
+
+  private _copyModel(model: DanceAreaModel): DanceAreaModel {
+    return {
+      id: model.id,
+      music: model.music,
+      roundId: model.roundId,
+      keySequence: model.keySequence,
+      duration: model.duration,
+      points: model.points,
+    };
   }
 
   /**
@@ -141,7 +152,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * If a new round has begun then we create a new round ID associated with it
    * and emit an update.
    */
-  public set roundId(roundId: string | undefined) {
+  set roundId(roundId: string | undefined) {
     if (this._model.roundId !== roundId) {
       this._model.roundId = roundId;
       this.emit('roundIdChanged', roundId);
@@ -152,15 +163,18 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The current key sequence that the player must follow.
    */
   public get keySequence(): KeySequence {
-    return this._model.keySequence;
+    return this._model.keySequence.slice();
   }
 
   /**
    * If there is a new key sequence then we change it and emit an update.
    */
-  public set keySequence(keySequence: KeySequence) {
-    if (this._model.keySequence !== keySequence) {
-      this._model.keySequence = keySequence;
+  set keySequence(keySequence: KeySequence) {
+    const equal =
+      this._model.keySequence.length === keySequence.length &&
+      this._model.keySequence.every((key, i) => key === keySequence[i]);
+    if (!equal) {
+      this._model.keySequence = keySequence.slice();
       this.emit('keySequenceChanged', keySequence);
     }
   }
@@ -204,17 +218,17 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The keys the user has pressed so far.
    */
-  public get keysPressed(): KeySequence {
+  public get keysPressed(): readonly NumberKey[] {
     return this._keysPressed;
   }
 
   /**
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
-  public set keysPressed(keysPressed: KeySequence) {
+  public set keysPressed(keysPressed: readonly NumberKey[]) {
     if (this._keysPressed !== keysPressed) {
       this._keysPressed = keysPressed;
-      this.emit('keysPressedChanged', keysPressed);
+      this.emit('keysPressedChanged', keysPressed.slice());
     }
   }
 
@@ -222,7 +236,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
-    return this._model;
+    return this._copyModel(this._model);
   }
 
   /**
@@ -233,10 +247,10 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
-    this.roundId = updatedModel.roundId;
     this.keySequence = updatedModel.keySequence;
     this.duration = updatedModel.duration;
     this.points = updatedModel.points;
+    this.roundId = updatedModel.roundId;
   }
 }
 
@@ -290,5 +304,40 @@ export function useKeysPressed(controller: DanceAreaController): KeySequence {
       controller.removeListener('keysPressedChanged', setKeysPressed);
     };
   }, [controller]);
-  return keysPressed;
+  return keysPressed.slice();
+}
+
+/**
+ * useActiveRound is a hook that returns the ID of the current active round. A
+ * round is active if the current round ID is defined and the time time passed
+ * since the start of the round is less than the duration.
+ *
+ * @returns The ID of the current round if there is one active otherwise undefined.
+ */
+export function useActiveRound(controller: DanceAreaController) {
+  const [timeoutID, setTimeoutID] = useState<NodeJS.Timeout | undefined>(undefined);
+
+  // initially undefined so a user will not have an active round if they join
+  // a dance area in the middle of a round.
+  const [activeRound, setActiveRound] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const onRoundChange = (roundID: string | undefined) => {
+      setActiveRound(roundID);
+      clearTimeout(timeoutID);
+      if (roundID) {
+        const id = setTimeout(() => {
+          setActiveRound(undefined);
+        }, controller.duration);
+        setTimeoutID(id);
+      }
+    };
+
+    controller.addListener('roundIdChanged', onRoundChange);
+    return () => {
+      controller.removeListener('roundIdChanged', onRoundChange);
+    };
+  }, [controller, timeoutID]);
+
+  return activeRound;
 }

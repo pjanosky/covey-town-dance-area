@@ -11,9 +11,11 @@ import { cleanup, render } from '@testing-library/react';
 import { useHandleKeys } from './DanceOverlay';
 import { DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
+import useTownController from '../../../hooks/useTownController';
 
 function HookComponent({ danceController }: { danceController: DanceAreaController }) {
-  useHandleKeys(danceController);
+  const townController = useTownController();
+  useHandleKeys(danceController, townController);
   return <></>;
 }
 
@@ -77,7 +79,9 @@ describe('DanceAreaController Hooks', () => {
       };
 
       it('Emits successful dance move result when the right key is pressed', () => {
-        danceController.keySequence = ['one', 'two', 'three'];
+        const model = danceController.danceAreaModel();
+        model.keySequence = ['one', 'two', 'three'];
+        danceController.updateFrom(model);
         danceController.keysPressed = ['one'];
         act(() => {
           danceController.emit('numberPressed', 'two');
@@ -92,7 +96,9 @@ describe('DanceAreaController Hooks', () => {
       });
 
       it('Emits unsuccessful dance move result when the wrong key is pressed', () => {
-        danceController.keySequence = ['one', 'two', 'three'];
+        const model = danceController.danceAreaModel();
+        model.keySequence = ['one', 'two', 'three'];
+        danceController.updateFrom(model);
         danceController.keysPressed = ['one'];
         act(() => {
           danceController.emit('numberPressed', 'four');
@@ -107,7 +113,9 @@ describe('DanceAreaController Hooks', () => {
       });
 
       it('Emits unsuccessful dance move result when too many keys are pressed', () => {
-        danceController.keySequence = ['one', 'two', 'three'];
+        const model = danceController.danceAreaModel();
+        model.keySequence = ['one', 'two', 'three'];
+        danceController.updateFrom(model);
         danceController.keysPressed = ['one', 'two', 'three'];
         act(() => {
           danceController.emit('numberPressed', 'four');
