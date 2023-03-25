@@ -82,7 +82,7 @@ describe('DanceAreaController Hooks', () => {
         const model = danceController.danceAreaModel();
         model.keySequence = ['one', 'two', 'three'];
         danceController.updateFrom(model);
-        danceController.keysPressed = ['one'];
+        danceController.keyResults = [false];
         act(() => {
           danceController.emit('numberPressed', 'two');
         });
@@ -92,14 +92,14 @@ describe('DanceAreaController Hooks', () => {
           roundId: danceController.roundId,
           success: true,
         });
-        expect(danceController.keysPressed).toEqual(['one', 'two']);
+        expect(danceController.keyResults).toEqual([false, true]);
       });
 
       it('Emits unsuccessful dance move result when the wrong key is pressed', () => {
         const model = danceController.danceAreaModel();
         model.keySequence = ['one', 'two', 'three'];
         danceController.updateFrom(model);
-        danceController.keysPressed = ['one'];
+        danceController.keyResults = [false];
         act(() => {
           danceController.emit('numberPressed', 'four');
         });
@@ -109,24 +109,20 @@ describe('DanceAreaController Hooks', () => {
           roundId: danceController.roundId,
           success: false,
         });
-        expect(danceController.keysPressed).toEqual(['one', 'four']);
+        expect(danceController.keyResults).toEqual([false, false]);
       });
 
-      it('Emits unsuccessful dance move result when too many keys are pressed', () => {
+      it('Does not emit a dance move result when too many keys are pressed', () => {
         const model = danceController.danceAreaModel();
         model.keySequence = ['one', 'two', 'three'];
         danceController.updateFrom(model);
-        danceController.keysPressed = ['one', 'two', 'three'];
+        danceController.keyResults = [true, true, true];
         act(() => {
           danceController.emit('numberPressed', 'four');
         });
-        expectDanceMove({
-          interactableID: danceController.id,
-          playerId: ourPlayer.id,
-          roundId: danceController.roundId,
-          success: false,
-        });
-        expect(danceController.keysPressed).toEqual(['one', 'two', 'three', 'four']);
+        expect(danceControllerDanceMoveSpy).not.toHaveBeenCalled();
+        expect(townControllerDanceMoveSpy).not.toHaveBeenCalled();
+        expect(danceController.keyResults).toEqual([true, true, true]);
       });
     });
   });

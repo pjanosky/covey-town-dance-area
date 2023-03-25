@@ -25,14 +25,14 @@ describe('DanceAreaController', () => {
     mockClear(mockListeners.keySequenceChanged);
     mockClear(mockListeners.durationChanged);
     mockClear(mockListeners.pointsChanged);
-    mockClear(mockListeners.keysPressedChanged);
+    mockClear(mockListeners.keyResultsChanged);
     mockClear(mockListeners.danceMove);
     testArea.addListener('musicChanged', mockListeners.musicChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
     testArea.addListener('keySequenceChanged', mockListeners.keySequenceChanged);
     testArea.addListener('durationChanged', mockListeners.durationChanged);
     testArea.addListener('pointsChanged', mockListeners.pointsChanged);
-    testArea.addListener('keysPressedChanged', mockListeners.keysPressedChanged);
+    testArea.addListener('keyResultsChanged', mockListeners.keyResultsChanged);
     testArea.addListener('danceMove', mockListeners.danceMove);
   });
 
@@ -101,15 +101,15 @@ describe('DanceAreaController', () => {
   });
   describe('Test get and set for the keysPressed property', () => {
     test('updates the keysPressed property and emits a keysPressed event if the property changes', () => {
-      const newKeysPressed: KeySequence = ['three', 'one', 'two'];
-      testArea.keysPressed = newKeysPressed;
-      expect(testArea.keysPressed).toStrictEqual(['three', 'one', 'two']);
-      expect(mockListeners.keysPressedChanged).toBeCalledWith(['three', 'one', 'two']);
+      const newKeysPressed = [true, false, true];
+      testArea.keyResults = newKeysPressed;
+      expect(testArea.keyResults).toEqual([true, false, true]);
+      expect(mockListeners.keyResultsChanged).toBeCalledWith([true, false, true]);
     });
     test('does not emit an update if the keysPressed property does not change', () => {
-      const originalKeysPressed = testArea.keysPressed;
-      testArea.keysPressed = originalKeysPressed; // the keysPressed remain unchanged
-      expect(mockListeners.keysPressedChanged).not.toBeCalled();
+      const originalKeysPressed = testArea.keyResults;
+      testArea.keyResults = originalKeysPressed; // the keysPressed remain unchanged
+      expect(mockListeners.keyResultsChanged).not.toBeCalled();
     });
   });
   describe('danceAreaModel', () => {

@@ -1,8 +1,8 @@
-import { Box, Grid, ListItem, makeStyles, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, ListItem, makeStyles, Typography } from '@material-ui/core';
 import {
   useActiveRound,
   useKeySequence,
-  useKeysPressed,
+  useKeyResults,
 } from '../../../classes/DanceAreaController';
 import { NumberKey } from '../../../types/CoveyTownSocket';
 import { DanceControllerProps, useOverlayComponentStyle } from './DanceOverlay';
@@ -70,8 +70,8 @@ function KeyTile({ numberKey, correct }: { numberKey: NumberKey; correct?: boole
         <Box flex={leftFlex}></Box>
         <Box flex={1} display='flex' justifyContent='center' alignItems='center'>
           <Box
-            border='solid'
-            borderColor={color}
+            border={`4px solid ${color}`}
+            bgcolor={color}
             borderRadius={5}
             width={KEY_SIZE}
             height={KEY_SIZE}
@@ -79,7 +79,9 @@ function KeyTile({ numberKey, correct }: { numberKey: NumberKey; correct?: boole
             display='flex'
             justifyContent='center'
             alignItems='center'>
-            <Typography style={{ color: color }}>{symbolForKey(numberKey)}</Typography>
+            <Typography style={{ color: 'white', fontSize: 'x-large', fontWeight: 900 }}>
+              {symbolForKey(numberKey)}
+            </Typography>
           </Box>
         </Box>
         <Box flex={3 - leftFlex}></Box>
@@ -91,22 +93,19 @@ function KeyTile({ numberKey, correct }: { numberKey: NumberKey; correct?: boole
 /**
  * KeyScrollContent displays all of the keys that that the user needs to
  * press. It is separate from {@link KeyScrollView} so that the animation does
- * not restart on re-renders caused by changes to {@link useKeysPressed} and
+ * not restart on re-renders caused by changes to {@link useKeyResults} and
  * {@link useKeySequence}.
  *
  */
 function KeyScrollContent({ danceController }: DanceControllerProps) {
-  const keysPressed = useKeysPressed(danceController);
+  const keyResults = useKeyResults(danceController);
   const keySequence = useKeySequence(danceController);
 
   return (
     <div>
       {keySequence
         .map((key, i) => {
-          let correct: boolean | undefined = undefined;
-          if (i < keysPressed.length) {
-            correct = i < keysPressed.length && keysPressed[i] === key;
-          }
+          const correct = i < keyResults.length ? keyResults[i] : undefined;
           return <KeyTile key={`key-tile-${i}`} numberKey={key} correct={correct}></KeyTile>;
         })
         .reverse()}
@@ -134,10 +133,16 @@ function KeyScrollView({ danceController }: DanceControllerProps) {
 
   return (
     <Box>
-      <Box width='100%' position='absolute' bottom='50px' borderBottom='3px dashed black'></Box>
+      <Box width='100%' position='absolute' bottom='100px' borderBottom='3px dashed black'></Box>
       <div className={classes.scrollingDiv}>
         <KeyScrollContent danceController={danceController}></KeyScrollContent>
       </div>
+      <Box width='100%' position='absolute' top='0px' bgcolor='white'>
+        <Typography style={{ padding: '25px' }}>
+          Press the keys as they cross the dotted line to dance{' '}
+        </Typography>
+        <Divider></Divider>
+      </Box>
     </Box>
   );
 }
@@ -165,7 +170,7 @@ export function DanceKeyViewer({ danceController }: DanceControllerProps) {
   return (
     <div
       className={overlayComponent}
-      style={{ maxHeight: '400px', minHeight: '100px', overflow: 'hidden', position: 'relative' }}>
+      style={{ maxHeight: '450px', minHeight: '100px', overflow: 'hidden', position: 'relative' }}>
       {activeRound ? (
         <KeyScrollView danceController={danceController}></KeyScrollView>
       ) : (

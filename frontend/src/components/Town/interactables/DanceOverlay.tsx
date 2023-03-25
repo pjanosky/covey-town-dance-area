@@ -7,9 +7,10 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { DanceKeyViewer } from './DanceKeyView';
 import DanceAreaController from '../../../classes/DanceAreaController';
+import { nanoid } from 'nanoid';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -46,8 +47,18 @@ export function DanceLeaderboard({ danceController }: DanceControllerProps): JSX
 
 function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
+  const allKeys: NumberKey[] = ['one', 'two', 'three', 'four'];
+  const onClick = () => {
+    danceController.duration = 10;
+    danceController.roundId = nanoid();
+    danceController.keySequence = [...Array(10).keys()].map(
+      () => allKeys[Math.floor(Math.random() * 4 - 0.0000000001)],
+    );
+    danceController.keyResults = [];
+  };
   return (
     <Box className={overlayComponent}>
+      <Button onClick={onClick}>Testing</Button>
       <Typography> This is where the music player will be</Typography>
     </Box>
   );
@@ -66,16 +77,19 @@ export function useHandleKeys(
   useEffect(() => {
     const newKey = (key: NumberKey) => {
       const keySequence = danceController.keySequence;
-      const nextKeyIndex = danceController.keysPressed.length;
-      const danceMoveResult: DanceMoveResult = {
-        interactableID: danceController.id,
-        playerId: townController.ourPlayer.id,
-        roundId: danceController.roundId,
-        success: nextKeyIndex < keySequence.length && key === keySequence[nextKeyIndex],
-      };
-      danceController.emit('danceMove', danceMoveResult);
-      townController.emitDanceMove(danceMoveResult);
-      danceController.keysPressed = [...danceController.keysPressed, key];
+      const nextKeyIndex = danceController.keyResults.length;
+      if (nextKeyIndex < keySequence.length) {
+        const success = nextKeyIndex < keySequence.length && key === keySequence[nextKeyIndex];
+        const danceMoveResult: DanceMoveResult = {
+          interactableID: danceController.id,
+          playerId: townController.ourPlayer.id,
+          roundId: danceController.roundId,
+          success: success,
+        };
+        danceController.emit('danceMove', danceMoveResult);
+        townController.emitDanceMove(danceMoveResult);
+        danceController.keyResults = [...danceController.keyResults, success];
+      }
     };
 
     danceController.addListener('numberPressed', newKey);

@@ -73,7 +73,7 @@ export type DanceAreaEvents = {
    *
    * @param keysPressed the updated list of keys pressed
    */
-  keysPressedChanged: (keysPressed: KeySequence) => void;
+  keyResultsChanged: (keysPressed: boolean[]) => void;
 };
 
 /**
@@ -90,7 +90,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   private _model: DanceAreaModel;
 
   // this list holds the keys the user has pressed
-  private _keysPressed: readonly NumberKey[];
+  private _keyResults: boolean[];
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -101,7 +101,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   constructor(danceAreaModel: DanceAreaModel) {
     super();
     this._model = this._copyModel(danceAreaModel);
-    this._keysPressed = [];
+    this._keyResults = [];
   }
 
   private _copyModel(model: DanceAreaModel): DanceAreaModel {
@@ -218,17 +218,17 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The keys the user has pressed so far.
    */
-  public get keysPressed(): readonly NumberKey[] {
-    return this._keysPressed;
+  public get keyResults(): boolean[] {
+    return this._keyResults;
   }
 
   /**
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
-  public set keysPressed(keysPressed: readonly NumberKey[]) {
-    if (this._keysPressed !== keysPressed) {
-      this._keysPressed = keysPressed;
-      this.emit('keysPressedChanged', keysPressed.slice());
+  public set keyResults(keysPressed: boolean[]) {
+    if (this._keyResults !== keysPressed) {
+      this._keyResults = keysPressed;
+      this.emit('keyResultsChanged', this._keyResults);
     }
   }
 
@@ -236,7 +236,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
-    return this._copyModel(this._model);
+    return this._model;
   }
 
   /**
@@ -296,15 +296,15 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
  * @param controller the given controller
  * @returns the list of numbers corresponding to the keys the user has pressed
  */
-export function useKeysPressed(controller: DanceAreaController): KeySequence {
-  const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
+export function useKeyResults(controller: DanceAreaController): boolean[] {
+  const [keyResults, setKeyResults] = useState(controller.keyResults);
   useEffect(() => {
-    controller.addListener('keysPressedChanged', setKeysPressed);
+    controller.addListener('keyResultsChanged', setKeyResults);
     return () => {
-      controller.removeListener('keysPressedChanged', setKeysPressed);
+      controller.removeListener('keyResultsChanged', setKeyResults);
     };
   }, [controller]);
-  return keysPressed.slice();
+  return keyResults;
 }
 
 /**
