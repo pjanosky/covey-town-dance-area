@@ -282,7 +282,7 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
  * @param controller the given controller
  * @returns the list of numbers corresponding to the keys the user has pressed
  */
-export function useKeyPressed(controller: DanceAreaController): KeySequence {
+export function useKeysPressed(controller: DanceAreaController): KeySequence {
   const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
   useEffect(() => {
     controller.addListener('keysPressed', setKeysPressed);

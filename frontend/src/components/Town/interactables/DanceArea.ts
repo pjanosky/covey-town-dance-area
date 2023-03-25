@@ -4,7 +4,7 @@ import Interactable, { KnownInteractableTypes } from '../Interactable';
  * DanceArea handles all of the Phaser logic for a dance interactable
  * on the front end.
  */
-export default class DanceArea extends Interactable {
+export class DanceArea extends Interactable {
   /**
    * The message that will be shown above the user's avatar when the come
    * close to the area
