@@ -9,7 +9,7 @@ import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { cleanup, render } from '@testing-library/react';
 import { useHandleKeys } from './DanceOverlay';
-import { DanceMoveResult } from '../../../types/CoveyTownSocket';
+import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 
@@ -83,14 +83,16 @@ describe('DanceAreaController Hooks', () => {
         model.keySequence = ['one', 'two', 'three'];
         danceController.updateFrom(model);
         danceController.keyResults = [false];
+        const key: NumberKey = 'two';
         act(() => {
-          danceController.emit('numberPressed', 'two');
+          danceController.emit('numberPressed', key);
         });
         expectDanceMove({
           interactableID: danceController.id,
           playerId: ourPlayer.id,
           roundId: danceController.roundId,
           success: true,
+          keyPressed: key,
         });
         expect(danceController.keyResults).toEqual([false, true]);
       });
@@ -100,14 +102,16 @@ describe('DanceAreaController Hooks', () => {
         model.keySequence = ['one', 'two', 'three'];
         danceController.updateFrom(model);
         danceController.keyResults = [false];
+        const key: NumberKey = 'four';
         act(() => {
-          danceController.emit('numberPressed', 'four');
+          danceController.emit('numberPressed', key);
         });
         expectDanceMove({
           interactableID: danceController.id,
           playerId: ourPlayer.id,
           roundId: danceController.roundId,
           success: false,
+          keyPressed: key,
         });
         expect(danceController.keyResults).toEqual([false, false]);
       });

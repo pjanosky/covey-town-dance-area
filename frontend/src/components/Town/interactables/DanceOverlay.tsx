@@ -104,6 +104,7 @@ export function useHandleKeys(
           playerId: townController.ourPlayer.id,
           roundId: danceController.roundId,
           success: success,
+          keyPressed: key,
         };
 
         danceController.emit('danceMove', danceMoveResult);
