@@ -4,7 +4,7 @@ import { BroadcastOperator } from 'socket.io';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
-import { isPosterSessionArea, isViewingArea } from '../TestUtils';
+import { isPosterSessionArea, isViewingArea, isDanceArea } from '../TestUtils';
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -15,11 +15,15 @@ import {
   SocketData,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
+  DanceArea as DanceAreaModel,
+  DanceMoveResult,
+  DanceRating,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
 import ViewingArea from './ViewingArea';
 import PosterSessionArea from './PosterSessionArea';
+import DanceArea from './DanceFloorArea';
 
 /**
  * The Town class implements the logic for each town: managing the various events that
@@ -146,6 +150,17 @@ export default class Town {
       this._updatePlayerLocation(newPlayer, movementData);
     });
 
+    // Register event listener to appropriately give out points according to a dance move result.
+    socket.on('danceMove', (result: DanceMoveResult) => {
+      this._addPointsSuccess(newPlayer, result);
+    });
+
+    socket.on('danceRating', (rating: DanceRating) => {
+      const sender = this._players.find(p => p.id === rating.sender) as Player;
+      const recipient = this._players.find(p => p.id === rating.recipient) as Player;
+      this._addPointsRating(sender, recipient, rating);
+    });
+
     // Set up a listener to process updates to interactables.
     // Currently only knows how to process updates for ViewingAreas and PosterSessionAreas, and
     // ignores any other updates for any other kind of interactable.
@@ -175,9 +190,64 @@ export default class Town {
         if (existingPosterSessionAreaArea) {
           existingPosterSessionAreaArea.updateModel(update);
         }
+      } else if (isDanceArea(update)) {
+        newPlayer.townEmitter.emit('interactableUpdate', update);
+        const existingDanceArea = <DanceArea>(
+          this._interactables.find(area => area.id === update.id && area instanceof DanceArea)
+        );
+        if (existingDanceArea) {
+          existingDanceArea.updateModel(update);
+        }
       }
     });
     return newPlayer;
+  }
+
+  /**
+   * Adds the points to the recipient from the rating of the sender if they are both
+   * in the same dance area.
+   *
+   * @param sender player who gave the rating
+   * @param recipient player who received the rating
+   * @param rating rating given
+   */
+  private _addPointsRating(sender: Player, recipient: Player, rating: DanceRating) {
+    const danceAreaSender = this._interactables.find(
+      dance => dance.id === sender.location.interactableID,
+    ) as DanceArea;
+
+    const danceAreaRecipient = this._interactables.find(
+      dance => dance.id === recipient.location.interactableID,
+    ) as DanceArea;
+
+    if (
+      isDanceArea(danceAreaSender) &&
+      isDanceArea(danceAreaRecipient) &&
+      danceAreaRecipient === danceAreaSender
+    ) {
+      danceAreaRecipient.addPoints(recipient, rating.rating);
+      this._broadcastEmitter.emit('danceRating', rating);
+    }
+  }
+
+  /**
+   * Adds a point to the player if they successfully completed the dance move
+   * and are in a dance area.
+   *
+   * @param player player with dance move result
+   * @param result result of the dance move
+   */
+  private _addPointsSuccess(player: Player, result: DanceMoveResult) {
+    const danceArea = this._interactables.find(
+      dance => dance.id === player.location.interactableID,
+    ) as DanceArea;
+
+    if (isDanceArea(danceArea)) {
+      if (result.success) {
+        danceArea.addPoints(player, 1);
+      }
+      this._broadcastEmitter.emit('danceMove', result);
+    }
   }
 
   /**
@@ -348,6 +418,34 @@ export default class Town {
   }
 
   /**
+   * Creates a new dance area in this town if there is not currently an active
+   * dance area with the same ID. The dance area ID must match the name of a
+   * dance area that exists in this town's map, and the dance area must not
+   * already have a music set.
+   *
+   * If successful creating the dance area, this method:
+   *    Adds any players who are in the region defined by the dance area to it
+   *    Notifies all players in the town that the dance area has been updated by
+   *      emitting an interactableUpdate event
+   *
+   * @param danceArea Information describing the dance area to create.
+   *
+   * @returns True if the dance area was created or false if there is no known
+   * dance area with the specified ID or if there is already an active dance area
+   * with the specified ID or if there is no music URL specified
+   */
+  public addDanceArea(danceArea: DanceAreaModel): boolean {
+    const area = this._interactables.find(eachArea => eachArea.id === danceArea.id) as DanceArea;
+    if (!area || !danceArea.music || area.music) {
+      return false;
+    }
+    area.updateModel(danceArea);
+    area.addPlayersWithinBounds(this._players);
+    this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    return true;
+  }
+
+  /**
    * Fetch a player's session based on the provided session token. Returns undefined if the
    * session token is not valid.
    *
@@ -420,10 +518,15 @@ export default class Town {
       .filter(eachObject => eachObject.type === 'PosterSessionArea')
       .map(eachPSAreaObj => PosterSessionArea.fromMapObject(eachPSAreaObj, this._broadcastEmitter));
 
+    const danceAreas = objectLayer.objects
+      .filter(eachObject => eachObject.type === 'DanceArea')
+      .map(eachDanceAreaObj => DanceArea.fromMapObject(eachDanceAreaObj, this._broadcastEmitter));
+
     this._interactables = this._interactables
       .concat(viewingAreas)
       .concat(conversationAreas)
-      .concat(posterSessionAreas);
+      .concat(posterSessionAreas)
+      .concat(danceAreas);
     this._validateInteractables();
   }
 

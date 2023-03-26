@@ -10,8 +10,11 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { ConversationArea } from './models/ConversationArea';
+export type { DanceArea } from './models/DanceArea';
 export type { InvalidParametersError } from './models/InvalidParametersError';
+export type { KeySequence } from './models/KeySequence';
 export type { PosterSessionArea } from './models/PosterSessionArea';
+export type { Record_string_number_ } from './models/Record_string_number_';
 export type { Town } from './models/Town';
 export type { TownCreateParams } from './models/TownCreateParams';
 export type { TownCreateResponse } from './models/TownCreateResponse';
