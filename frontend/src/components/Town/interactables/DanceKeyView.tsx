@@ -19,42 +19,6 @@ const KEY_SPACING = 25;
  * @returns time since the start of the round that the user
  * must press the key in milliseconds.
  */
-export function calculateKeyTime(
-  controller: DanceAreaController,
-  index: number,
-): [start: number, end: number] {
-  // the number of keys in the current sequence
-  const numKeys = controller.keySequence.length;
-  // distance to the bottom of the key from the bottom of the scroll content
-  const keyContentDist = (KEY_SIZE + KEY_SPACING) * index;
-  // distance to the dotted line from the top of the viewer
-  const viewerLineDist = VIEWER_HEIGHT - LINE_POS;
-  // distance key key must travel before it meets the line
-  const keyTravelDist = viewerLineDist + keyContentDist;
-
-  // height of the scroll content
-  const contentHeight = (KEY_SIZE + KEY_SPACING) * numKeys;
-  // distance the scroll content traves over the whole course of the animation
-  const animationDist = contentHeight + VIEWER_HEIGHT;
-  const animationTime = controller.duration * 1000;
-  const rate = animationDist / animationTime;
-
-  const start = keyTravelDist / rate;
-  const end = (keyTravelDist + KEY_SIZE) / rate;
-  const buffer = 100;
-
-  console.log(
-    `i: ${index}, keyContentDist: ${keyContentDist}, keyTravelDist: ${keyTravelDist}, rate: ${rate}`,
-  );
-  return [start - buffer, end + buffer];
-}
-
-/**
- * Calculates the time range where the key will be over the line.
- *
- * @returns time since the start of the round that the user
- * must press the key in milliseconds.
- */
 export function calculateKeyIndex(
   controller: DanceAreaController,
   time: number,

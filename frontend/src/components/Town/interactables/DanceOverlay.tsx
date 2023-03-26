@@ -8,7 +8,7 @@ import useTownController from '../../../hooks/useTownController';
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
-import { calculateKeyIndex, calculateKeyTime, DanceKeyViewer } from './DanceKeyView';
+import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { nanoid } from 'nanoid';
 
