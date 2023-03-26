@@ -244,8 +244,10 @@ export default class Town {
       dance => dance.id === player.location.interactableID,
     ) as DanceArea;
 
-    if (isDanceArea(danceArea) && result.success) {
-      danceArea.addPoints(player, 1);
+    if (isDanceArea(danceArea)) {
+      if (result.success) {
+        danceArea.addPoints(player, 1);
+      }
       this._broadcastEmitter.emit('danceMove', result);
     }
   }
