@@ -63,7 +63,7 @@ describe('DanceAreaController Hooks', () => {
       roundId: `round-${nanoid()}`,
       duration: 0,
       keySequence: [],
-      points: new Map(),
+      points: {},
     });
     townController = mockTownController({ danceAreas: [danceController] });
 
@@ -179,7 +179,7 @@ describe('DanceAreaController Hooks', () => {
         roundId: `round-${nanoid()}`,
         duration: 0,
         keySequence: [],
-        points: new Map(),
+        points: {},
       });
       const newAddListenerSpy = jest.spyOn(newDanceAreaController, 'addListener');
       renderData.rerender(RenderDanceAreaHooks(newDanceAreaController, townController));

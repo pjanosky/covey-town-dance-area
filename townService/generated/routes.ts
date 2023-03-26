@@ -86,6 +86,29 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "KeySequence": {
+        "dataType": "refAlias",
+        "type": {"dataType":"array","array":{"dataType":"double"},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Record_string.number_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DanceArea": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "music": {"dataType":"string"},
+            "roundId": {"dataType":"string","required":true},
+            "keySequence": {"ref":"KeySequence","required":true},
+            "duration": {"dataType":"double","required":true},
+            "points": {"ref":"Record_string.number_","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const validationService = new ValidationService(models);
 
@@ -273,6 +296,33 @@ export function RegisterRoutes(app: express.Router) {
 
 
               const promise = controller.createPosterSessionArea.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/towns/:townID/danceArea',
+            ...(fetchMiddlewares<RequestHandler>(TownsController)),
+            ...(fetchMiddlewares<RequestHandler>(TownsController.prototype.createDanceArea)),
+
+            function TownsController_createDanceArea(request: any, response: any, next: any) {
+            const args = {
+                    townID: {"in":"path","name":"townID","required":true,"dataType":"string"},
+                    sessionToken: {"in":"header","name":"X-Session-Token","required":true,"dataType":"string"},
+                    requestBody: {"in":"body","name":"requestBody","required":true,"ref":"DanceArea"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TownsController();
+
+
+              const promise = controller.createDanceArea.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
