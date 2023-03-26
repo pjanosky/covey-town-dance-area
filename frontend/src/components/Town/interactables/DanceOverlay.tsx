@@ -131,26 +131,35 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   useHandleKeys(danceController, townController);
 
   return (
-    <Grid
-      container
-      direction='row'
-      justifyContent='space-between'
+    <Box
+      width='100%'
+      height='100%'
+      position='relative'
+      display='flex'
       alignItems='flex-end'
-      alignContent='flex-end'
-      wrap='nowrap'
-      style={{ minHeight: '100%', minWidth: '100%' }}>
-      <Grid item>
-        <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
-      </Grid>
-      <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
-        <Grid item>
-          <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+      alignContent='flex-end'>
+      <Box position='sticky' bottom='0px' left='0px' right='0px' width='100%'>
+        <Grid
+          container
+          direction='row'
+          justifyContent='space-between'
+          alignItems='flex-end'
+          alignContent='flex-end'
+          wrap='nowrap'>
+          <Grid item>
+            <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
+          </Grid>
+          <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
+            <Grid item>
+              <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+            </Grid>
+            <Grid item>
+              <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
+            </Grid>
+          </Grid>
         </Grid>
-        <Grid item>
-          <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
-        </Grid>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }
 
