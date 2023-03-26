@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
 import TownController from '../../classes/TownController';
-import { PlayerLocation } from '../../types/CoveyTownSocket';
+import { NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
@@ -25,6 +25,16 @@ function interactableTypeForObjectType(type: string): any {
   }
 }
 
+/**
+ * An object storing the current status of the keyboard keys 1, 2, 3, and 4.
+ */
+type NumberKeyInputs = {
+  one: Phaser.Input.Keyboard.Key;
+  two: Phaser.Input.Keyboard.Key;
+  three: Phaser.Input.Keyboard.Key;
+  four: Phaser.Input.Keyboard.Key;
+};
+
 // Original inspiration and code from:
 // https://medium.com/@michaelwesthadley/modular-game-worlds-in-phaser-3-tilemaps-1-958fc7e6bbd6
 
@@ -42,6 +52,8 @@ export default class TownGameScene extends Phaser.Scene {
   private _cursors: Phaser.Types.Input.Keyboard.CursorKeys[] = [];
 
   private _cursorKeys?: Phaser.Types.Input.Keyboard.CursorKeys;
+
+  private _numberKeys: NumberKeyInputs | undefined;
 
   /*
    * A "captured" key doesn't send events to the browser - they are trapped by Phaser
@@ -76,6 +88,14 @@ export default class TownGameScene extends Phaser.Scene {
     const ret = this._cursorKeys;
     if (!ret) {
       throw new Error('Unable to access cursors before game scene is loaded');
+    }
+    return ret;
+  }
+
+  public get numberKeys() {
+    const ret = this._numberKeys;
+    if (!ret) {
+      throw new Error('Unable to access number keys before game scene is loaded');
     }
     return ret;
   }
@@ -150,6 +170,26 @@ export default class TownGameScene extends Phaser.Scene {
     });
     // Remove disconnected players from list
     this._players = players;
+  }
+
+  /**
+   * Get the number key that is currently pressed with lower numbers taking
+   * precedence over higher number of multiple keys are pressed at the same time.
+   *
+   * @returns The number key that is currently pressed of undefined if
+   * no key is pressed.
+   */
+  getPressedNumber(): NumberKey | undefined {
+    if (this._numberKeys?.one.isDown) {
+      return 'one';
+    } else if (this._numberKeys?.two.isDown) {
+      return 'two';
+    } else if (this._numberKeys?.three.isDown) {
+      return 'three';
+    } else if (this._numberKeys?.four.isDown) {
+      return 'four';
+    }
+    return undefined;
   }
 
   getNewMovementDirection() {
@@ -386,6 +426,14 @@ export default class TownGameScene extends Phaser.Scene {
         false,
       ) as Phaser.Types.Input.Keyboard.CursorKeys,
     );
+
+    /// Register the number keys for the dance interactable area
+    this._numberKeys = this.input.keyboard.addKeys({
+      one: Phaser.Input.Keyboard.KeyCodes.ONE,
+      two: Phaser.Input.Keyboard.KeyCodes.TWO,
+      three: Phaser.Input.Keyboard.KeyCodes.THREE,
+      four: Phaser.Input.Keyboard.KeyCodes.FOUR,
+    }) as NumberKeyInputs;
 
     // Create a sprite with physics enabled via the physics system. The image used for the sprite
     // has a bit of whitespace, so I'm using setSize & setOffset to control the size of the

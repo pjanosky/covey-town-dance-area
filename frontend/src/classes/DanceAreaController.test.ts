@@ -2,7 +2,7 @@ import { mock, mockClear, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import TownController from './TownController';
 import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
-import { DanceArea } from '../types/CoveyTownSocket';
+import { DanceArea, KeySequence } from '../types/CoveyTownSocket';
 
 describe('DanceAreaController', () => {
   let testArea: DanceAreaController;
@@ -16,7 +16,7 @@ describe('DanceAreaController', () => {
       roundId: nanoid(),
       keySequence: [],
       duration: 0,
-      points: new Map<string, number>(),
+      points: {},
     };
     testArea = new DanceAreaController(testAreaModel);
     mockClear(townController);
@@ -25,11 +25,15 @@ describe('DanceAreaController', () => {
     mockClear(mockListeners.newKeySequence);
     mockClear(mockListeners.durationChanged);
     mockClear(mockListeners.pointsChanged);
+    mockClear(mockListeners.keysPressed);
+    mockClear(mockListeners.danceMove);
     testArea.addListener('musicChanged', mockListeners.musicChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
     testArea.addListener('newKeySequence', mockListeners.newKeySequence);
     testArea.addListener('durationChanged', mockListeners.durationChanged);
     testArea.addListener('pointsChanged', mockListeners.pointsChanged);
+    testArea.addListener('keysPressed', mockListeners.keysPressed);
+    testArea.addListener('danceMove', mockListeners.danceMove);
   });
 
   describe('Tests get and set for the music property', () => {
@@ -58,9 +62,9 @@ describe('DanceAreaController', () => {
   });
   describe('Tests get and set for the keySequence property', () => {
     test('updates the key sequence and emits a newKeySequence event if the property changes', () => {
-      const newKeySequence = [1, 2, 3];
+      const newKeySequence: KeySequence = ['one', 'two', 'three'];
       testArea.keySequence = newKeySequence;
-      expect(testArea.keySequence).toStrictEqual([1, 2, 3]);
+      expect(testArea.keySequence).toStrictEqual(['one', 'two', 'three']);
       expect(mockListeners.newKeySequence).toBeCalledWith(newKeySequence);
     });
     test('does not emit an update if the key sequence does not change', () => {
@@ -91,8 +95,21 @@ describe('DanceAreaController', () => {
       expect(mockListeners.pointsChanged).toBeCalledWith(newPoints);
     });
     test('does not emit an update if the points do not change', () => {
-      testArea.points = testAreaModel.points;
+      testArea.points = new Map(Object.entries(testAreaModel.points));
       expect(mockListeners.pointsChanged).not.toBeCalled();
+    });
+  });
+  describe('Test get and set for the keysPressed property', () => {
+    test('updates the keysPressed property and emits a keysPressed event if the property changes', () => {
+      const newKeysPressed: KeySequence = ['three', 'one', 'two'];
+      testArea.keysPressed = newKeysPressed;
+      expect(testArea.keysPressed).toStrictEqual(['three', 'one', 'two']);
+      expect(mockListeners.keysPressed).toBeCalledWith(['three', 'one', 'two']);
+    });
+    test('does not emit an update if the keysPressed property does not change', () => {
+      const originalKeysPressed = testArea.keysPressed;
+      testArea.keysPressed = originalKeysPressed; // the keysPressed remain unchanged
+      expect(mockListeners.keysPressed).not.toBeCalled();
     });
   });
   describe('danceAreaModel', () => {
@@ -103,32 +120,32 @@ describe('DanceAreaController', () => {
   });
   describe('updateFrom', () => {
     test('Updates the music, roundId, keySequence, duration, and points properties', () => {
-      const newPoints = new Map<string, number>();
-      newPoints.set('player1', 10);
+      const keySeq: KeySequence = ['one', 'two'];
+      const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: testAreaModel.id,
         music: 'Gaddi Red Challenger',
         roundId: 'round 2',
-        keySequence: [1, 2],
+        keySequence: keySeq,
         duration: 60,
         points: newPoints,
       };
       testArea.updateFrom(newDanceAreaModel);
       expect(testArea.music).toBe('Gaddi Red Challenger');
       expect(testArea.roundId).toBe('round 2');
-      expect(testArea.keySequence).toStrictEqual([1, 2]);
+      expect(testArea.keySequence).toStrictEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
       expect(testArea.points).toBe(newPoints);
     });
     test('does not update the id property as it is readonly', () => {
+      const keySeq: KeySequence = ['one', 'two'];
       const existingId = testArea.id;
-      const newPoints = new Map<string, number>();
-      newPoints.set('player1', 10);
+      const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: nanoid(),
         music: 'Gaddi Red Challenger',
         roundId: 'round 2',
-        keySequence: [1, 2],
+        keySequence: keySeq,
         duration: 60,
         points: newPoints,
       };

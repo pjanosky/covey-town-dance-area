@@ -1,3 +1,4 @@
+import { EventParams } from '@socket.io/component-emitter';
 import { mock, mockClear, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import { LoginController } from '../contexts/LoginControllerContext';
@@ -19,7 +20,6 @@ import {
   DanceRating,
   Player as PlayerModel,
   PlayerLocation,
-  Rating,
   ServerToClientEvents,
   TownJoinResponse,
 } from '../types/CoveyTownSocket';
@@ -29,7 +29,7 @@ import {
   isPosterSessionArea,
   isViewingArea,
 } from '../types/TypeUtils';
-import DanceAreaController from './DanceAreaController';
+import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
 import PlayerController from './PlayerController';
 import PosterSessionAreaController from './PosterSessionAreaController';
 import TownController, { TownEvents } from './TownController';
@@ -90,33 +90,6 @@ describe('TownController', () => {
     } else {
       expect(mockListener).toHaveBeenCalledWith(expectedListenerParam);
     }
-    return mockListener;
-  };
-  /**
-   * Testing harness that mocks the arrival of an event from the CoveyTownSocket and expects that
-   * a given listener is not invoked.
-   *
-   * Returns a mock listener callback that represents the listener under expectation
-   *
-   * @param receivedEvent
-   * @param receivedParameter
-   * @param listenerToExpect
-   * @param expectedListenerParam
-   * @returns mock listener mock
-   */
-  const emitEventAndExpectListenerNotFiring = <
-    ReceivedEventFromSocket extends EventNames<ServerToClientEvents>,
-    ExpectedListenerName extends EventNames<TownEvents>,
-  >(
-    receivedEvent: ReceivedEventFromSocket,
-    receivedParameter: ReceivedEventParameter<ReceivedEventFromSocket>,
-    listenerToExpect: ExpectedListenerName,
-  ): jest.MockedFunction<TownEvents[ExpectedListenerName]> => {
-    const eventListener = getEventListener(mockSocket, receivedEvent);
-    const mockListener = jest.fn() as jest.MockedFunction<TownEvents[ExpectedListenerName]>;
-    testController.addListener(listenerToExpect, mockListener);
-    eventListener(receivedParameter);
-    expect(mockListener).toHaveBeenCalledTimes(0);
     return mockListener;
   };
 
@@ -602,98 +575,150 @@ describe('TownController', () => {
         PlayerController.fromPlayerModel(testPlayer),
       );
     });
-    describe('Dance move events', () => {
-      it('Emits danceMove event when a dance move result is received', async () => {
-        mockTownControllerConnection(testController, mockSocket);
-        const testInteractableID = nanoid();
-        testController.ourPlayer.location.interactableID = testInteractableID;
-        const testDanceMoveResult = {
-          interactableID: testInteractableID,
-          playerId: nanoid(),
-          roundId: nanoid(),
-          success: true,
-        };
-        emitEventAndExpectListenerFiring(
-          'danceMove',
-          testDanceMoveResult,
-          'danceMove',
-          testDanceMoveResult,
-        );
-      });
-      it('Does not emit a danceMove event when a dance move result is received with a different interactable ID', async () => {
-        await mockTownControllerConnection(testController, mockSocket);
-        const testInteractableID = nanoid();
-        testController.ourPlayer.location.interactableID = testInteractableID;
-        const testDanceMoveResult = {
-          interactableID: nanoid(),
-          playerId: nanoid(),
-          roundId: nanoid(),
-          success: true,
-        };
-        emitEventAndExpectListenerNotFiring('danceMove', testDanceMoveResult, 'danceMove');
-      });
-    });
 
-    describe('Dance rating events', () => {
-      it('Emits danceRating event when a dance rating is received', async () => {
-        await mockTownControllerConnection(testController, mockSocket);
-        const testInteractableID = nanoid();
-        testController.ourPlayer.location.interactableID = testInteractableID;
-        const rating: Rating = 3;
-        const testDanceRating = {
-          interactableID: testInteractableID,
+    describe('test dance socket handlers', () => {
+      let danceController: DanceAreaController;
+      let danceModel: DanceArea;
+      let danceMoveListener: jest.MockedFunction<DanceAreaEvents['danceMove']>;
+      let danceRatingListener: jest.MockedFunction<DanceAreaEvents['danceRating']>;
+      type DanceControllerEventName = EventNames<DanceAreaEvents>;
+
+      beforeEach(async () => {
+        mockTownControllerConnection(testController, mockSocket);
+        if (testController.danceAreas.length === 0) {
+          throw Error('no dance areas added to town');
+        }
+        danceController = testController.danceAreas[0];
+        danceModel = danceController.danceAreaModel();
+        danceMoveListener = jest.fn();
+        danceRatingListener = jest.fn();
+        danceController.addListener('danceMove', danceMoveListener);
+        danceController.addListener('danceRating', danceRatingListener);
+      });
+
+      /**
+       * Emits an event to the test TownController to simulate an event being received
+       * from the backend.
+       */
+      const emitToTown = <ReceivedEventFromSocket extends EventNames<ServerToClientEvents>>(
+        receivedEvent: ReceivedEventFromSocket,
+        receivedParameter: ReceivedEventParameter<ReceivedEventFromSocket>,
+      ) => {
+        const eventListener = getEventListener(mockSocket, receivedEvent);
+        eventListener(receivedParameter);
+      };
+
+      /**
+       * Testing harness that expects that the given event is emitted to the
+       * danceAreaController. If the `value` is supplied, this function expects
+       * that the value passed to the listeners of this event matches the given
+       * 'value'.
+       *
+       * This function is uses the mockEvent listeners set up in the `beforeAll`
+       * function. It currently only works for 'danceMove' and 'danceRating' events.
+       *
+       * @param event The name of the event that is expected be be invoked
+       * @param value The value that is passed to listeners.
+       */
+      const expectControllerEvent = <DanceEventName extends DanceControllerEventName>(
+        event: DanceEventName,
+        value: EventParams<DanceAreaEvents, DanceEventName>[0] | undefined = undefined,
+      ) => {
+        // typescript doesn't currently support type narrowing on generics so we have
+        // to use the `any` type here.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const expectCall = (listener: jest.MockedFunction<any>) => {
+          if (value) {
+            expect(listener).toHaveBeenCalledWith(value);
+          } else {
+            expect(listener).toHaveBeenCalled();
+          }
+        };
+
+        switch (event) {
+          case 'danceMove':
+            expectCall(danceMoveListener);
+            break;
+          case 'danceRating':
+            expectCall(danceRatingListener);
+            break;
+          default:
+            throw Error(`${event} event has not been implemented`);
+        }
+      };
+
+      /**
+       * Ensures that the given event has not been emitted from the dance
+       * area controller.
+       */
+      const expectNoControllerEvent = (event: DanceControllerEventName) => {
+        switch (event) {
+          case 'danceMove':
+            expect(danceMoveListener).toHaveBeenCalledTimes(0);
+            break;
+          case 'danceRating':
+            expect(danceRatingListener).toHaveBeenCalledTimes(0);
+            break;
+          default:
+            throw Error(`${event} event has not been implemented`);
+        }
+      };
+
+      it('Forwards danceMove to controller when interactableID is valid', () => {
+        const result: DanceMoveResult = {
+          interactableID: danceModel.id,
+          playerId: nanoid(),
+          roundId: nanoid(),
+          success: true,
+        };
+        emitToTown('danceMove', result);
+        expectControllerEvent('danceMove', result);
+      });
+      it('Does not forward danceMove to controller when interactableID is invalid', () => {
+        const result: DanceMoveResult = {
+          interactableID: nanoid(),
+          playerId: nanoid(),
+          roundId: nanoid(),
+          success: true,
+        };
+        emitToTown('danceMove', result);
+        expectNoControllerEvent('danceMove');
+      });
+      it('Forwards danceRating to controller when interactableID is valid', () => {
+        const rating: DanceRating = {
+          interactableID: danceModel.id,
           sender: nanoid(),
           recipient: nanoid(),
-          rating: rating,
+          rating: 1,
         };
-        emitEventAndExpectListenerFiring(
-          'danceRating',
-          testDanceRating,
-          'danceRating',
-          testDanceRating,
-        );
+        emitToTown('danceRating', rating);
+        expectControllerEvent('danceRating', rating);
       });
-      it('Does not emit a danceRating event when a dance rating is received with a different interactable ID', async () => {
-        await mockTownControllerConnection(testController, mockSocket);
-        const testInteractableID = nanoid();
-        testController.ourPlayer.location.interactableID = testInteractableID;
-        const rating: Rating = 3;
-        const testDanceRating = {
+      it('Does not forward danceRating to controller when interactableID is invalid', () => {
+        const rating: DanceRating = {
           interactableID: nanoid(),
           sender: nanoid(),
           recipient: nanoid(),
-          rating: rating,
+          rating: 1,
         };
-        emitEventAndExpectListenerNotFiring('danceRating', testDanceRating, 'danceRating');
+        emitToTown('danceRating', rating);
+        expectNoControllerEvent('danceRating');
       });
     });
   });
   describe('Dance Area Tests', () => {
     it('danceAreas setter update the dance areas', async () => {
-      const townJoinResponse = await mockTownControllerConnection(testController, mockSocket);
+      await mockTownControllerConnection(testController, mockSocket);
       const newArea = {
         id: nanoid(),
         music: nanoid(),
         roundId: nanoid(),
         keySequence: [],
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       };
       expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeUndefined();
       testController.danceAreas.push(new DanceAreaController(newArea));
-      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeDefined();
-    });
-    it('getDanceAreaController creates a new dance area', () => {
-      const newArea = {
-        id: nanoid(),
-        music: nanoid(),
-        roundId: nanoid(),
-        keySequence: [],
-        duration: 0,
-        points: new Map<string, number>(),
-      };
-      expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeUndefined();
-      testController.getDanceAreaController(newArea);
       expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeDefined();
     });
   });

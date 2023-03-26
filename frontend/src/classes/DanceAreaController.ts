@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { KeySequence } from '../types/CoveyTownSocket';
+import { DanceMoveResult, DanceRating, KeySequence, NumberKey } from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
 
 /**
@@ -20,7 +20,7 @@ export type DanceAreaEvents = {
    *
    * @param roundId the new unique ID
    */
-  roundIdChanged: (roundId: string) => void;
+  roundIdChanged: (roundId: string | undefined) => void;
 
   /**
    * A newKeySequence event indicates that there is a new key sequence for
@@ -46,6 +46,34 @@ export type DanceAreaEvents = {
    * @param pointsToAdd the number of points won
    */
   pointsChanged: (points: Map<string, number>) => void;
+
+  /**
+   * An event that indicates that another player has successfully or unsuccessfully performed
+   * dance move.
+   *
+   * @param result: The result of the dance move that the other user performed
+   */
+  danceMove: (result: DanceMoveResult) => void;
+
+  /**
+   * An event that indicates that another player has rated our player's dancing.
+   * @param rating the rating that the other player gave.
+   */
+  danceRating: (rating: DanceRating) => void;
+
+  /**
+   * An event that indicates that a number key has been pressed.
+   *
+   * @param key the key that was pressed
+   */
+  numberPressed: (key: NumberKey) => void;
+
+  /**
+   * A keysPressed event indicates that the keysPressed field has been updated/changed.
+   *
+   * @param keysPressed the updated list of keys pressed
+   */
+  keysPressed: (keysPressed: KeySequence) => void;
 };
 
 /**
@@ -59,7 +87,20 @@ export type DanceAreaEvents = {
  * updated @see DanceAreaEvents
  */
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
-  private _model: DanceAreaModel;
+  private _id: string;
+
+  private _music: string | undefined;
+
+  private _roundId: string | undefined;
+
+  private _keySequence: KeySequence;
+
+  private _duration: number;
+
+  private _points: Map<string, number>;
+
+  // this list holds the keys the user has pressed
+  private _keysPressed: KeySequence;
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -67,9 +108,15 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    *
    * @param danceAreaModel The dance area model that this controller should represent
    */
-  constructor(danceAreaModel: DanceAreaModel) {
+  constructor(model: DanceAreaModel) {
     super();
-    this._model = danceAreaModel;
+    this._id = model.id;
+    this._music = model.music;
+    this._roundId = model.roundId;
+    this._keySequence = model.keySequence;
+    this._duration = model.duration;
+    this._points = new Map(Object.entries(model));
+    this._keysPressed = [];
   }
 
   /**
@@ -78,22 +125,22 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * be tied to the same ID.
    */
   public get id(): string {
-    return this._model.id;
+    return this._id;
   }
 
   /**
    * The music of the dance area, or undefined when the first player joins the area.
    */
   public get music(): string | undefined {
-    return this._model.music;
+    return this._music;
   }
 
   /**
    * If the music changes, set it to the new music and emit an update.
    */
   public set music(music: string | undefined) {
-    if (this._model.music !== music) {
-      this._model.music = music;
+    if (this._music !== music) {
+      this._music = music;
       this.emit('musicChanged', music);
     }
   }
@@ -101,17 +148,17 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The round that is ongoing in the dance area.
    */
-  public get roundId(): string {
-    return this._model.roundId;
+  public get roundId(): string | undefined {
+    return this._roundId;
   }
 
   /**
    * If a new round has begun then we create a new round ID associated with it
    * and emit an update.
    */
-  public set roundId(roundId: string) {
-    if (this._model.roundId !== roundId) {
-      this._model.roundId = roundId;
+  public set roundId(roundId: string | undefined) {
+    if (this._roundId !== roundId) {
+      this._roundId = roundId;
       this.emit('roundIdChanged', roundId);
     }
   }
@@ -120,15 +167,15 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The current key sequence that the player must follow.
    */
   public get keySequence(): KeySequence {
-    return this._model.keySequence;
+    return this._keySequence;
   }
 
   /**
    * If there is a new key sequence then we change it and emit an update.
    */
   public set keySequence(keySequence: KeySequence) {
-    if (this._model.keySequence !== keySequence) {
-      this._model.keySequence = keySequence;
+    if (this._keySequence !== keySequence) {
+      this._keySequence = keySequence;
       this.emit('newKeySequence', keySequence);
     }
   }
@@ -137,7 +184,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The duration (in seconds) of the current round.
    */
   public get duration(): number {
-    return this._model.duration;
+    return this._duration;
   }
 
   /**
@@ -145,8 +192,8 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set duration(duration: number) {
-    if (this._model.duration !== duration) {
-      this._model.duration = duration;
+    if (this._duration !== duration) {
+      this._duration = duration;
       this.emit('durationChanged', duration);
     }
   }
@@ -155,7 +202,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The amount points of each player currently in the dance area.
    */
   public get points(): Map<string, number> {
-    return this._model.points;
+    return this._points;
   }
 
   /**
@@ -163,9 +210,26 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set points(points: Map<string, number>) {
-    if (this._model.points !== points) {
-      this._model.points = points;
+    if (this._points !== points) {
+      this._points = points;
       this.emit('pointsChanged', points);
+    }
+  }
+
+  /**
+   * The keys the user has pressed so far.
+   */
+  public get keysPressed(): KeySequence {
+    return this._keysPressed;
+  }
+
+  /**
+   * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
+   */
+  public set keysPressed(keysPressed: KeySequence) {
+    if (this._keysPressed !== keysPressed) {
+      this._keysPressed = keysPressed;
+      this.emit('keysPressed', keysPressed);
     }
   }
 
@@ -173,7 +237,14 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
-    return this._model;
+    return {
+      id: this._id,
+      music: this._music,
+      roundId: this._roundId,
+      keySequence: this._keySequence,
+      duration: this._duration,
+      points: Object.fromEntries(this._points),
+    };
   }
 
   /**
@@ -187,7 +258,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     this.roundId = updatedModel.roundId;
     this.keySequence = updatedModel.keySequence;
     this.duration = updatedModel.duration;
-    this.points = updatedModel.points;
+    this.points = new Map(Object.entries(updatedModel.points));
   }
 }
 
@@ -206,4 +277,40 @@ export function useMusic(controller: DanceAreaController): string | undefined {
     };
   }, [controller]);
   return music;
+}
+
+/**
+ * A hook that returns the current key sequence that the user must follow for the
+ * dance area with the given controller.
+ *
+ * @param controller the given controller
+ * @returns a list of numbers corresponding to the keys
+ */
+export function useKeySequence(controller: DanceAreaController): KeySequence {
+  const [keySequence, setKeySequence] = useState(controller.keySequence);
+  useEffect(() => {
+    controller.addListener('newKeySequence', setKeySequence);
+    return () => {
+      controller.removeListener('newKeySequence', setKeySequence);
+    };
+  }, [controller]);
+  return keySequence;
+}
+
+/**
+ * A hook that returns the current keys pressed that the player has pressed for the
+ * given dance area with the given controller.
+ *
+ * @param controller the given controller
+ * @returns the list of numbers corresponding to the keys the user has pressed
+ */
+export function useKeysPressed(controller: DanceAreaController): KeySequence {
+  const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
+  useEffect(() => {
+    controller.addListener('keysPressed', setKeysPressed);
+    return () => {
+      controller.removeListener('keysPressed', setKeysPressed);
+    };
+  }, [controller]);
+  return keysPressed;
 }

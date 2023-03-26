@@ -1,15 +1,20 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
-import { BoundingBox, TownEmitter, DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
+import {
+  BoundingBox,
+  TownEmitter,
+  DanceArea as DanceAreaModel,
+  KeySequence,
+} from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
 export default class DanceArea extends InteractableArea {
   private _music?: string;
 
-  private _roundId: string;
+  private _roundId: string | undefined;
 
-  private _keySequence: number[];
+  private _keySequence: KeySequence;
 
   private _duration: number;
 

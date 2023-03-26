@@ -8,6 +8,7 @@ import ViewingAreaController from './classes/ViewingAreaController';
 import PosterSessionAreaController from './classes/PosterSessionAreaController';
 import { TownsService } from './generated/client';
 import { CoveyTownSocket, ServerToClientEvents, TownJoinResponse } from './types/CoveyTownSocket';
+import DanceAreaController from './classes/DanceAreaController';
 
 //These types copied from socket.io server library so that we don't have to depend on the whole thing to have type-safe tests.
 type SocketReservedEventsMap = {
@@ -87,6 +88,8 @@ type MockedTownControllerProperties = {
   conversationAreas?: ConversationAreaController[];
   viewingAreas?: ViewingAreaController[];
   posterSessionAreas?: PosterSessionAreaController[];
+  danceAreas?: DanceAreaController[];
+  ourPlayer?: PlayerController;
 };
 export function mockTownController({
   friendlyName,
@@ -98,6 +101,8 @@ export function mockTownController({
   conversationAreas,
   viewingAreas,
   posterSessionAreas,
+  danceAreas,
+  ourPlayer,
 }: MockedTownControllerProperties) {
   const mockedController = mockDeep<TownController>();
   if (friendlyName) {
@@ -138,6 +143,14 @@ export function mockTownController({
         return ++posterSessionArea.stars;
       },
     );
+  }
+  if (danceAreas) {
+    Object.defineProperty(mockedController, 'danceAreas', { value: danceAreas });
+    mockedController.emitDanceMove.mockImplementation(() => {});
+    mockedController.emitDanceRating.mockImplementation(() => {});
+  }
+  if (ourPlayer) {
+    Object.defineProperty(mockedController, 'ourPlayer', { value: ourPlayer });
   }
   return mockedController;
 }
@@ -211,7 +224,7 @@ export async function mockTownControllerConnection(
         roundId: nanoid(),
         keySequence: [],
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       });
     }
   }
