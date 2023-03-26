@@ -7,7 +7,7 @@ import React from 'react';
 import DanceAreaController, {
   DanceAreaEvents,
   useKeySequence,
-  useKeysPressed,
+  useKeyResults,
   useMusic,
 } from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
@@ -17,7 +17,7 @@ import { cleanup, render, RenderResult } from '@testing-library/react';
 function HookComponents({ danceController }: { danceController: DanceAreaController }) {
   const music = useMusic(danceController);
   const keySequence = useKeySequence(danceController);
-  const keysPressed = useKeysPressed(danceController);
+  const keysPressed = useKeyResults(danceController);
   return (
     <>
       {music}
@@ -128,50 +128,50 @@ describe('DanceAreaController Hooks', () => {
 
     it('useKeySequence registers exactly one newKeySequence listener', () => {
       act(() => {
-        danceController.emit('newKeySequence', ['one']);
+        danceController.emit('keySequenceChanged', ['one']);
       });
       act(() => {
-        danceController.emit('newKeySequence', ['one', 'two']);
+        danceController.emit('keySequenceChanged', ['one', 'two']);
       });
       act(() => {
-        danceController.emit('newKeySequence', ['four', 'three']);
+        danceController.emit('keySequenceChanged', ['four', 'three']);
       });
-      getSingleListenerAdded('newKeySequence');
+      getSingleListenerAdded('keySequenceChanged');
     });
     it('useKeySequence unregisters exactly the same newKeySequence listener on unmounting', () => {
       act(() => {
-        danceController.emit('newKeySequence', ['two', 'four', 'one', 'one']);
+        danceController.emit('keySequenceChanged', ['two', 'four', 'one', 'one']);
       });
-      const listenerAdded = getSingleListenerAdded('newKeySequence');
+      const listenerAdded = getSingleListenerAdded('keySequenceChanged');
       cleanup();
-      expect(getSingleListenerRemoved('newKeySequence')).toBe(listenerAdded);
+      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(listenerAdded);
     });
 
-    it('useKeysPressed registers exactly one keysPressed listener', () => {
+    it('useKeyResults registers exactly one keysResults listener', () => {
       act(() => {
-        danceController.emit('keysPressed', ['one']);
+        danceController.emit('keyResultsChanged', [false]);
       });
       act(() => {
-        danceController.emit('keysPressed', ['one', 'two']);
+        danceController.emit('keyResultsChanged', [false, false]);
       });
       act(() => {
-        danceController.emit('keysPressed', ['four', 'three']);
+        danceController.emit('keyResultsChanged', [false, false, true]);
       });
-      getSingleListenerAdded('keysPressed');
+      getSingleListenerAdded('keyResultsChanged');
     });
-    it('useKeysPressed unregisters exactly the same keysPressed listener on unmounting', () => {
+    it('useKeyResults unregisters exactly the same keysResults listener on unmounting', () => {
       act(() => {
-        danceController.emit('keysPressed', ['two', 'four', 'one', 'one']);
+        danceController.emit('keyResultsChanged', [false, true, false, false, true]);
       });
-      const listenerAdded = getSingleListenerAdded('keysPressed');
+      const listenerAdded = getSingleListenerAdded('keyResultsChanged');
       cleanup();
-      expect(getSingleListenerRemoved('keysPressed')).toBe(listenerAdded);
+      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(listenerAdded);
     });
 
     it('Removes the listeners and adds new ones if the controller changes', () => {
       const origStarChange = getSingleListenerAdded('musicChanged');
-      const origTitleChange = getSingleListenerAdded('newKeySequence');
-      const origImageContentsChange = getSingleListenerAdded('keysPressed');
+      const origTitleChange = getSingleListenerAdded('keySequenceChanged');
+      const origImageContentsChange = getSingleListenerAdded('keyResultsChanged');
 
       const newDanceAreaController = new DanceAreaController({
         id: `id-${nanoid()}`,
@@ -185,12 +185,12 @@ describe('DanceAreaController Hooks', () => {
       renderData.rerender(RenderDanceAreaHooks(newDanceAreaController, townController));
 
       expect(getSingleListenerRemoved('musicChanged')).toBe(origStarChange);
-      expect(getSingleListenerRemoved('newKeySequence')).toBe(origTitleChange);
-      expect(getSingleListenerRemoved('keysPressed')).toBe(origImageContentsChange);
+      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(origTitleChange);
+      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(origImageContentsChange);
 
       getSingleListenerAdded('musicChanged', newAddListenerSpy);
-      getSingleListenerAdded('newKeySequence', newAddListenerSpy);
-      getSingleListenerAdded('keysPressed', newAddListenerSpy);
+      getSingleListenerAdded('keySequenceChanged', newAddListenerSpy);
+      getSingleListenerAdded('keyResultsChanged', newAddListenerSpy);
     });
   });
 });

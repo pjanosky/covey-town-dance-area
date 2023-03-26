@@ -1,4 +1,5 @@
 import Interactable, { KnownInteractableTypes } from '../Interactable';
+import { NumberKeyInputs } from '../TownGameScene';
 
 /**
  * DanceArea handles all of the Phaser logic for a dance interactable
@@ -13,6 +14,14 @@ export class DanceArea extends Interactable {
 
   /** Whether the user is currently interacting with this area. */
   private _isInteracting = false;
+
+  /** Whether the user currently has a number key pressed. */
+  private _downKeys: Record<keyof NumberKeyInputs, boolean> = {
+    one: false,
+    two: false,
+    three: false,
+    four: false,
+  };
 
   addedToScene() {
     super.addedToScene();
@@ -38,14 +47,6 @@ export class DanceArea extends Interactable {
     this._labelText.setX(location.x);
     this._labelText.setY(location.y);
     this._labelText.setVisible(true);
-
-    const pressedNum = this._scene.getPressedNumber();
-    if (pressedNum) {
-      const danceController = this.townController.danceAreas.find(area => area.id === this.name);
-      if (danceController) {
-        danceController.emit('numberPressed', pressedNum);
-      }
-    }
   }
 
   overlapExit(): void {
@@ -53,6 +54,25 @@ export class DanceArea extends Interactable {
     if (this._isInteracting) {
       this.townController.interactableEmitter.emit('endInteraction', this);
       this._isInteracting = false;
+    }
+  }
+
+  whileOverlapping(): void {
+    let key: keyof NumberKeyInputs;
+    for (key in this._scene.numberKeys) {
+      const isDown = this._scene.numberKeys[key].isDown;
+      const alreadyDown = this._downKeys[key];
+      if (isDown) {
+        if (!alreadyDown && !this.townController.paused) {
+          this._downKeys[key] = true;
+          const danceController = this.townController.danceAreas.find(
+            area => area.id === this.name,
+          );
+          danceController?.emit('numberPressed', key);
+        }
+      } else {
+        this._downKeys[key] = false;
+      }
     }
   }
 
