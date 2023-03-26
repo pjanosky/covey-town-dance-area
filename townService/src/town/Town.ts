@@ -16,6 +16,8 @@ import {
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
   DanceArea as DanceAreaModel,
+  DanceMoveResult,
+  DanceRating,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import InteractableArea from './InteractableArea';
@@ -148,6 +150,17 @@ export default class Town {
       this._updatePlayerLocation(newPlayer, movementData);
     });
 
+    // Register event listener to appropriately give out points according to a dance move result.
+    socket.on('danceMove', (result: DanceMoveResult) => {
+      this._addPointsSuccess(newPlayer, result);
+    });
+
+    socket.on('danceRating', (rating: DanceRating) => {
+      const sender = this._players.find(p => p.id === rating.sender) as Player;
+      const recipient = this._players.find(p => p.id === rating.recipient) as Player;
+      this._addPointsRating(sender, recipient, rating);
+    });
+
     // Set up a listener to process updates to interactables.
     // Currently only knows how to process updates for ViewingAreas and PosterSessionAreas, and
     // ignores any other updates for any other kind of interactable.
@@ -188,6 +201,53 @@ export default class Town {
       }
     });
     return newPlayer;
+  }
+
+  /**
+   * Adds the points to the recipient from the rating of the sender if they are both
+   * in the same dance area.
+   *
+   * @param sender player who gave the rating
+   * @param recipient player who received the rating
+   * @param rating rating given
+   */
+  private _addPointsRating(sender: Player, recipient: Player, rating: DanceRating) {
+    const danceAreaSender = this._interactables.find(
+      dance => dance.id === sender.location.interactableID,
+    ) as DanceArea;
+
+    const danceAreaRecipient = this._interactables.find(
+      dance => dance.id === recipient.location.interactableID,
+    ) as DanceArea;
+
+    if (
+      isDanceArea(danceAreaSender) &&
+      isDanceArea(danceAreaRecipient) &&
+      danceAreaRecipient === danceAreaSender
+    ) {
+      danceAreaRecipient.addPoints(recipient, rating.rating);
+      this._broadcastEmitter.emit('danceRating', rating);
+    }
+  }
+
+  /**
+   * Adds a point to the player if they successfully completed the dance move
+   * and are in a dance area.
+   *
+   * @param player player with dance move result
+   * @param result result of the dance move
+   */
+  private _addPointsSuccess(player: Player, result: DanceMoveResult) {
+    const danceArea = this._interactables.find(
+      dance => dance.id === player.location.interactableID,
+    ) as DanceArea;
+
+    if (isDanceArea(danceArea)) {
+      if (result.success) {
+        danceArea.addPoints(player, 1);
+      }
+      this._broadcastEmitter.emit('danceMove', result);
+    }
   }
 
   /**
