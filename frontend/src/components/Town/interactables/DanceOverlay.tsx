@@ -92,8 +92,12 @@ export function useHandleKeys(
       const now = new Date();
       const time = now.getTime() - danceController.roundStart.getTime();
       const i = calculateKeyIndex(danceController, time);
-
-      if (i && i < keyResults.length && i < keySequence.length && keyResults[i] === undefined) {
+      if (
+        i !== undefined &&
+        i < keyResults.length &&
+        i < keySequence.length &&
+        keyResults[i] === undefined
+      ) {
         const success = danceController.keySequence[i] === key;
         const danceMoveResult: DanceMoveResult = {
           interactableID: danceController.id,

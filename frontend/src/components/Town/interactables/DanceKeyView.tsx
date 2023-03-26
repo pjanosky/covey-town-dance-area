@@ -79,7 +79,6 @@ export function calculateKeyIndex(
   const index = Math.floor(keyDist / (KEY_SIZE + KEY_SPACING));
   // whether a key is currently over the line
   const keyOverLine = keyDist % (KEY_SIZE + KEY_SPACING) < KEY_SIZE;
-  console.log(`contentDist: ${contentDist}, keyDist: ${keyDist}, keyOverLine: ${keyOverLine}`);
   if (index >= 0 && index < controller.keySequence.length && keyOverLine) {
     return Math.floor(keyDist / (KEY_SIZE + KEY_SPACING));
   }
