@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ConversationArea } from '../models/ConversationArea';
+import type { DanceArea } from '../models/DanceArea';
 import type { PosterSessionArea } from '../models/PosterSessionArea';
 import type { Town } from '../models/Town';
 import type { TownCreateParams } from '../models/TownCreateParams';
@@ -179,6 +180,37 @@ export class TownsService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/towns/{townID}/posterSessionArea',
+            path: {
+                'townID': townId,
+            },
+            headers: {
+                'X-Session-Token': xSessionToken,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid values specified`,
+            },
+        });
+    }
+
+    /**
+     * Creates a dance area in a given town
+     * @param townId ID of the town in which to create the new dance area
+     * @param xSessionToken session token of the player making the request, must
+     * match the session token returned when the player joined the town
+     * @param requestBody The new dance area to create
+     * @returns void
+     * @throws ApiError
+     */
+    public createDanceArea(
+        townId: string,
+        xSessionToken: string,
+        requestBody: DanceArea,
+    ): CancelablePromise<void> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/towns/{townID}/danceArea',
             path: {
                 'townID': townId,
             },

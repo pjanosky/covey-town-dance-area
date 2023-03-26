@@ -94,7 +94,17 @@ export type KeyResult = boolean | undefined;
  * updated @see DanceAreaEvents
  */
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
-  private _model: DanceAreaModel;
+  private _id: string;
+
+  private _music: string | undefined;
+
+  private _roundId: string | undefined;
+
+  private _keySequence: KeySequence;
+
+  private _duration: number;
+
+  private _points: Map<string, number>;
 
   /** this list holds the keys the user has pressed */
   private _keyResults: KeyResult[];
@@ -111,21 +121,15 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    *
    * @param danceAreaModel The dance area model that this controller should represent
    */
-  constructor(danceAreaModel: DanceAreaModel) {
+  constructor(model: DanceAreaModel) {
     super();
-    this._model = this._copyModel(danceAreaModel);
+    this._id = model.id;
+    this._music = model.music;
+    this._roundId = model.roundId;
+    this._keySequence = model.keySequence;
+    this._duration = model.duration;
+    this._points = new Map(Object.entries(model));
     this._keyResults = [];
-  }
-
-  private _copyModel(model: DanceAreaModel): DanceAreaModel {
-    return {
-      id: model.id,
-      music: model.music,
-      roundId: model.roundId,
-      keySequence: model.keySequence,
-      duration: model.duration,
-      points: model.points,
-    };
   }
 
   /**
@@ -134,22 +138,22 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * be tied to the same ID.
    */
   public get id(): string {
-    return this._model.id;
+    return this._id;
   }
 
   /**
    * The music of the dance area, or undefined when the first player joins the area.
    */
   public get music(): string | undefined {
-    return this._model.music;
+    return this._music;
   }
 
   /**
    * If the music changes, set it to the new music and emit an update.
    */
   public set music(music: string | undefined) {
-    if (this._model.music !== music) {
-      this._model.music = music;
+    if (this._music !== music) {
+      this._music = music;
       this.emit('musicChanged', music);
     }
   }
@@ -158,16 +162,16 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The round that is ongoing in the dance area.
    */
   public get roundId(): string | undefined {
-    return this._model.roundId;
+    return this._roundId;
   }
 
   /**
    * If a new round has begun then we create a new round ID associated with it
    * and emit an update.
    */
-  set roundId(roundId: string | undefined) {
-    if (this._model.roundId !== roundId) {
-      this._model.roundId = roundId;
+  public set roundId(roundId: string | undefined) {
+    if (this._roundId !== roundId) {
+      this._roundId = roundId;
       this.emit('roundIdChanged', roundId);
     }
   }
@@ -176,18 +180,18 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The current key sequence that the player must follow.
    */
   public get keySequence(): KeySequence {
-    return this._model.keySequence.slice();
+    return this._keySequence.slice();
   }
 
   /**
    * If there is a new key sequence then we change it and emit an update.
    */
-  set keySequence(keySequence: KeySequence) {
+  public set keySequence(keySequence: KeySequence) {
     const equal =
-      this._model.keySequence.length === keySequence.length &&
-      this._model.keySequence.every((key, i) => key === keySequence[i]);
+      this._keySequence.length === keySequence.length &&
+      this._keySequence.every((key, i) => key === keySequence[i]);
     if (!equal) {
-      this._model.keySequence = keySequence.slice();
+      this._keySequence = keySequence.slice();
       this.emit('keySequenceChanged', keySequence);
     }
   }
@@ -196,7 +200,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The duration (in seconds) of the current round.
    */
   public get duration(): number {
-    return this._model.duration;
+    return this._duration;
   }
 
   /**
@@ -204,8 +208,8 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set duration(duration: number) {
-    if (this._model.duration !== duration) {
-      this._model.duration = duration;
+    if (this._duration !== duration) {
+      this._duration = duration;
       this.emit('durationChanged', duration);
     }
   }
@@ -214,7 +218,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The amount points of each player currently in the dance area.
    */
   public get points(): Map<string, number> {
-    return this._model.points;
+    return this._points;
   }
 
   /**
@@ -222,8 +226,8 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set points(points: Map<string, number>) {
-    if (this._model.points !== points) {
-      this._model.points = points;
+    if (this._points !== points) {
+      this._points = points;
       this.emit('pointsChanged', points);
     }
   }
@@ -252,7 +256,14 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * @returns A DanceAreaModel that represents the current state of this DanceAreaController.
    */
   public danceAreaModel(): DanceAreaModel {
-    return this._model;
+    return {
+      id: this._id,
+      music: this._music,
+      roundId: this._roundId,
+      keySequence: this._keySequence,
+      duration: this._duration,
+      points: Object.fromEntries(this._points),
+    };
   }
 
   /**
@@ -293,7 +304,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     this.music = updatedModel.music;
     this.keySequence = updatedModel.keySequence;
     this.duration = updatedModel.duration;
-    this.points = updatedModel.points;
+    this.points = new Map(Object.entries(updatedModel.points));
     this.roundId = updatedModel.roundId;
   }
 }

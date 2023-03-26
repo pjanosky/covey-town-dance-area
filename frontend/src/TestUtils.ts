@@ -224,7 +224,7 @@ export async function mockTownControllerConnection(
         roundId: nanoid(),
         keySequence: [],
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       });
     }
   }

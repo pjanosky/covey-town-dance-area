@@ -16,7 +16,7 @@ describe('DanceAreaController', () => {
       roundId: nanoid(),
       keySequence: [],
       duration: 0,
-      points: new Map<string, number>(),
+      points: {},
     };
     testArea = new DanceAreaController(testAreaModel);
     mockClear(townController);
@@ -95,7 +95,7 @@ describe('DanceAreaController', () => {
       expect(mockListeners.pointsChanged).toBeCalledWith(newPoints);
     });
     test('does not emit an update if the points do not change', () => {
-      testArea.points = testAreaModel.points;
+      testArea.points = new Map(Object.entries(testAreaModel.points));
       expect(mockListeners.pointsChanged).not.toBeCalled();
     });
   });
@@ -121,8 +121,7 @@ describe('DanceAreaController', () => {
   describe('updateFrom', () => {
     test('Updates the music, roundId, keySequence, duration, and points properties', () => {
       const keySeq: KeySequence = ['one', 'two'];
-      const newPoints = new Map<string, number>();
-      newPoints.set('player1', 10);
+      const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: testAreaModel.id,
         music: 'Gaddi Red Challenger',
@@ -141,8 +140,7 @@ describe('DanceAreaController', () => {
     test('does not update the id property as it is readonly', () => {
       const keySeq: KeySequence = ['one', 'two'];
       const existingId = testArea.id;
-      const newPoints = new Map<string, number>();
-      newPoints.set('player1', 10);
+      const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: nanoid(),
         music: 'Gaddi Red Challenger',

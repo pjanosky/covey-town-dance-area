@@ -715,7 +715,7 @@ describe('TownController', () => {
         roundId: nanoid(),
         keySequence: [],
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       };
       expect(testController.danceAreas.find(area => area.id === newArea.id)).toBeUndefined();
       testController.danceAreas.push(new DanceAreaController(newArea));
