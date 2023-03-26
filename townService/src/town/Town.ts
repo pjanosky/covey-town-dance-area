@@ -152,9 +152,7 @@ export default class Town {
 
     // Register event listener to appropriately give out points according to a dance move result.
     socket.on('danceMove', (result: DanceMoveResult) => {
-      if (result.success) {
-        this._addPointsSuccess(newPlayer, result);
-      }
+      this._addPointsSuccess(newPlayer, result);
     });
 
     socket.on('danceRating', (rating: DanceRating) => {
