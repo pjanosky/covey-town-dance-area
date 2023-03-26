@@ -73,8 +73,15 @@ export type DanceAreaEvents = {
    *
    * @param keysPressed the updated list of keys pressed
    */
-  keyResultsChanged: (keysPressed: boolean[]) => void;
+  keyResultsChanged: (keysPressed: KeyResult[]) => void;
 };
+
+/**
+ * KeyResult records the result of pressing a specific key in a sequence.
+ * It is undefined if the key was pressed, false of the wrong key was
+ * pressed, and true if the right key was pressed.
+ */
+export type KeyResult = boolean | undefined;
 
 /**
  * A DanceAreaController manages the state for a DanceArea in the frontend app,
@@ -89,8 +96,14 @@ export type DanceAreaEvents = {
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _model: DanceAreaModel;
 
-  // this list holds the keys the user has pressed
-  private _keyResults: boolean[];
+  /** this list holds the keys the user has pressed */
+  private _keyResults: KeyResult[];
+
+  /** The timeout that is responsible for ending the current round */
+  private _roundTimeout: NodeJS.Timeout | undefined;
+
+  /**  The time the current round became active */
+  private _roundStart: Date | undefined;
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -218,16 +231,19 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The keys the user has pressed so far.
    */
-  public get keyResults(): boolean[] {
-    return this._keyResults;
+  public get keyResults(): KeyResult[] {
+    return this._keyResults.slice();
   }
 
   /**
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
-  public set keyResults(keysPressed: boolean[]) {
-    if (this._keyResults !== keysPressed) {
-      this._keyResults = keysPressed;
+  public set keyResults(keyResults: KeyResult[]) {
+    const equal =
+      this._keyResults.length === keyResults.length &&
+      this._keyResults.every((key, i) => key === keyResults[i]);
+    if (!equal) {
+      this._keyResults = keyResults.slice();
       this.emit('keyResultsChanged', this._keyResults);
     }
   }
@@ -237,6 +253,34 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    */
   public danceAreaModel(): DanceAreaModel {
     return this._model;
+  }
+
+  /**
+   * Gets the timeout responsible for ending the active round.
+   */
+  public get roundTimeout(): NodeJS.Timeout | undefined {
+    return this._roundTimeout;
+  }
+
+  /**
+   * Sets the timeout responsible for ending the active round.
+   */
+  public set roundTimeout(timeout: NodeJS.Timeout | undefined) {
+    this._roundTimeout = timeout;
+  }
+
+  /**
+   * Gets the time that this round became active.
+   */
+  public get roundStart(): Date | undefined {
+    return this._roundStart;
+  }
+
+  /**
+   * Sets the time that this round became active.
+   */
+  public set roundStart(startTime: Date | undefined) {
+    this._roundStart = startTime;
   }
 
   /**
@@ -296,7 +340,7 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
  * @param controller the given controller
  * @returns the list of numbers corresponding to the keys the user has pressed
  */
-export function useKeyResults(controller: DanceAreaController): boolean[] {
+export function useKeyResults(controller: DanceAreaController): KeyResult[] {
   const [keyResults, setKeyResults] = useState(controller.keyResults);
   useEffect(() => {
     controller.addListener('keyResultsChanged', setKeyResults);
@@ -315,8 +359,6 @@ export function useKeyResults(controller: DanceAreaController): boolean[] {
  * @returns The ID of the current round if there is one active otherwise undefined.
  */
 export function useActiveRound(controller: DanceAreaController) {
-  const [timeoutID, setTimeoutID] = useState<NodeJS.Timeout | undefined>(undefined);
-
   // initially undefined so a user will not have an active round if they join
   // a dance area in the middle of a round.
   const [activeRound, setActiveRound] = useState<string | undefined>(undefined);
@@ -324,12 +366,12 @@ export function useActiveRound(controller: DanceAreaController) {
   useEffect(() => {
     const onRoundChange = (roundID: string | undefined) => {
       setActiveRound(roundID);
-      clearTimeout(timeoutID);
+      clearTimeout(controller.roundTimeout);
       if (roundID) {
-        const id = setTimeout(() => {
+        controller.roundTimeout = setTimeout(() => {
           setActiveRound(undefined);
-        }, controller.duration);
-        setTimeoutID(id);
+        }, controller.duration * 1000 + 1);
+        controller.keyResults = Array(controller.keySequence.length).fill(undefined);
       }
     };
 
@@ -337,7 +379,7 @@ export function useActiveRound(controller: DanceAreaController) {
     return () => {
       controller.removeListener('roundIdChanged', onRoundChange);
     };
-  }, [controller, timeoutID]);
+  }, [controller]);
 
   return activeRound;
 }
