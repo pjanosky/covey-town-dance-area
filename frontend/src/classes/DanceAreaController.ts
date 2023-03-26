@@ -23,12 +23,12 @@ export type DanceAreaEvents = {
   roundIdChanged: (roundId: string | undefined) => void;
 
   /**
-   * A newKeySequence event indicates that there is a new key sequence for
+   * A keySequenceChanged event indicates that there is a new key sequence for
    * the players to follow.
    *
    * @param keySequence the new list of numbers representing the sequence
    */
-  newKeySequence: (keySequence: KeySequence) => void;
+  keySequenceChanged: (keySequence: KeySequence) => void;
 
   /**
    * A durationChanged event indicates that a new round has begun with a set
@@ -69,12 +69,19 @@ export type DanceAreaEvents = {
   numberPressed: (key: NumberKey) => void;
 
   /**
-   * A keysPressed event indicates that the keysPressed field has been updated/changed.
+   * A keysPressedChanged event indicates that the keysPressed field has been updated/changed.
    *
    * @param keysPressed the updated list of keys pressed
    */
-  keysPressed: (keysPressed: KeySequence) => void;
+  keyResultsChanged: (keysPressed: KeyResult[]) => void;
 };
+
+/**
+ * KeyResult records the result of pressing a specific key in a sequence.
+ * It is undefined if the key was pressed, false of the wrong key was
+ * pressed, and true if the right key was pressed.
+ */
+export type KeyResult = boolean | undefined;
 
 /**
  * A DanceAreaController manages the state for a DanceArea in the frontend app,
@@ -99,8 +106,14 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
 
   private _points: Map<string, number>;
 
-  // this list holds the keys the user has pressed
-  private _keysPressed: KeySequence;
+  /** this list holds the keys the user has pressed */
+  private _keyResults: KeyResult[];
+
+  /** The timeout that is responsible for ending the current round */
+  private _roundTimeout: NodeJS.Timeout | undefined;
+
+  /**  The time the current round became active */
+  private _roundStart: Date | undefined;
 
   /**
    * Constructs a new DanceAreaController, initialized with the state of the
@@ -116,7 +129,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     this._keySequence = model.keySequence;
     this._duration = model.duration;
     this._points = new Map(Object.entries(model));
-    this._keysPressed = [];
+    this._keyResults = [];
   }
 
   /**
@@ -167,16 +180,19 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * The current key sequence that the player must follow.
    */
   public get keySequence(): KeySequence {
-    return this._keySequence;
+    return this._keySequence.slice();
   }
 
   /**
    * If there is a new key sequence then we change it and emit an update.
    */
   public set keySequence(keySequence: KeySequence) {
-    if (this._keySequence !== keySequence) {
-      this._keySequence = keySequence;
-      this.emit('newKeySequence', keySequence);
+    const equal =
+      this._keySequence.length === keySequence.length &&
+      this._keySequence.every((key, i) => key === keySequence[i]);
+    if (!equal) {
+      this._keySequence = keySequence.slice();
+      this.emit('keySequenceChanged', keySequence);
     }
   }
 
@@ -219,17 +235,20 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The keys the user has pressed so far.
    */
-  public get keysPressed(): KeySequence {
-    return this._keysPressed;
+  public get keyResults(): KeyResult[] {
+    return this._keyResults.slice();
   }
 
   /**
    * If the user presses a new key, then we can use this setter to add that key to the list of keys pressed.
    */
-  public set keysPressed(keysPressed: KeySequence) {
-    if (this._keysPressed !== keysPressed) {
-      this._keysPressed = keysPressed;
-      this.emit('keysPressed', keysPressed);
+  public set keyResults(keyResults: KeyResult[]) {
+    const equal =
+      this._keyResults.length === keyResults.length &&
+      this._keyResults.every((key, i) => key === keyResults[i]);
+    if (!equal) {
+      this._keyResults = keyResults.slice();
+      this.emit('keyResultsChanged', this._keyResults);
     }
   }
 
@@ -248,6 +267,34 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * Gets the timeout responsible for ending the active round.
+   */
+  public get roundTimeout(): NodeJS.Timeout | undefined {
+    return this._roundTimeout;
+  }
+
+  /**
+   * Sets the timeout responsible for ending the active round.
+   */
+  public set roundTimeout(timeout: NodeJS.Timeout | undefined) {
+    this._roundTimeout = timeout;
+  }
+
+  /**
+   * Gets the time that this round became active.
+   */
+  public get roundStart(): Date | undefined {
+    return this._roundStart;
+  }
+
+  /**
+   * Sets the time that this round became active.
+   */
+  public set roundStart(startTime: Date | undefined) {
+    this._roundStart = startTime;
+  }
+
+  /**
    * Applies updates to this dance area controller's model, setting the music,
    * roundId, keySequence, duration, and points.
    *
@@ -255,10 +302,10 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
-    this.roundId = updatedModel.roundId;
     this.keySequence = updatedModel.keySequence;
     this.duration = updatedModel.duration;
     this.points = new Map(Object.entries(updatedModel.points));
+    this.roundId = updatedModel.roundId;
   }
 }
 
@@ -289,9 +336,9 @@ export function useMusic(controller: DanceAreaController): string | undefined {
 export function useKeySequence(controller: DanceAreaController): KeySequence {
   const [keySequence, setKeySequence] = useState(controller.keySequence);
   useEffect(() => {
-    controller.addListener('newKeySequence', setKeySequence);
+    controller.addListener('keySequenceChanged', setKeySequence);
     return () => {
-      controller.removeListener('newKeySequence', setKeySequence);
+      controller.removeListener('keySequenceChanged', setKeySequence);
     };
   }, [controller]);
   return keySequence;
@@ -304,13 +351,46 @@ export function useKeySequence(controller: DanceAreaController): KeySequence {
  * @param controller the given controller
  * @returns the list of numbers corresponding to the keys the user has pressed
  */
-export function useKeysPressed(controller: DanceAreaController): KeySequence {
-  const [keysPressed, setKeysPressed] = useState(controller.keysPressed);
+export function useKeyResults(controller: DanceAreaController): KeyResult[] {
+  const [keyResults, setKeyResults] = useState(controller.keyResults);
   useEffect(() => {
-    controller.addListener('keysPressed', setKeysPressed);
+    controller.addListener('keyResultsChanged', setKeyResults);
     return () => {
-      controller.removeListener('keysPressed', setKeysPressed);
+      controller.removeListener('keyResultsChanged', setKeyResults);
     };
   }, [controller]);
-  return keysPressed;
+  return keyResults;
+}
+
+/**
+ * useActiveRound is a hook that returns the ID of the current active round. A
+ * round is active if the current round ID is defined and the time time passed
+ * since the start of the round is less than the duration.
+ *
+ * @returns The ID of the current round if there is one active otherwise undefined.
+ */
+export function useActiveRound(controller: DanceAreaController) {
+  // initially undefined so a user will not have an active round if they join
+  // a dance area in the middle of a round.
+  const [activeRound, setActiveRound] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const onRoundChange = (roundID: string | undefined) => {
+      setActiveRound(roundID);
+      clearTimeout(controller.roundTimeout);
+      if (roundID) {
+        controller.roundTimeout = setTimeout(() => {
+          setActiveRound(undefined);
+        }, controller.duration * 1000 + 1);
+        controller.keyResults = Array(controller.keySequence.length).fill(undefined);
+      }
+    };
+
+    controller.addListener('roundIdChanged', onRoundChange);
+    return () => {
+      controller.removeListener('roundIdChanged', onRoundChange);
+    };
+  }, [controller]);
+
+  return activeRound;
 }
