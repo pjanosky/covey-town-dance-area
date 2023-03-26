@@ -44,7 +44,7 @@ describe('DanceAreaController Hooks', () => {
       roundId: `round-${nanoid()}`,
       duration: 0,
       keySequence: [],
-      points: new Map(),
+      points: {},
     });
     ourPlayer = new PlayerController(nanoid(), 'user123', {
       moving: false,

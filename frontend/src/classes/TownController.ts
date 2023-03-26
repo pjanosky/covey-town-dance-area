@@ -754,7 +754,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
         roundId: undefined,
         keySequence: [],
         duration: 0,
-        points: new Map<string, number>(),
+        points: {},
       });
       this._danceAreas.push(newController);
       return newController;

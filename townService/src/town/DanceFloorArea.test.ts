@@ -2,7 +2,7 @@ import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
-import { TownEmitter } from '../types/CoveyTownSocket';
+import { KeySequence, TownEmitter } from '../types/CoveyTownSocket';
 import DanceArea from './DanceFloorArea';
 
 describe('DanceArea', () => {
@@ -13,7 +13,7 @@ describe('DanceArea', () => {
   const id = nanoid();
   const music = nanoid();
   const roundId = nanoid();
-  const keySequence: number[] = [];
+  const keySequence: KeySequence = [];
   const duration = 20;
   let points: Record<string, number>;
 
@@ -120,7 +120,7 @@ describe('DanceArea', () => {
     const newId = 'spam';
     const newMusic = 'random song';
     const newRoundId = nanoid();
-    const newKeySequence = [0, 1, 2];
+    const newKeySequence: KeySequence = ['one', 'two', 'three'];
     const newDuration = 45;
     const newPoints = { [newPlayer.id]: 23 };
     testArea.updateModel({
@@ -134,7 +134,7 @@ describe('DanceArea', () => {
     expect(testArea.music).toBe(newMusic);
     expect(testArea.id).toBe(id);
     expect(testArea.roundId).toBe(newRoundId);
-    expect(testArea.keySequence).toBe(newKeySequence);
+    expect(testArea.keySequence).toEqual(newKeySequence);
     expect(testArea.duration).toBe(newDuration);
     expect(Object.fromEntries(testArea.points)).toEqual(newPoints);
   });
