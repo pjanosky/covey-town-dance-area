@@ -19,10 +19,14 @@ const KEY_SPACING = 25;
  * @returns time since the start of the round that the user
  * must press the key in milliseconds.
  */
-export function calculateKeyIndex(
-  controller: DanceAreaController,
-  time: number,
-): integer | undefined {
+export function calculateKeyIndex(controller: DanceAreaController): integer | undefined {
+  // calculate time passes since start of round
+  if (!controller.roundStart) {
+    return undefined;
+  }
+  const now = new Date();
+  const timePassed = now.getTime() - controller.roundStart.getTime();
+
   // the number of keys in the current sequence
   const numKeys = controller.keySequence.length;
 
@@ -30,19 +34,22 @@ export function calculateKeyIndex(
   const contentHeight = (KEY_SIZE + KEY_SPACING) * numKeys;
   // distance the scroll content traves over the whole course of the animation
   const animationDist = contentHeight + VIEWER_HEIGHT;
+  // total duration of the animation
   const animationTime = controller.duration * 1000;
+  // the rate the content is moving in px/ms
   const rate = animationDist / animationTime;
 
   // distance to the dotted line from the top of the viewer
   const viewerLineDist = VIEWER_HEIGHT - LINE_POS;
   // the distance the scroll content has traveled since the start of the animation
-  const contentDist = rate * time;
+  const contentDist = rate * timePassed;
   // distance from the bottom of the scroll content that the line is currently over
   const keyDist = contentDist - viewerLineDist;
   // the index of the key that is currently over the line
   const index = Math.floor(keyDist / (KEY_SIZE + KEY_SPACING));
   // whether a key is currently over the line
   const keyOverLine = keyDist % (KEY_SIZE + KEY_SPACING) < KEY_SIZE;
+
   if (index >= 0 && index < controller.keySequence.length && keyOverLine) {
     return Math.floor(keyDist / (KEY_SIZE + KEY_SPACING));
   }
@@ -241,7 +248,6 @@ function NoActiveRound() {
 export function DanceKeyViewer({ danceController }: DanceControllerProps) {
   const activeRound = useActiveRound(danceController);
   const overlayComponent = useOverlayComponentStyle(0);
-
   useEffect(() => {
     // start the round when the component mounts to sync with animation
     console.log(`component mounted: ${new Date().getTime()}`);

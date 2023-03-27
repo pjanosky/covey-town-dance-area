@@ -84,14 +84,9 @@ export function useHandleKeys(
 ) {
   useEffect(() => {
     const newKey = (key: NumberKey) => {
-      if (!danceController.roundStart) {
-        return;
-      }
       const keySequence = danceController.keySequence;
       const keyResults = danceController.keyResults;
-      const now = new Date();
-      const time = now.getTime() - danceController.roundStart.getTime();
-      const i = calculateKeyIndex(danceController, time);
+      const i = calculateKeyIndex(danceController);
       if (
         i !== undefined &&
         i < keyResults.length &&
