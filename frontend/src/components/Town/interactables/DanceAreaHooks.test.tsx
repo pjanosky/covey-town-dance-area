@@ -201,9 +201,9 @@ describe('DanceAreaController Hooks', () => {
 
   describe('useDanceAreaController', () => {
     it('Removes the listeners and adds new ones if the controller changes', () => {
-      const origStarChange = getSingleListenerAdded('musicChanged');
-      const origTitleChange = getSingleListenerAdded('keySequenceChanged');
-      const origImageContentsChange = getSingleListenerAdded('keyResultsChanged');
+      const origMusicChange = getSingleListenerAdded('musicChanged');
+      const origKeySequenceChange = getSingleListenerAdded('keySequenceChanged');
+      const origKeyResultsChange = getSingleListenerAdded('keyResultsChanged');
 
       const newDanceAreaController = new DanceAreaController({
         id: `id-${nanoid()}`,
@@ -216,9 +216,9 @@ describe('DanceAreaController Hooks', () => {
       const newAddListenerSpy = jest.spyOn(newDanceAreaController, 'addListener');
       renderData.rerender(RenderDanceAreaHooks(newDanceAreaController, townController));
 
-      expect(getSingleListenerRemoved('musicChanged')).toBe(origStarChange);
-      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(origTitleChange);
-      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(origImageContentsChange);
+      expect(getSingleListenerRemoved('musicChanged')).toBe(origMusicChange);
+      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(origKeySequenceChange);
+      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(origKeyResultsChange);
 
       getSingleListenerAdded('musicChanged', newAddListenerSpy);
       getSingleListenerAdded('keySequenceChanged', newAddListenerSpy);
