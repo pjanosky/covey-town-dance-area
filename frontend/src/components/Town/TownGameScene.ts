@@ -9,6 +9,8 @@ import Transporter from './interactables/Transporter';
 import ViewingArea from './interactables/ViewingArea';
 import PosterSessionArea from './interactables/PosterSessionArea';
 import { DanceArea } from './interactables/DanceArea';
+import { useHandleKeys } from './interactables/DanceOverlay';
+import { useKeyResults } from '../../classes/DanceAreaController';
 
 // Still not sure what the right type is here... "Interactable" doesn't do it
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,40 +233,31 @@ export default class TownGameScene extends Phaser.Scene {
       body.setVelocity(0);
 
       // corresponding each key press from NumberKey to a dance move --> for now these all use the same png
-      const primaryMove = this.getPressedNumber();
-      console.log(primaryMove);
-      switch (primaryMove) {
-        case 'one':
-          // body.setVelocityX(speed);
-          // body.setVelocityX(speed);
-          gameObjects.sprite.anims.play('misa-flip', true);
-          break;
-        // case 'two':
-        //   body.setVelocityX(speed);
-        //   gameObjects.sprite.anims.play('make-shift-anim', true);
-        //   break;
-        // case 'three':
-        //   body.setVelocityX(speed);
-        //   gameObjects.sprite.anims.play('make-shift-anim', true);
-        //   break;
-        // case 'four':
-        //   body.setVelocityX(speed);
-        //   gameObjects.sprite.anims.play('make-shift-anim', true);
-        //   break;
-        default:
-          // Not moving
-          gameObjects.sprite.anims.stop();
-          // If we were moving, pick and idle frame to use
-          if (prevVelocity.x < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-left');
-          } else if (prevVelocity.x > 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-right');
-          } else if (prevVelocity.y < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-back');
-          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
-          break;
-      }
+      /*
+      - get the danceMoveResult --> HOW??
+      - check that the player's interactable id matches the id of the danceMoveResult
+        -- if they match, then get the keyPressed from the danceMoveResult
+      - using the key we got, do a switch/case for each NumberKey pressed and
+      correspond it to an animation
 
+      OH:
+      - check if lastLocation is in the dance area
+      - listen to the key presses, similar switch case to left/right/front/back
+
+      - have town game scene listen to key events and pass it onto the town controller
+      - set the field of local type of field that speicfies what key was pressed
+          -- call emitDanceMove function with the data
+      - once we have key that was pressed, keep logic in the DanceOverlay
+      */
+      //this.coveyTownController.addListener('')
+
+      const playerLocation = this._lastLocation;
+      const danceArea = this.coveyTownController.danceAreas.find(
+        area => area.id === playerLocation?.interactableID,
+      );
+      if (danceArea) {
+        // danceArea.addListener('danceMove');
+      }
       const primaryDirection = this.getNewMovementDirection();
       switch (primaryDirection) {
         case 'left':
@@ -536,13 +529,65 @@ export default class TownGameScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    // create the anims for dance moves
+    // anim for 360 degree spin move
     anims.create({
-      key: 'misa-flip', // name of the animation
+      key: 'misa-spin', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-spin.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 3, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for 180 degree flip move
+    anims.create({
+      key: 'misa-flip',
       frames: anims.generateFrameNames('atlas', {
         prefix: 'misa-flip.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 1, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for arm movement dance
+    anims.create({
+      key: 'misa-arms', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-arms-up.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 1, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for jump movement
+    anims.create({
+      key: 'misa-jump', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-jump.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 4, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for failed movement
+    anims.create({
+      key: 'misa-fail', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-fail.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 0, // last frame has index 1
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
