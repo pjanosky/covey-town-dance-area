@@ -66,6 +66,8 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
     danceController.roundId = nanoid();
   };
   const music = useMusic(danceController);
+  const spotifyRegex =
+    '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(album|track)(?::|/)((?:[0-9a-zA-Z]){22})/';
   if (music) {
     return (
       <Box
@@ -80,7 +82,11 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
           fullWidth={true}
           onKeyDown={m => {
             if (m.key === 'Enter') {
-              danceController.music = m.currentTarget.value;
+              if (m.currentTarget.value.match(spotifyRegex)) {
+                danceController.music = m.currentTarget.value;
+              } else {
+                m.currentTarget.value = '';
+              }
             }
           }}
         />
