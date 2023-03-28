@@ -505,7 +505,8 @@ export default class TownGameScene extends Phaser.Scene {
       .setOffset(0, 24)
       .setDepth(6);
     const label = this.add
-      .text(spawnPoint.x, spawnPoint.y - 20, '(You)', {
+      // (You) in '' for labl
+      .text(spawnPoint.x, spawnPoint.y - 20, '', {
         font: '18px monospace',
         color: '#000000',
         // padding: {x: 20, y: 10},
@@ -537,6 +538,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-left-walk.',
         start: 0, // specifies that the first frame should have index 0
         end: 3, // specifies that the first frame should have index 3
+        suffix: '.png',
         zeroPad: 3, // the frame indices will be 000, 001, 002, 003
       }),
       frameRate: 10,
@@ -548,6 +550,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-right-walk.',
         start: 0,
         end: 3,
+        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -559,6 +562,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-front-walk.',
         start: 0,
         end: 3,
+        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -570,6 +574,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-back-walk.',
         start: 0,
         end: 3,
+        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -583,6 +588,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-spin.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 3, // last frame has index 1
+        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10, // this value overrides the duration
@@ -596,6 +602,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-flip.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 1, // last frame has index 1
+        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -609,6 +616,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-arms-up.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 1, // last frame has index 1
+        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -622,6 +630,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-jump.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 4, // last frame has index 1
+        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -635,6 +644,7 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-fail.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 0, // last frame has index 1
+        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
