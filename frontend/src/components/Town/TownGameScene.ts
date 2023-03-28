@@ -145,6 +145,11 @@ export default class TownGameScene extends Phaser.Scene {
       '16_Grocery_store_32x32',
       this._resourcePathPrefix + '/assets/tilesets/16_Grocery_store_32x32.png',
     );
+    console.log('loading dance tiles');
+    this.load.image(
+      'Dance_Tiles_32x32',
+      this._resourcePathPrefix + '/assets/tilesets/Dance_Tiles_32x32.png',
+    );
     this.load.tilemapTiledJSON('map', this._resourcePathPrefix + '/assets/tilemaps/indoors.json');
     this.load.atlas(
       'atlas',
@@ -344,6 +349,7 @@ export default class TownGameScene extends Phaser.Scene {
       '13_Conference_Hall_32x32',
       '14_Basement_32x32',
       '16_Grocery_store_32x32',
+      'Dance_Tiles_32x32',
     ].map(v => this.map.addTilesetImage(v));
 
     // Parameters: layer name (or index) from Tiled, tileset, x, y
