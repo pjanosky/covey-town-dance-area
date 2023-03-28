@@ -151,6 +151,11 @@ export default class TownGameScene extends Phaser.Scene {
       this._resourcePathPrefix + '/assets/atlas/atlas.png',
       this._resourcePathPrefix + '/assets/atlas/atlas.json',
     );
+    // this.load.atlas(
+    //   'atlas',
+    //   this._resourcePathPrefix + '/assets/atlas/spritesheet.png',
+    //   this._resourcePathPrefix + '/assets/atlas/dance.json',
+    // );
   }
 
   updatePlayers(players: PlayerController[]) {
@@ -304,7 +309,7 @@ export default class TownGameScene extends Phaser.Scene {
       switch (primaryDirection) {
         case 'left':
           body.setVelocityX(-speed);
-          gameObjects.sprite.anims.play('misa-flip', true);
+          gameObjects.sprite.anims.play('misa-left-walk', true);
           break;
         case 'right':
           body.setVelocityX(speed);

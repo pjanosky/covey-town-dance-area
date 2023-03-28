@@ -217,20 +217,6 @@
             <key type="filename">tuxemon-misa/misa-right-walk.002.png</key>
             <key type="filename">tuxemon-misa/misa-right-walk.003.png</key>
             <key type="filename">tuxemon-misa/misa-right.png</key>
-            <key type="filename">tuxemon-misa/misa-flip.000.png</key>
-            <key type="filename">tuxemon-misa/misa-flip.001.png</key>
-            <key type="filename">tuxemon-misa/misa-spin.000.png</key>
-            <key type="filename">tuxemon-misa/misa-spin.001.png</key>
-            <key type="filename">tuxemon-misa/misa-spin.002.png</key>
-            <key type="filename">tuxemon-misa/misa-spin.003.png</key>
-            <key type="filename">tuxemon-misa/misa-arms-up.000.png</key>
-            <key type="filename">tuxemon-misa/misa-arms-up.001.png</key>
-            <key type="filename">tuxemon-misa/misa-jump.000.png</key>
-            <key type="filename">tuxemon-misa/misa-jump.001.png</key>
-            <key type="filename">tuxemon-misa/misa-jump.002.png</key>
-            <key type="filename">tuxemon-misa/misa-jump.003.png</key>
-            <key type="filename">tuxemon-misa/misa-jump.004.png</key>
-            <key type="filename">tuxemon-misa/misa-fail.000.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
