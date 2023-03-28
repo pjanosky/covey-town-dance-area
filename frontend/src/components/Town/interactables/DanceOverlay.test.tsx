@@ -57,7 +57,7 @@ describe('Dance Overlay Tests', () => {
   beforeEach(() => {
     danceArea = {
       id: nanoid(),
-      music: nanoid(),
+      music: [],
       roundId: nanoid(),
       duration: 5,
       keySequence: ['one', 'two', 'three'],

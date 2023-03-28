@@ -709,9 +709,9 @@ describe('TownController', () => {
   describe('Dance Area Tests', () => {
     it('danceAreas setter update the dance areas', async () => {
       await mockTownControllerConnection(testController, mockSocket);
-      const newArea = {
+      const newArea: DanceArea = {
         id: nanoid(),
-        music: nanoid(),
+        music: [],
         roundId: nanoid(),
         keySequence: [],
         duration: 0,

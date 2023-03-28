@@ -12,7 +12,7 @@ export type DanceAreaEvents = {
    * A musicChanged event indicates that a new song is playing in the DanceArea.
    * @param music the title of the new song
    */
-  musicChanged: (music: string | undefined) => void;
+  musicChanged: (music: string[]) => void;
 
   /**
    * A roundChanged event indicates that a new round has begun, with a new
@@ -96,7 +96,7 @@ export type KeyResult = boolean | undefined;
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _id: string;
 
-  private _music: string | undefined;
+  private _music: string[];
 
   private _roundId: string | undefined;
 
@@ -144,15 +144,17 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The music of the dance area, or undefined when the first player joins the area.
    */
-  public get music(): string | undefined {
+  public get music(): string[] {
     return this._music;
   }
 
   /**
    * If the music changes, set it to the new music and emit an update.
    */
-  public set music(music: string | undefined) {
-    if (this._music !== music) {
+  public set music(music: string[]) {
+    const equal =
+      this._music.length === music.length && this._music.every((track, i) => track === music[i]);
+    if (!equal) {
       this._music = music;
       this.emit('musicChanged', music);
     }
@@ -315,7 +317,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
  * @param controller the given controller
  * @returns a string representing the music
  */
-export function useMusic(controller: DanceAreaController): string | undefined {
+export function useMusic(controller: DanceAreaController): string[] {
   const [music, setMusic] = useState(controller.music);
   useEffect(() => {
     controller.addListener('musicChanged', setMusic);

@@ -12,7 +12,7 @@ describe('DanceAreaController', () => {
   beforeEach(() => {
     testAreaModel = {
       id: nanoid(),
-      music: nanoid(),
+      music: [],
       roundId: nanoid(),
       keySequence: [],
       duration: 0,
@@ -38,13 +38,13 @@ describe('DanceAreaController', () => {
 
   describe('Tests get and set for the music property', () => {
     test('updates the music property and emits a musicChanged event if the property changes', () => {
-      const newMusic = 'charli XCX';
+      const newMusic = ['charli XCX'];
       testArea.music = newMusic;
-      expect(testArea.music).toBe('charli XCX'); // get check
+      expect(testArea.music).toEqual(['charli XCX']); // get check
       expect(mockListeners.musicChanged).toBeCalledWith(newMusic); // set check
     });
-    test('does not emit an update if the music doees not change', () => {
-      testArea.music = `${testAreaModel.music}`;
+    test('does not emit an update if the music does not change', () => {
+      testArea.music = testAreaModel.music;
       expect(mockListeners.musicChanged).not.toBeCalled();
     });
   });
@@ -124,14 +124,14 @@ describe('DanceAreaController', () => {
       const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: testAreaModel.id,
-        music: 'Gaddi Red Challenger',
+        music: ['Gaddi Red Challenger'],
         roundId: 'round 2',
         keySequence: keySeq,
         duration: 60,
         points: newPoints,
       };
       testArea.updateFrom(newDanceAreaModel);
-      expect(testArea.music).toBe('Gaddi Red Challenger');
+      expect(testArea.music).toBe(['Gaddi Red Challenger']);
       expect(testArea.roundId).toBe('round 2');
       expect(testArea.keySequence).toEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
@@ -143,7 +143,7 @@ describe('DanceAreaController', () => {
       const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: nanoid(),
-        music: 'Gaddi Red Challenger',
+        music: ['Gaddi Red Challenger'],
         roundId: 'round 2',
         keySequence: keySeq,
         duration: 60,

@@ -10,7 +10,7 @@ import {
 import InteractableArea from './InteractableArea';
 
 export default class DanceArea extends InteractableArea {
-  private _music?: string;
+  private _music: string[];
 
   private _roundId: string | undefined;
 
@@ -71,7 +71,7 @@ export default class DanceArea extends InteractableArea {
     super.remove(player);
     this.points.delete(player.id);
     if (this._occupants.length === 0) {
-      this._music = undefined;
+      this._music = [];
       this._roundId = '';
       this._keySequence = [];
       this._duration = 0;
@@ -151,7 +151,7 @@ export default class DanceArea extends InteractableArea {
     return new DanceArea(
       {
         id: mapObject.name,
-        music: undefined,
+        music: [],
         roundId: '',
         keySequence: [],
         // TODO: set initial values.... or make them undefined?

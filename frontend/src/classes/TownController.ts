@@ -750,7 +750,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     } else {
       const newController = new DanceAreaController({
         id: danceArea.name,
-        music: undefined,
+        music: [],
         roundId: undefined,
         keySequence: [],
         duration: 0,

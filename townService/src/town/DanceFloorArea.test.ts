@@ -11,7 +11,7 @@ describe('DanceArea', () => {
   const townEmitter = mock<TownEmitter>();
   let newPlayer: Player;
   const id = nanoid();
-  const music = nanoid();
+  const music: string[] = ['test song'];
   const roundId = nanoid();
   const keySequence: KeySequence = [];
   const duration = 20;
@@ -79,7 +79,7 @@ describe('DanceArea', () => {
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
         id,
-        music: undefined,
+        music: [],
         roundId: '',
         keySequence: [],
         duration: 0,
@@ -118,7 +118,7 @@ describe('DanceArea', () => {
   });
   test('[OMG2 updateModel] updateModel sets music, roundId, keySequence, duration and points', () => {
     const newId = 'spam';
-    const newMusic = 'random song';
+    const newMusic = ['random song'];
     const newRoundId = nanoid();
     const newKeySequence: KeySequence = ['one', 'two', 'three'];
     const newDuration = 45;
