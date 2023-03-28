@@ -7,9 +7,9 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Input, makeStyles, TextField, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController from '../../../classes/DanceAreaController';
+import DanceAreaController, { useMusic } from '../../../classes/DanceAreaController';
 import { nanoid } from 'nanoid';
 import { Spotify } from 'react-spotify-embed';
 
@@ -65,11 +65,43 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
     danceController.keySequence = allKeys;
     danceController.roundId = nanoid();
   };
-  return (
-    <Box className={overlayComponent} display='flex' justifyContent='center'>
-      <Spotify link='https://open.spotify.com/track/7dJGehjbhJvs3K4fWwYTW1?si=5d8bd0e642904143' />
-    </Box>
-  );
+  const music = useMusic(danceController);
+  if (music) {
+    return (
+      <Box
+        className={overlayComponent}
+        display='flex'
+        justifyContent='center'
+        flexDirection='column'>
+        <Spotify link={music} />
+        <Input
+          id='standard-basic'
+          placeholder='Enter spotify link here!'
+          fullWidth={true}
+          onKeyDown={m => {
+            if (m.key === 'Enter') {
+              danceController.music = m.currentTarget.value;
+            }
+          }}
+        />
+      </Box>
+    );
+  } else {
+    return (
+      <Box className={overlayComponent}>
+        <Input
+          id='standard-basic'
+          placeholder='Enter spotify link here!'
+          fullWidth={true}
+          onKeyDown={m => {
+            if (m.key === 'Enter') {
+              danceController.music = m.currentTarget.value;
+            }
+          }}
+        />
+      </Box>
+    );
+  }
 }
 
 /**
