@@ -7,10 +7,11 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { nanoid } from 'nanoid';
+import { Spotify } from 'react-spotify-embed';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -24,7 +25,7 @@ export function useOverlayComponentStyle(padding = 25) {
       padding: `${padding}px`,
       borderRadius: '15px',
       backgroundColor: 'white',
-      width: '300px',
+      width: '400px',
     },
   });
 
@@ -65,9 +66,8 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
     danceController.roundId = nanoid();
   };
   return (
-    <Box className={overlayComponent}>
-      <Button onClick={onClick}>Testing</Button>
-      <Typography> This is where the music player will be</Typography>
+    <Box className={overlayComponent} display='flex' justifyContent='center'>
+      <Spotify link='https://open.spotify.com/track/7dJGehjbhJvs3K4fWwYTW1?si=5d8bd0e642904143' />
     </Box>
   );
 }
