@@ -9,8 +9,6 @@ import Transporter from './interactables/Transporter';
 import ViewingArea from './interactables/ViewingArea';
 import PosterSessionArea from './interactables/PosterSessionArea';
 import { DanceArea } from './interactables/DanceArea';
-import { useHandleKeys } from './interactables/DanceOverlay';
-import { useKeyResults } from '../../classes/DanceAreaController';
 
 // Still not sure what the right type is here... "Interactable" doesn't do it
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -193,6 +191,22 @@ export default class TownGameScene extends Phaser.Scene {
     return undefined;
   }
 
+  // return the string corresponding to the NumberKey in _numberKeys
+  getDanceMoveKey() {
+    if (this.numberKeys.one.isDown) {
+      return 'one';
+    }
+    if (this.numberKeys.two.isDown) {
+      return 'two';
+    }
+    if (this.numberKeys.three.isDown) {
+      return 'three';
+    }
+    if (this.numberKeys.four.isDown) {
+      return 'four';
+    }
+  }
+
   moveOurPlayerTo(destination: Partial<PlayerLocation>) {
     const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
     if (!gameObjects) {
@@ -240,7 +254,7 @@ export default class TownGameScene extends Phaser.Scene {
       - using the key we got, do a switch/case for each NumberKey pressed and
       correspond it to an animation
 
-      OH:
+      OH: 
       - check if lastLocation is in the dance area
       - listen to the key presses, similar switch case to left/right/front/back
 
@@ -251,13 +265,24 @@ export default class TownGameScene extends Phaser.Scene {
       */
       //this.coveyTownController.addListener('')
 
-      const playerLocation = this._lastLocation;
-      const danceArea = this.coveyTownController.danceAreas.find(
-        area => area.id === playerLocation?.interactableID,
-      );
-      if (danceArea) {
-        // danceArea.addListener('danceMove');
+      const danceMove = this.getDanceMoveKey();
+      switch (danceMove) {
+        case 'one':
+          body.setVelocityX(speed);
+          body.setVelocityY(speed);
+          gameObjects.sprite.anims.play('misa-spin', true);
+          break;
+        case 'two':
+          gameObjects.sprite.anims.play('misa-flip', true);
+          break;
+        case 'three':
+          gameObjects.sprite.anims.play('misa-arms', true);
+          break;
+        case 'four':
+          gameObjects.sprite.anims.play('misa-jump', true);
+          break;
       }
+
       const primaryDirection = this.getNewMovementDirection();
       switch (primaryDirection) {
         case 'left':
@@ -538,7 +563,7 @@ export default class TownGameScene extends Phaser.Scene {
         end: 3, // last frame has index 1
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
-      frameRate: 10,
+      frameRate: 10, // this value overrides the duration
       repeat: -1,
     });
 
