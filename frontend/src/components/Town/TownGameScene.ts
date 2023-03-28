@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
 import TownController from '../../classes/TownController';
-import { PlayerLocation } from '../../types/CoveyTownSocket';
+import { NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
@@ -191,20 +191,24 @@ export default class TownGameScene extends Phaser.Scene {
     return undefined;
   }
 
-  // return the string corresponding to the NumberKey in _numberKeys
-  getDanceMoveKey() {
-    if (this.numberKeys.one.isDown) {
+  /**
+   * Get the number key that is currently pressed with lower numbers taking
+   * precedence over higher number of multiple keys are pressed at the same time.
+   *
+   * @returns The number key that is currently pressed of undefined if
+   * no key is pressed.
+   */
+  getPressedNumber(): NumberKey | undefined {
+    if (this._numberKeys?.one.isDown) {
       return 'one';
-    }
-    if (this.numberKeys.two.isDown) {
+    } else if (this._numberKeys?.two.isDown) {
       return 'two';
-    }
-    if (this.numberKeys.three.isDown) {
+    } else if (this._numberKeys?.three.isDown) {
       return 'three';
-    }
-    if (this.numberKeys.four.isDown) {
+    } else if (this._numberKeys?.four.isDown) {
       return 'four';
     }
+    return undefined;
   }
 
   moveOurPlayerTo(destination: Partial<PlayerLocation>) {
@@ -265,11 +269,12 @@ export default class TownGameScene extends Phaser.Scene {
       */
       //this.coveyTownController.addListener('')
 
-      const danceMove = this.getDanceMoveKey();
+      const danceMove = this.getPressedNumber();
+      // the reason we don't set the velocity in this switch case is
+      // the dance moves are realtively stationary such that the sprite does not
+      // move in the X or Y direction
       switch (danceMove) {
         case 'one':
-          body.setVelocityX(speed);
-          body.setVelocityY(speed);
           gameObjects.sprite.anims.play('misa-spin', true);
           break;
         case 'two':
@@ -281,13 +286,25 @@ export default class TownGameScene extends Phaser.Scene {
         case 'four':
           gameObjects.sprite.anims.play('misa-jump', true);
           break;
+        default:
+          // Not moving
+          gameObjects.sprite.anims.stop();
+          // If we were moving, pick and idle frame to use
+          if (prevVelocity.x < 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-left');
+          } else if (prevVelocity.x > 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-right');
+          } else if (prevVelocity.y < 0) {
+            gameObjects.sprite.setTexture('atlas', 'misa-back');
+          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
+          break;
       }
 
       const primaryDirection = this.getNewMovementDirection();
       switch (primaryDirection) {
         case 'left':
           body.setVelocityX(-speed);
-          gameObjects.sprite.anims.play('misa-left-walk', true);
+          gameObjects.sprite.anims.play('misa-flip', true);
           break;
         case 'right':
           body.setVelocityX(speed);
