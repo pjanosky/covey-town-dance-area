@@ -72,12 +72,26 @@ export default class DanceArea extends InteractableArea {
     this.points.delete(player.id);
     if (this._occupants.length === 0) {
       this._music = undefined;
-      this._roundId = '';
+      this._roundId = undefined;
       this._keySequence = [];
       this._duration = 0;
       this._points.clear();
     }
     this._emitAreaChanged();
+  }
+
+  /**
+   * updates the round
+   */
+
+  public updateRound(): void {
+    if (this._occupants.length > 0) {
+      this._duration = 20;
+      this._roundId = nanoid();
+      this._keySequence = ['one'];
+      setTimeout(this.updateRound, this.duration * 1000);
+      this._emitAreaChanged();
+    }
   }
 
   /**
@@ -87,6 +101,10 @@ export default class DanceArea extends InteractableArea {
    */
   public add(player: Player): void {
     super.add(player);
+    // set roundID when area first becomes occupied;
+    if (this._occupants.length === 1) {
+      this.updateRound();
+    }
     this._points.set(player.id, 0);
     this._emitAreaChanged();
   }
@@ -152,9 +170,8 @@ export default class DanceArea extends InteractableArea {
       {
         id: mapObject.name,
         music: undefined,
-        roundId: '',
+        roundId: undefined,
         keySequence: [],
-        // TODO: set initial values.... or make them undefined?
         duration: 0,
         points: {},
       },
