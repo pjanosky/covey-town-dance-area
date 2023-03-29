@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TownController, {
   useDanceAreaController,
   useInteractable,
@@ -7,10 +7,9 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, Input, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController from '../../../classes/DanceAreaController';
-import { nanoid } from 'nanoid';
+import DanceAreaController, { useMusic } from '../../../classes/DanceAreaController';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -47,27 +46,29 @@ export function DanceLeaderboard({ danceController }: DanceControllerProps): JSX
 
 function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
-  const allKeys: NumberKey[] = [
-    'one',
-    'one',
-    'two',
-    'two',
-    'three',
-    'three',
-    'four',
-    'four',
-    'four',
-    'four',
-  ];
-  const onClick = () => {
-    danceController.duration = 20;
-    danceController.keySequence = allKeys;
-    danceController.roundId = nanoid();
-  };
+  const townController = useTownController();
+  const music = useMusic(danceController);
+  const [input, setInput] = useState('');
+
   return (
-    <Box className={overlayComponent}>
-      <Button onClick={onClick}>Testing</Button>
-      <Typography> This is where the music player will be</Typography>
+    <Box display='flex' flexDirection='column'>
+      <span> Music Player Here</span>
+      <Input
+        onKeyDown={async event => {
+          if (event.key === 'Enter') {
+            await townController.queueDanceAreaTrack(danceController, input);
+          }
+        }}
+        onChange={event => {
+          setInput(event.target.value);
+        }}></Input>
+      <Box className={overlayComponent}>
+        <div>
+          {music.map((track, i) => {
+            return <Typography key={`${track}-${i}`}> {track}</Typography>;
+          })}
+        </div>
+      </Box>
     </Box>
   );
 }

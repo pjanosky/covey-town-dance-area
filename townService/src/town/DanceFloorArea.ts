@@ -124,6 +124,7 @@ export default class DanceArea extends InteractableArea {
     this._duration = updatedModel.duration;
     this._points = new Map(Object.entries(updatedModel.points));
     this._playSongs();
+    this._emitAreaChanged();
   }
 
   /**
@@ -195,12 +196,14 @@ export default class DanceArea extends InteractableArea {
       this._trackTimeout = setTimeout(() => {
         if (this._music.length > 0) {
           this._music = this._music.splice(1);
+          this._emitAreaChanged();
         }
         this._playSongs();
-      }, trackData.duration);
+      }, trackData.duration + 5000);
     } else {
       // this song isn't valid, remove it from the queue
       this._music = this._music.splice(1);
+      this._emitAreaChanged();
       this._playSongs();
     }
   }

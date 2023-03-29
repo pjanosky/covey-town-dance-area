@@ -819,7 +819,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       this.townID,
       danceAreaController.id,
       this.sessionToken,
-      trackUrl,
+      { trackUrl: trackUrl },
     );
   }
 
