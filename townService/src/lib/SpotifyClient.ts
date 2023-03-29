@@ -44,7 +44,7 @@ export default class SpotifyClient implements IMusicClient {
     const clientID = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
     if (!clientID || !clientSecret) {
-      throw Error('SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables must be set');
+      return;
     }
 
     try {

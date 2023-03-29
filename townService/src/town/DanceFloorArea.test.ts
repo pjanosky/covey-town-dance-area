@@ -86,7 +86,7 @@ describe('DanceArea', () => {
         points: {},
       });
 
-      expect(testArea.music).toBeUndefined();
+      expect(testArea.music).toEqual([]);
       expect(testArea.roundId).toEqual('');
       expect(testArea.keySequence).toEqual([]);
       expect(testArea.duration).toEqual(0);
@@ -157,7 +157,7 @@ describe('DanceArea', () => {
       // TODO: check implementation for expected initialization
       expect(val.boundingBox).toEqual({ x, y, width, height });
       expect(val.id).toEqual(name);
-      expect(val.music).toBeUndefined();
+      expect(val.music).toEqual([]);
       expect(val.roundId).toEqual('');
       expect(val.keySequence).toEqual([]);
       expect(val.duration).toEqual(0);

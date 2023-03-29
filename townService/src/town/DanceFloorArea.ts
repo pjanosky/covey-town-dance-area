@@ -188,7 +188,7 @@ export default class DanceArea extends InteractableArea {
     }
 
     const trackData = await this._musicClient.getTrackData(this.music[0]);
-    if (trackData.valid && trackData.duration) {
+    if (trackData.valid) {
       this._playing = true;
 
       // set a timer to go to the next song when this one finishes
@@ -199,7 +199,7 @@ export default class DanceArea extends InteractableArea {
           this._emitAreaChanged();
         }
         this._playSongs();
-      }, trackData.duration + 5000);
+      }, trackData.duration ?? 180000 + 5000);
     } else {
       // this song isn't valid, remove it from the queue
       this._music = this._music.splice(1);
