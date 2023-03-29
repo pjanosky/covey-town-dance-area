@@ -16,5 +16,5 @@ export interface IMusicClient {
    * Gets information about a song.
    * @param link The link to the song.
    */
-  getTrackData(link: string): Promise<TrackData | undefined>;
+  getTrackData(link: string): Promise<TrackData>;
 }

@@ -1,6 +1,7 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
-import { nanoid } from 'nanoid';
+import { IMusicClient } from '../lib/IMusicClient';
 import Player from '../lib/Player';
+import SpotifyClient from '../lib/SpotifyClient';
 import {
   BoundingBox,
   TownEmitter,
@@ -19,6 +20,12 @@ export default class DanceArea extends InteractableArea {
   private _duration: number;
 
   private _points: Map<string, number>;
+
+  private _trackTimeout: NodeJS.Timeout | undefined;
+
+  private _musicClient: IMusicClient;
+
+  private _playing = false;
 
   public get music() {
     return this._music;
@@ -58,6 +65,7 @@ export default class DanceArea extends InteractableArea {
     this._keySequence = keySequence;
     this._duration = duration;
     this._points = new Map(Object.entries(points));
+    this._musicClient = new SpotifyClient();
   }
 
   /**
@@ -115,6 +123,7 @@ export default class DanceArea extends InteractableArea {
     this._keySequence = updatedModel.keySequence;
     this._duration = updatedModel.duration;
     this._points = new Map(Object.entries(updatedModel.points));
+    this._playSongs();
   }
 
   /**
@@ -161,5 +170,38 @@ export default class DanceArea extends InteractableArea {
       box,
       townEmitter,
     );
+  }
+
+  /**
+   * Plays all of the songs in the queue, removing each song after it is played.
+   * Stops when the queue is empty. This method has no effect is music is
+   * already playing.
+   */
+  private async _playSongs() {
+    if (this._playing) {
+      return;
+    }
+    if (this.music.length === 0) {
+      this._playing = false;
+      return;
+    }
+
+    const trackData = await this._musicClient.getTrackData(this.music[0]);
+    if (trackData.valid && trackData.duration) {
+      this._playing = true;
+
+      // set a timer to go to the next song when this one finishes
+      clearTimeout(this._trackTimeout);
+      this._trackTimeout = setTimeout(() => {
+        if (this._music.length > 0) {
+          this._music = this._music.splice(1);
+        }
+        this._playSongs();
+      }, trackData.duration);
+    } else {
+      // this song isn't valid, remove it from the queue
+      this._music = this._music.splice(1);
+      this._playSongs();
+    }
   }
 }
