@@ -251,36 +251,37 @@ export default class TownGameScene extends Phaser.Scene {
       body.setVelocity(0);
 
       const danceMove = this.getPressedNumber();
+      if (danceMove) {
+        switch (danceMove) {
+          case 'one':
+            gameObjects.sprite.anims.play('misa-spin', true);
+            break;
+          case 'two':
+            gameObjects.sprite.anims.play('misa-flip', true);
+            break;
+          case 'three':
+            gameObjects.sprite.anims.play('misa-arms', true);
+            break;
+          case 'four':
+            gameObjects.sprite.anims.play('misa-jump', true);
+            break;
+          default:
+            // Not moving
+            gameObjects.sprite.anims.stop();
+            // If we were moving, pick and idle frame to use
+            if (prevVelocity.x < 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-left');
+            } else if (prevVelocity.x > 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-right');
+            } else if (prevVelocity.y < 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-back');
+            } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
+            break;
+        }
+      }
       // the reason we don't set the velocity in this switch case is
       // the dance moves are realtively stationary such that the sprite does not
       // move in the X or Y direction
-      switch (danceMove) {
-        case 'one':
-          gameObjects.sprite.anims.play('misa-spin', true);
-          break;
-        case 'two':
-          gameObjects.sprite.anims.play('misa-flip', true);
-          break;
-        case 'three':
-          gameObjects.sprite.anims.play('misa-arms', true);
-          break;
-        case 'four':
-          gameObjects.sprite.anims.play('misa-jump', true);
-          break;
-        default:
-          // Not moving
-          gameObjects.sprite.anims.stop();
-          // If we were moving, pick and idle frame to use
-          if (prevVelocity.x < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-left');
-          } else if (prevVelocity.x > 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-right');
-          } else if (prevVelocity.y < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-back');
-          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
-          break;
-      }
-
       const primaryDirection = this.getNewMovementDirection();
       switch (primaryDirection) {
         case 'left':
