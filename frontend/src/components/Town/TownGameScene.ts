@@ -250,25 +250,6 @@ export default class TownGameScene extends Phaser.Scene {
       // Stop any previous movement from the last frame
       body.setVelocity(0);
 
-      // corresponding each key press from NumberKey to a dance move --> for now these all use the same png
-      /*
-      - get the danceMoveResult --> HOW??
-      - check that the player's interactable id matches the id of the danceMoveResult
-        -- if they match, then get the keyPressed from the danceMoveResult
-      - using the key we got, do a switch/case for each NumberKey pressed and
-      correspond it to an animation
-
-      OH: 
-      - check if lastLocation is in the dance area
-      - listen to the key presses, similar switch case to left/right/front/back
-
-      - have town game scene listen to key events and pass it onto the town controller
-      - set the field of local type of field that speicfies what key was pressed
-          -- call emitDanceMove function with the data
-      - once we have key that was pressed, keep logic in the DanceOverlay
-      */
-      //this.coveyTownController.addListener('')
-
       const danceMove = this.getPressedNumber();
       // the reason we don't set the velocity in this switch case is
       // the dance moves are realtively stationary such that the sprite does not
