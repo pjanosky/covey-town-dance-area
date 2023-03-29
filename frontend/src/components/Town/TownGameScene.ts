@@ -151,11 +151,6 @@ export default class TownGameScene extends Phaser.Scene {
       this._resourcePathPrefix + '/assets/atlas/atlas.png',
       this._resourcePathPrefix + '/assets/atlas/atlas.json',
     );
-    // this.load.atlas(
-    //   'atlas',
-    //   this._resourcePathPrefix + '/assets/atlas/spritesheet.png',
-    //   this._resourcePathPrefix + '/assets/atlas/dance.json',
-    // );
   }
 
   updatePlayers(players: PlayerController[]) {
