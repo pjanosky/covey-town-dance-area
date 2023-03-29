@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
 import TownController from '../../classes/TownController';
-import { NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
+import { PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
 import Transporter from './interactables/Transporter';
 import ViewingArea from './interactables/ViewingArea';
 import PosterSessionArea from './interactables/PosterSessionArea';
+import { DanceArea } from './interactables/DanceArea';
 
 // Still not sure what the right type is here... "Interactable" doesn't do it
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,6 +21,8 @@ function interactableTypeForObjectType(type: string): any {
     return ViewingArea;
   } else if (type == 'PosterSessionArea') {
     return PosterSessionArea;
+  } else if (type == 'DanceArea') {
+    return DanceArea;
   } else {
     throw new Error(`Unknown object type: ${type}`);
   }
@@ -28,7 +31,7 @@ function interactableTypeForObjectType(type: string): any {
 /**
  * An object storing the current status of the keyboard keys 1, 2, 3, and 4.
  */
-type NumberKeyInputs = {
+export type NumberKeyInputs = {
   one: Phaser.Input.Keyboard.Key;
   two: Phaser.Input.Keyboard.Key;
   three: Phaser.Input.Keyboard.Key;
@@ -142,6 +145,11 @@ export default class TownGameScene extends Phaser.Scene {
       '16_Grocery_store_32x32',
       this._resourcePathPrefix + '/assets/tilesets/16_Grocery_store_32x32.png',
     );
+    console.log('loading dance tiles');
+    this.load.image(
+      'Dance_Tiles_32x32',
+      this._resourcePathPrefix + '/assets/tilesets/Dance_Tiles_32x32.png',
+    );
     this.load.tilemapTiledJSON('map', this._resourcePathPrefix + '/assets/tilemaps/indoors.json');
     this.load.atlas(
       'atlas',
@@ -170,26 +178,6 @@ export default class TownGameScene extends Phaser.Scene {
     });
     // Remove disconnected players from list
     this._players = players;
-  }
-
-  /**
-   * Get the number key that is currently pressed with lower numbers taking
-   * precedence over higher number of multiple keys are pressed at the same time.
-   *
-   * @returns The number key that is currently pressed of undefined if
-   * no key is pressed.
-   */
-  getPressedNumber(): NumberKey | undefined {
-    if (this._numberKeys?.one.isDown) {
-      return 'one';
-    } else if (this._numberKeys?.two.isDown) {
-      return 'two';
-    } else if (this._numberKeys?.three.isDown) {
-      return 'three';
-    } else if (this._numberKeys?.four.isDown) {
-      return 'four';
-    }
-    return undefined;
   }
 
   getNewMovementDirection() {
@@ -361,6 +349,7 @@ export default class TownGameScene extends Phaser.Scene {
       '13_Conference_Hall_32x32',
       '14_Basement_32x32',
       '16_Grocery_store_32x32',
+      'Dance_Tiles_32x32',
     ].map(v => this.map.addTilesetImage(v));
 
     // Parameters: layer name (or index) from Tiled, tileset, x, y
@@ -428,12 +417,15 @@ export default class TownGameScene extends Phaser.Scene {
     );
 
     /// Register the number keys for the dance interactable area
-    this._numberKeys = this.input.keyboard.addKeys({
-      one: Phaser.Input.Keyboard.KeyCodes.ONE,
-      two: Phaser.Input.Keyboard.KeyCodes.TWO,
-      three: Phaser.Input.Keyboard.KeyCodes.THREE,
-      four: Phaser.Input.Keyboard.KeyCodes.FOUR,
-    }) as NumberKeyInputs;
+    this._numberKeys = this.input.keyboard.addKeys(
+      {
+        one: Phaser.Input.Keyboard.KeyCodes.ONE,
+        two: Phaser.Input.Keyboard.KeyCodes.TWO,
+        three: Phaser.Input.Keyboard.KeyCodes.THREE,
+        four: Phaser.Input.Keyboard.KeyCodes.FOUR,
+      },
+      false,
+    ) as NumberKeyInputs;
 
     // Create a sprite with physics enabled via the physics system. The image used for the sprite
     // has a bit of whitespace, so I'm using setSize & setOffset to control the size of the

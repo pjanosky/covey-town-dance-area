@@ -7,23 +7,28 @@ import React from 'react';
 import DanceAreaController, {
   DanceAreaEvents,
   useKeySequence,
-  useKeysPressed,
+  useKeyResults,
   useMusic,
+  useActiveRound,
 } from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { cleanup, render, RenderResult } from '@testing-library/react';
+import { cleanup, render, RenderResult, waitFor } from '@testing-library/react';
+import { KeySequence } from '../../../types/CoveyTownSocket';
 
 function HookComponents({ danceController }: { danceController: DanceAreaController }) {
   const music = useMusic(danceController);
   const keySequence = useKeySequence(danceController);
-  const keysPressed = useKeysPressed(danceController);
+  const keyResults = useKeyResults(danceController);
+  const activeRound = useActiveRound(danceController);
+
   return (
-    <>
-      {music}
-      {keySequence}
-      {keysPressed}
-    </>
+    <div>
+      <span> {`music-${music}`}</span>
+      <span> {`keySequence-${keySequence}`} </span>
+      <span> {`keyResults-${keyResults}`} </span>
+      <span> {`activeRound-${activeRound}`} </span>
+    </div>
   );
 }
 
@@ -58,9 +63,9 @@ describe('DanceAreaController Hooks', () => {
   let renderData: RenderResult;
   beforeEach(() => {
     danceController = new DanceAreaController({
-      id: `id-${nanoid()}`,
-      music: `music-${nanoid()}`,
-      roundId: `round-${nanoid()}`,
+      id: nanoid(),
+      music: nanoid(),
+      roundId: nanoid(),
       duration: 0,
       keySequence: [],
       points: {},
@@ -107,7 +112,7 @@ describe('DanceAreaController Hooks', () => {
     return removedListeners[0][1] as unknown as DanceAreaEvents[Ev];
   }
 
-  describe('Dance area controller hooks', () => {
+  describe('useMusic', () => {
     it('useMusic Registers exactly one musicChanged listener', () => {
       act(() => {
         danceController.emit('musicChanged', undefined);
@@ -125,53 +130,80 @@ describe('DanceAreaController Hooks', () => {
       cleanup();
       expect(getSingleListenerRemoved('musicChanged')).toBe(listenerAdded);
     });
+    it('useMusic refreshes the view when the music changes', async () => {
+      const newMusic = 'twinkle twinkle little star';
+      act(() => {
+        danceController.emit('musicChanged', newMusic);
+      });
+      expect(await renderData.findByText(`music-${newMusic}`)).toBeVisible();
+    });
+  });
 
+  describe('useKeySequence', () => {
     it('useKeySequence registers exactly one newKeySequence listener', () => {
       act(() => {
-        danceController.emit('newKeySequence', ['one']);
+        danceController.emit('keySequenceChanged', ['one']);
       });
       act(() => {
-        danceController.emit('newKeySequence', ['one', 'two']);
+        danceController.emit('keySequenceChanged', ['one', 'two']);
       });
       act(() => {
-        danceController.emit('newKeySequence', ['four', 'three']);
+        danceController.emit('keySequenceChanged', ['four', 'three']);
       });
-      getSingleListenerAdded('newKeySequence');
+      getSingleListenerAdded('keySequenceChanged');
     });
     it('useKeySequence unregisters exactly the same newKeySequence listener on unmounting', () => {
       act(() => {
-        danceController.emit('newKeySequence', ['two', 'four', 'one', 'one']);
+        danceController.emit('keySequenceChanged', ['two', 'four', 'one', 'one']);
       });
-      const listenerAdded = getSingleListenerAdded('newKeySequence');
+      const listenerAdded = getSingleListenerAdded('keySequenceChanged');
       cleanup();
-      expect(getSingleListenerRemoved('newKeySequence')).toBe(listenerAdded);
+      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(listenerAdded);
     });
+    it('useKeySequence refreshes the view when the key sequence changes', async () => {
+      const newKeySequence: KeySequence = ['one', 'two', 'three'];
+      act(() => {
+        danceController.emit('keySequenceChanged', newKeySequence);
+      });
+      expect(await renderData.findByText(`keySequence-${newKeySequence}`)).toBeVisible();
+    });
+  });
 
-    it('useKeysPressed registers exactly one keysPressed listener', () => {
+  describe('useKeyResults', () => {
+    it('useKeyResults registers exactly one keysResults listener', () => {
       act(() => {
-        danceController.emit('keysPressed', ['one']);
+        danceController.emit('keyResultsChanged', [false]);
       });
       act(() => {
-        danceController.emit('keysPressed', ['one', 'two']);
+        danceController.emit('keyResultsChanged', [false, false]);
       });
       act(() => {
-        danceController.emit('keysPressed', ['four', 'three']);
+        danceController.emit('keyResultsChanged', [false, false, true]);
       });
-      getSingleListenerAdded('keysPressed');
+      getSingleListenerAdded('keyResultsChanged');
     });
-    it('useKeysPressed unregisters exactly the same keysPressed listener on unmounting', () => {
+    it('useKeyResults unregisters exactly the same keysResults listener on unmounting', () => {
       act(() => {
-        danceController.emit('keysPressed', ['two', 'four', 'one', 'one']);
+        danceController.emit('keyResultsChanged', [false, true, false, false, true]);
       });
-      const listenerAdded = getSingleListenerAdded('keysPressed');
+      const listenerAdded = getSingleListenerAdded('keyResultsChanged');
       cleanup();
-      expect(getSingleListenerRemoved('keysPressed')).toBe(listenerAdded);
+      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(listenerAdded);
     });
+    it('useKeyResults refreshes the view when the key sequence changes', async () => {
+      const newKeyResults = [undefined, true, false];
+      act(() => {
+        danceController.emit('keyResultsChanged', newKeyResults);
+      });
+      expect(await renderData.findByText(`keyResults-${newKeyResults}`)).toBeVisible();
+    });
+  });
 
+  describe('useDanceAreaController', () => {
     it('Removes the listeners and adds new ones if the controller changes', () => {
-      const origStarChange = getSingleListenerAdded('musicChanged');
-      const origTitleChange = getSingleListenerAdded('newKeySequence');
-      const origImageContentsChange = getSingleListenerAdded('keysPressed');
+      const origMusicChange = getSingleListenerAdded('musicChanged');
+      const origKeySequenceChange = getSingleListenerAdded('keySequenceChanged');
+      const origKeyResultsChange = getSingleListenerAdded('keyResultsChanged');
 
       const newDanceAreaController = new DanceAreaController({
         id: `id-${nanoid()}`,
@@ -184,13 +216,59 @@ describe('DanceAreaController Hooks', () => {
       const newAddListenerSpy = jest.spyOn(newDanceAreaController, 'addListener');
       renderData.rerender(RenderDanceAreaHooks(newDanceAreaController, townController));
 
-      expect(getSingleListenerRemoved('musicChanged')).toBe(origStarChange);
-      expect(getSingleListenerRemoved('newKeySequence')).toBe(origTitleChange);
-      expect(getSingleListenerRemoved('keysPressed')).toBe(origImageContentsChange);
+      expect(getSingleListenerRemoved('musicChanged')).toBe(origMusicChange);
+      expect(getSingleListenerRemoved('keySequenceChanged')).toBe(origKeySequenceChange);
+      expect(getSingleListenerRemoved('keyResultsChanged')).toBe(origKeyResultsChange);
 
       getSingleListenerAdded('musicChanged', newAddListenerSpy);
-      getSingleListenerAdded('newKeySequence', newAddListenerSpy);
-      getSingleListenerAdded('keysPressed', newAddListenerSpy);
+      getSingleListenerAdded('keySequenceChanged', newAddListenerSpy);
+      getSingleListenerAdded('keyResultsChanged', newAddListenerSpy);
+    });
+  });
+
+  describe('useActiveRound', () => {
+    it('useActiveRound registers exactly one keysResults listener', () => {
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      getSingleListenerAdded('roundIdChanged');
+    });
+    it('useActiveRound unregisters exactly the same keysResults listener on unmounting', () => {
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      const listenerAdded = getSingleListenerAdded('roundIdChanged');
+      cleanup();
+      expect(getSingleListenerRemoved('roundIdChanged')).toBe(listenerAdded);
+    });
+    it('useActiveRound refreshes the view when a new round starts', async () => {
+      const newRoundID = nanoid();
+      act(() => {
+        danceController.roundStart = new Date();
+        danceController.duration = 5;
+        danceController.emit('roundIdChanged', newRoundID);
+      });
+      expect(await renderData.findByText(`activeRound-${newRoundID}`)).toBeVisible();
+    });
+    it('useActiveRound refreshes the view when the round duration ends', async () => {
+      const newRoundID = nanoid();
+      act(() => {
+        danceController.roundStart = new Date();
+        danceController.duration = 1;
+        danceController.emit('roundIdChanged', newRoundID);
+      });
+
+      const waitDuration = danceController.duration * 1000 + 1000;
+      await waitFor(() => new Promise(resolve => setTimeout(resolve, waitDuration)), {
+        timeout: waitDuration + 1000,
+      });
+      expect(await renderData.findByText(`activeRound-${undefined}`)).toBeVisible();
     });
   });
 });
