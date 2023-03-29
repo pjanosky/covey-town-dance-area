@@ -297,6 +297,16 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * Gets the first track in the queue if it's empty, otherwise returns undefined
+   */
+  public getCurrentTrack(): string | undefined {
+    if (this._music.length > 0) {
+      return this._music[0];
+    }
+    return undefined;
+  }
+
+  /**
    * Applies updates to this dance area controller's model, setting the music,
    * roundId, keySequence, duration, and points.
    *
@@ -326,6 +336,32 @@ export function useMusic(controller: DanceAreaController): string[] {
     };
   }, [controller]);
   return music;
+}
+
+/**
+ * A hook that returns first song in the queue from the dance controller.
+ *
+ * @param controller the given controller
+ * @returns a string representing the music
+ */
+export function useCurrentTrack(controller: DanceAreaController): string | undefined {
+  const [track, setTrack] = useState(controller.getCurrentTrack());
+  useEffect(() => {
+    const onChange = (newMusic: string[]) => {
+      let newTrack: string | undefined = undefined;
+      if (newMusic.length > 0) {
+        newTrack = newMusic[0];
+      }
+      if (newTrack != track) {
+        setTrack(newTrack);
+      }
+    };
+    controller.addListener('musicChanged', onChange);
+    return () => {
+      controller.removeListener('musicChanged', onChange);
+    };
+  }, [controller, track]);
+  return track;
 }
 
 /**
