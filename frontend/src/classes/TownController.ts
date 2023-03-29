@@ -810,6 +810,20 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Adds a track to the queue of the specified dance area.
+   * @param danceAreaController the dance area controller associated with the area to add the track
+   * @param trackUrl the url of the track
+   */
+  public async queueDanceAreaTrack(danceAreaController: DanceAreaController, trackUrl: string) {
+    return this._townsService.queueDanceAreaTrack(
+      this.townID,
+      danceAreaController.id,
+      this.sessionToken,
+      trackUrl,
+    );
+  }
+
+  /**
    * Determine which players are "nearby" -- that they should be included in our video call
    */
   public nearbyPlayers(): PlayerController[] {

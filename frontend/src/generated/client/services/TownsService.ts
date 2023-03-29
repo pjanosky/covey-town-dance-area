@@ -286,4 +286,39 @@ export class TownsService {
         });
     }
 
+
+    /**
+     * Add a track to the queue of a dance area.
+     * @param townId ID of the town in which to queue the track
+     * @param danceAreaId interactable ID of the dance area
+     * @param xSessionToken session token of the player making the request, must
+     * match the session token returned when the player joined the town
+     * @returns number Ok
+     * @throws ApiError
+     */
+    public queueDanceAreaTrack(
+      townId: string,
+      danceAreaId: string,
+      xSessionToken: string,
+      trackUrl: string,
+  ): CancelablePromise<void> {
+      return this.httpRequest.request({
+          method: 'PATCH',
+          url: '/towns/{townID}/{danceAreaId}/queueTrack',
+          path: {
+              'townID': townId,
+              'danceAreaId': danceAreaId,
+          },
+          headers: {
+              'X-Session-Token': xSessionToken,
+          },
+          body: {
+            trackUrl: trackUrl,
+          },
+          errors: {
+              400: `Invalid values specified`,
+          },
+      });
+  }
+
 }
