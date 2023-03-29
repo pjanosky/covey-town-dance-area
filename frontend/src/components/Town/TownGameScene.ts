@@ -250,6 +250,7 @@ export default class TownGameScene extends Phaser.Scene {
       // Stop any previous movement from the last frame
       body.setVelocity(0);
 
+      const primaryDirection = this.getNewMovementDirection();
       const danceMove = this.getPressedNumber();
       if (danceMove) {
         switch (danceMove) {
@@ -268,6 +269,38 @@ export default class TownGameScene extends Phaser.Scene {
           default:
             // Not moving
             gameObjects.sprite.anims.stop();
+            //If we were moving, pick and idle frame to use
+            // if (prevVelocity.x < 0) {
+            //   gameObjects.sprite.setTexture('atlas', 'misa-left');
+            // } else if (prevVelocity.x > 0) {
+            //   gameObjects.sprite.setTexture('atlas', 'misa-right');
+            // } else if (prevVelocity.y < 0) {
+            //   gameObjects.sprite.setTexture('atlas', 'misa-back');
+            // } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
+            gameObjects.sprite.setTexture('atlas', 'misa-front');
+            break;
+        }
+      } else {
+        switch (primaryDirection) {
+          case 'left':
+            body.setVelocityX(-speed);
+            gameObjects.sprite.anims.play('misa-left-walk', true);
+            break;
+          case 'right':
+            body.setVelocityX(speed);
+            gameObjects.sprite.anims.play('misa-right-walk', true);
+            break;
+          case 'front':
+            body.setVelocityY(speed);
+            gameObjects.sprite.anims.play('misa-front-walk', true);
+            break;
+          case 'back':
+            body.setVelocityY(-speed);
+            gameObjects.sprite.anims.play('misa-back-walk', true);
+            break;
+          default:
+            // Not moving
+            gameObjects.sprite.anims.stop();
             // If we were moving, pick and idle frame to use
             if (prevVelocity.x < 0) {
               gameObjects.sprite.setTexture('atlas', 'misa-left');
@@ -279,41 +312,6 @@ export default class TownGameScene extends Phaser.Scene {
             break;
         }
       }
-      // the reason we don't set the velocity in this switch case is
-      // the dance moves are realtively stationary such that the sprite does not
-      // move in the X or Y direction
-      const primaryDirection = this.getNewMovementDirection();
-      switch (primaryDirection) {
-        case 'left':
-          body.setVelocityX(-speed);
-          gameObjects.sprite.anims.play('misa-left-walk', true);
-          break;
-        case 'right':
-          body.setVelocityX(speed);
-          gameObjects.sprite.anims.play('misa-right-walk', true);
-          break;
-        case 'front':
-          body.setVelocityY(speed);
-          gameObjects.sprite.anims.play('misa-front-walk', true);
-          break;
-        case 'back':
-          body.setVelocityY(-speed);
-          gameObjects.sprite.anims.play('misa-back-walk', true);
-          break;
-        default:
-          // Not moving
-          gameObjects.sprite.anims.stop();
-          // If we were moving, pick and idle frame to use
-          if (prevVelocity.x < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-left');
-          } else if (prevVelocity.x > 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-right');
-          } else if (prevVelocity.y < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-back');
-          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
-          break;
-      }
-
       // Normalize and scale the velocity so that player can't move faster along a diagonal
       gameObjects.sprite.body.velocity.normalize().scale(speed);
 
@@ -515,7 +513,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-left-walk.',
         start: 0, // specifies that the first frame should have index 0
         end: 3, // specifies that the first frame should have index 3
-        suffix: '.png',
         zeroPad: 3, // the frame indices will be 000, 001, 002, 003
       }),
       frameRate: 10,
@@ -527,7 +524,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-right-walk.',
         start: 0,
         end: 3,
-        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -539,7 +535,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-front-walk.',
         start: 0,
         end: 3,
-        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -551,7 +546,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-back-walk.',
         start: 0,
         end: 3,
-        suffix: '.png',
         zeroPad: 3,
       }),
       frameRate: 10,
@@ -565,7 +559,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-spin.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 3, // last frame has index 1
-        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10, // this value overrides the duration
@@ -579,7 +572,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-flip.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 1, // last frame has index 1
-        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -593,7 +585,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-arms-up.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 1, // last frame has index 1
-        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -607,7 +598,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-jump.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 4, // last frame has index 1
-        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
@@ -621,7 +611,6 @@ export default class TownGameScene extends Phaser.Scene {
         prefix: 'misa-fail.', // the prefix of the name of the png
         start: 0, // the first frame has index 0
         end: 0, // last frame has index 1
-        suffix: '.png',
         zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
