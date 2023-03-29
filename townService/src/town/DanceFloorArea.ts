@@ -187,11 +187,12 @@ export default class DanceArea extends InteractableArea {
       return;
     }
 
-    const trackData = await this._musicClient.getTrackData(this.music[0]);
-    if (trackData.valid) {
-      this._playing = true;
-
+    this._playing = true;
+    const spotifyRegex =
+      '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(track)(?::|/)((?:[0-9a-zA-Z]){22})/';
+    if (this.music[0].match(spotifyRegex)) {
       // set a timer to go to the next song when this one finishes
+      const trackData = await this._musicClient.getTrackData(this.music[0]);
       clearTimeout(this._trackTimeout);
       this._trackTimeout = setTimeout(() => {
         if (this._music.length > 0) {
@@ -199,7 +200,7 @@ export default class DanceArea extends InteractableArea {
           this._emitAreaChanged();
         }
         this._playSongs();
-      }, trackData.duration ?? 180000 + 5000);
+      }, trackData?.duration ?? 180000 + 5000);
     } else {
       // this song isn't valid, remove it from the queue
       this._music = this._music.splice(1);
