@@ -121,6 +121,23 @@ export function useHandleKeys(
   }, [danceController, townController]);
 }
 
+export function useDanceAnimation(
+  danceAreaController: DanceAreaController,
+  danceArea: DanceAreaInteractable,
+) {
+  {
+    useEffect(() => {
+      const danceMove = (danceMoveResult: DanceMoveResult) => {
+        danceArea.doDanceMove(danceMoveResult);
+      };
+      danceAreaController.addListener('danceMove', danceMove);
+      return () => {
+        danceAreaController.removeListener('danceMove', danceMove);
+      };
+    }, [danceArea, danceAreaController]);
+  }
+}
+
 /**
  * Dance overlay displays all of the overlay components for a dance interactable area
  * including the keys the user needs to press, the leaderboard, and the music player.
@@ -130,6 +147,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   const danceController = useDanceAreaController(danceArea.id);
   const townController = useTownController();
   useHandleKeys(danceController, townController);
+  useDanceAnimation(danceController, danceArea);
 
   return (
     <Box

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
 import TownController from '../../classes/TownController';
-import { NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
+import { DanceMoveResult, NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
@@ -9,6 +9,7 @@ import Transporter from './interactables/Transporter';
 import ViewingArea from './interactables/ViewingArea';
 import PosterSessionArea from './interactables/PosterSessionArea';
 import { DanceArea } from './interactables/DanceArea';
+import { clear } from 'console';
 
 // Still not sure what the right type is here... "Interactable" doesn't do it
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +58,12 @@ export default class TownGameScene extends Phaser.Scene {
   private _cursorKeys?: Phaser.Types.Input.Keyboard.CursorKeys;
 
   private _numberKeys: NumberKeyInputs | undefined;
+
+  private _isDancing: boolean;
+
+  private _animationKey: string;
+
+  private _timer: ReturnType<typeof setTimeout> | undefined;
 
   /*
    * A "captured" key doesn't send events to the browser - they are trapped by Phaser
@@ -110,6 +117,8 @@ export default class TownGameScene extends Phaser.Scene {
     this._resourcePathPrefix = resourcePathPrefix;
     this.coveyTownController = coveyTownController;
     this._players = this.coveyTownController.players;
+    this._isDancing = false;
+    this._animationKey = 'misa-front';
   }
 
   preload() {
@@ -211,6 +220,31 @@ export default class TownGameScene extends Phaser.Scene {
     return undefined;
   }
 
+  doDanceMove(danceMoveResult: DanceMoveResult) {
+    this._isDancing = true;
+    const keyPressed = danceMoveResult.keyPressed;
+    const success = danceMoveResult.success;
+    if (success) {
+      if (keyPressed === 'one') {
+        this._animationKey = 'misa-spin';
+      } else if (keyPressed === 'two') {
+        this._animationKey = 'misa-flip';
+      } else if (keyPressed === 'three') {
+        this._animationKey = 'misa-arms';
+      } else if (keyPressed === 'four') {
+        this._animationKey = 'misa-jump';
+      }
+    } else {
+      this._animationKey = 'misa-fail';
+    }
+    clearTimeout(this._timer);
+    if (this._isDancing) {
+      this._timer = setTimeout(() => {
+        this._isDancing = false;
+      }, 500);
+    }
+  }
+
   moveOurPlayerTo(destination: Partial<PlayerLocation>) {
     const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
     if (!gameObjects) {
@@ -251,26 +285,8 @@ export default class TownGameScene extends Phaser.Scene {
       body.setVelocity(0);
 
       const primaryDirection = this.getNewMovementDirection();
-      const danceMove = this.getPressedNumber();
-      if (danceMove) {
-        switch (danceMove) {
-          case 'one':
-            gameObjects.sprite.anims.play('misa-spin', true);
-            break;
-          case 'two':
-            gameObjects.sprite.anims.play('misa-flip', true);
-            break;
-          case 'three':
-            gameObjects.sprite.anims.play('misa-arms', true);
-            break;
-          case 'four':
-            gameObjects.sprite.anims.play('misa-jump', true);
-            break;
-          default:
-            // Not moving
-            gameObjects.sprite.anims.stop();
-            break;
-        }
+      if (this._isDancing) {
+        gameObjects.sprite.anims.play(this._animationKey, true);
       } else {
         switch (primaryDirection) {
           case 'left':
