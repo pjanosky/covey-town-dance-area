@@ -31,7 +31,7 @@ export function useOverlayComponentStyle(padding = 25) {
   return useStyles().overlayComponent;
 }
 
-export function DanceLeaderboard({ danceController }: DanceControllerProps): JSX.Element {
+export function DanceLeaderboard(): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
   return (
     <Box className={overlayComponent}>
@@ -149,7 +149,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
               <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
-              <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
+              <DanceLeaderboard></DanceLeaderboard>
             </Grid>
           </Grid>
         </Grid>
