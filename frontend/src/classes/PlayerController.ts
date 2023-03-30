@@ -56,7 +56,7 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
       sprite.setX(this.location.x);
       sprite.setY(this.location.y);
       label.setX(this.location.x);
-      label.setY(this.location.y - 20);
+      label.setY(this.location.y + 20);
       if (this.location.moving) {
         sprite.anims.play(`misa-${this.location.rotation}-walk`, true);
       } else {

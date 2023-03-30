@@ -269,15 +269,6 @@ export default class TownGameScene extends Phaser.Scene {
           default:
             // Not moving
             gameObjects.sprite.anims.stop();
-            //If we were moving, pick and idle frame to use
-            // if (prevVelocity.x < 0) {
-            //   gameObjects.sprite.setTexture('atlas', 'misa-left');
-            // } else if (prevVelocity.x > 0) {
-            //   gameObjects.sprite.setTexture('atlas', 'misa-right');
-            // } else if (prevVelocity.y < 0) {
-            //   gameObjects.sprite.setTexture('atlas', 'misa-back');
-            // } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
-            gameObjects.sprite.setTexture('atlas', 'misa-front');
             break;
         }
       } else {
@@ -317,7 +308,7 @@ export default class TownGameScene extends Phaser.Scene {
 
       const isMoving = primaryDirection !== undefined;
       gameObjects.label.setX(body.x);
-      gameObjects.label.setY(body.y - 20);
+      gameObjects.label.setY(body.y - 43);
       const x = gameObjects.sprite.getBounds().centerX;
       const y = gameObjects.sprite.getBounds().centerY;
       //Move the sprite
@@ -480,14 +471,13 @@ export default class TownGameScene extends Phaser.Scene {
       .setOffset(0, 24)
       .setDepth(6);
     const label = this.add
-      // (You) in '' for labl
-      .text(spawnPoint.x, spawnPoint.y - 20, '', {
+      .text(spawnPoint.x, spawnPoint.y - 43, '(You)', {
         font: '18px monospace',
         color: '#000000',
         // padding: {x: 20, y: 10},
         backgroundColor: '#ffffff',
       })
-      .setDepth(6);
+      .setDepth(6); // changing this to 1 put the notes in front of the (You) label
     this.coveyTownController.ourPlayer.gameObjects = {
       sprite,
       label,
@@ -651,7 +641,7 @@ export default class TownGameScene extends Phaser.Scene {
         .setOffset(0, 24);
       const label = this.add.text(
         player.location.x,
-        player.location.y - 20,
+        player.location.y - 43,
         player === this.coveyTownController.ourPlayer ? '(You)' : player.userName,
         {
           font: '18px monospace',
