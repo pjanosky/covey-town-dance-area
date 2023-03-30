@@ -123,7 +123,7 @@ export default class DanceArea extends InteractableArea {
     this._keySequence = updatedModel.keySequence;
     this._duration = updatedModel.duration;
     this._points = new Map(Object.entries(updatedModel.points));
-    this._playSongs();
+    this.playSongs();
     this._emitAreaChanged();
   }
 
@@ -178,7 +178,7 @@ export default class DanceArea extends InteractableArea {
    * Stops when the queue is empty. This method has no effect is music is
    * already playing.
    */
-  private async _playSongs() {
+  async playSongs() {
     if (this._playing) {
       return;
     }
@@ -199,13 +199,13 @@ export default class DanceArea extends InteractableArea {
           this._music = this._music.splice(1);
           this._emitAreaChanged();
         }
-        this._playSongs();
+        this.playSongs();
       }, trackData?.duration ?? 180000 + 5000);
     } else {
       // this song isn't valid, remove it from the queue
       this._music = this._music.splice(1);
       this._emitAreaChanged();
-      this._playSongs();
+      this.playSongs();
     }
   }
 }

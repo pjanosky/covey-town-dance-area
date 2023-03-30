@@ -2,7 +2,7 @@ import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
-import { KeySequence, TownEmitter } from '../types/CoveyTownSocket';
+import { DanceArea as DanceAreaModel, KeySequence, TownEmitter } from '../types/CoveyTownSocket';
 import DanceArea from './DanceFloorArea';
 
 describe('DanceArea', () => {
@@ -24,6 +24,8 @@ describe('DanceArea', () => {
       testAreaBox,
       townEmitter,
     );
+    const playSongsSpy = jest.spyOn(testArea, 'playSongs');
+    playSongsSpy.mockImplementation(jest.fn(async () => {}));
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
@@ -123,14 +125,15 @@ describe('DanceArea', () => {
     const newKeySequence: KeySequence = ['one', 'two', 'three'];
     const newDuration = 45;
     const newPoints = { [newPlayer.id]: 23 };
-    testArea.updateModel({
+    const newModel: DanceAreaModel = {
       id: newId,
       music: newMusic,
       roundId: newRoundId,
       keySequence: newKeySequence,
       duration: newDuration,
       points: newPoints,
-    });
+    };
+    testArea.updateModel(newModel);
     expect(testArea.music).toEqual(newMusic);
     expect(testArea.id).toBe(id);
     expect(testArea.roundId).toBe(newRoundId);
