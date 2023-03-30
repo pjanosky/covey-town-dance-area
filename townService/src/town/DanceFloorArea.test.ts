@@ -131,7 +131,7 @@ describe('DanceArea', () => {
       duration: newDuration,
       points: newPoints,
     });
-    expect(testArea.music).toBe(newMusic);
+    expect(testArea.music).toEqual(newMusic);
     expect(testArea.id).toBe(id);
     expect(testArea.roundId).toBe(newRoundId);
     expect(testArea.keySequence).toEqual(newKeySequence);
