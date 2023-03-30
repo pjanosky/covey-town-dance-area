@@ -135,7 +135,7 @@ describe('DanceAreaController', () => {
       expect(testArea.roundId).toBe('round 2');
       expect(testArea.keySequence).toEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
-      expect(testArea.points).toBe(newPoints);
+      expect(testArea.points).toEqual(new Map(Object.entries(newPoints)));
     });
     test('does not update the id property as it is readonly', () => {
       const keySeq: KeySequence = ['one', 'two'];

@@ -85,7 +85,7 @@ export type KeyResult = boolean | undefined;
 
 /**
  * A DanceAreaController manages the state for a DanceArea in the frontend app,
- * serving as a bridge between the music being played + key sequnence shown and the
+ * serving as a bridge between the music being played + key sequence shown and the
  * backend TownService. The TownService ensures that the players' points increase
  * when they do the right dance moves and get rated.
  *
@@ -128,7 +128,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     this._roundId = model.roundId;
     this._keySequence = model.keySequence;
     this._duration = model.duration;
-    this._points = new Map(Object.entries(model));
+    this._points = new Map(Object.entries(model.points));
     this._keyResults = [];
   }
 
@@ -228,7 +228,9 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set points(points: Map<string, number>) {
-    if (this._points !== points) {
+    const same =
+      this._points.size === points.size && [...this._points].every(([k, v]) => points.get(k) === v);
+    if (!same) {
       this._points = points;
       this.emit('pointsChanged', points);
     }
@@ -310,7 +312,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * Applies updates to this dance area controller's model, setting the music,
    * roundId, keySequence, duration, and points.
    *
-   * @param updatedModel the model from which we are getting the udpated properties
+   * @param updatedModel the model from which we are getting the updated properties
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
