@@ -245,6 +245,9 @@ export default class TownGameScene extends Phaser.Scene {
     if (this._isDancing) {
       this._timer = setTimeout(() => {
         this._isDancing = false;
+        // once the dance move is complete, misa is back to the front facing position
+        const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
+        gameObjects?.sprite.setTexture('atlas', 'misa-front');
       }, 500);
     }
   }

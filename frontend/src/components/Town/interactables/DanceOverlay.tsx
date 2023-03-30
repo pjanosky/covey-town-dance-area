@@ -116,6 +116,11 @@ export function useHandleKeys(
   }, [danceController, townController]);
 }
 
+/**
+ * This hook adds a listener to the dance controller for when a dance move result is emitted to eventually be passed onto the town.
+ * @param danceAreaController the controller that listens for the event
+ * @param danceArea the dance are from which the event is passed onto the town
+ */
 export function useDanceAnimation(
   danceAreaController: DanceAreaController,
   danceArea: DanceAreaInteractable,
