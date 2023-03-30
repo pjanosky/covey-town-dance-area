@@ -131,7 +131,7 @@ describe('DanceAreaController', () => {
         points: newPoints,
       };
       testArea.updateFrom(newDanceAreaModel);
-      expect(testArea.music).toBe(['Gaddi Red Challenger']);
+      expect(testArea.music).toEqual(['Gaddi Red Challenger']);
       expect(testArea.roundId).toBe('round 2');
       expect(testArea.keySequence).toEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
