@@ -31,7 +31,7 @@ export function useOverlayComponentStyle(padding = 25) {
   return useStyles().overlayComponent;
 }
 
-export function DanceLeaderboard({ danceController }: DanceControllerProps): JSX.Element {
+export function DanceLeaderboard(): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
   return (
     <Box className={overlayComponent}>
@@ -84,14 +84,9 @@ export function useHandleKeys(
 ) {
   useEffect(() => {
     const newKey = (key: NumberKey) => {
-      if (!danceController.roundStart) {
-        return;
-      }
       const keySequence = danceController.keySequence;
       const keyResults = danceController.keyResults;
-      const now = new Date();
-      const time = now.getTime() - danceController.roundStart.getTime();
-      const i = calculateKeyIndex(danceController, time);
+      const i = calculateKeyIndex(danceController);
       if (
         i !== undefined &&
         i < keyResults.length &&
@@ -173,7 +168,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
               <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
-              <DanceLeaderboard danceController={danceController}></DanceLeaderboard>
+              <DanceLeaderboard></DanceLeaderboard>
             </Grid>
           </Grid>
         </Grid>
