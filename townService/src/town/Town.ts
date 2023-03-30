@@ -240,9 +240,9 @@ export default class Town {
   private _addPointsSuccess(player: Player, result: DanceMoveResult) {
     const danceArea = this._interactables.find(
       dance => dance.id === player.location.interactableID,
-    ) as DanceArea;
+    ) as DanceArea | undefined;
 
-    if (isDanceArea(danceArea)) {
+    if (danceArea && isDanceArea(danceArea)) {
       if (result.success) {
         danceArea.addPoints(player, 1);
       }
