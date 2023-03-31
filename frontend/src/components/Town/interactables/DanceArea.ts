@@ -86,6 +86,10 @@ export class DanceArea extends Interactable {
     return 'danceArea';
   }
 
+  /**
+   * Calls the passes an incoming dance move result to the town game scene.
+   * @param danceMoveResult the incoming dance move result
+   */
   doDanceMove(danceMoveResult: DanceMoveResult) {
     this._scene.doDanceMove(danceMoveResult);
   }
