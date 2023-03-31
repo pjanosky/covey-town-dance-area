@@ -224,6 +224,7 @@ export default class TownGameScene extends Phaser.Scene {
     return undefined;
   }
 
+  // checks which key was pressed in the dance move result and assigns a dance move to each key
   doDanceMove(danceMoveResult: DanceMoveResult) {
     this._isDancing = true;
     const keyPressed = danceMoveResult.keyPressed;
@@ -238,6 +239,7 @@ export default class TownGameScene extends Phaser.Scene {
       } else if (keyPressed === 'four') {
         this._animationKey = 'misa-jump';
       }
+      // if the wrong key is pressed, show the misa-fail animation
     } else {
       this._animationKey = 'misa-fail';
     }
