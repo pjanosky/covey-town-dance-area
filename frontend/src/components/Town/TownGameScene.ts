@@ -153,7 +153,6 @@ export default class TownGameScene extends Phaser.Scene {
       '16_Grocery_store_32x32',
       this._resourcePathPrefix + '/assets/tilesets/16_Grocery_store_32x32.png',
     );
-    console.log('loading dance tiles');
     this.load.image(
       'Dance_Tiles_32x32',
       this._resourcePathPrefix + '/assets/tilesets/Dance_Tiles_32x32.png',

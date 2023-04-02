@@ -64,7 +64,7 @@ describe('DanceAreaController Hooks', () => {
   beforeEach(() => {
     danceController = new DanceAreaController({
       id: nanoid(),
-      music: nanoid(),
+      music: [],
       roundId: nanoid(),
       duration: 0,
       keySequence: [],
@@ -115,23 +115,23 @@ describe('DanceAreaController Hooks', () => {
   describe('useMusic', () => {
     it('useMusic Registers exactly one musicChanged listener', () => {
       act(() => {
-        danceController.emit('musicChanged', undefined);
+        danceController.emit('musicChanged', []);
       });
       act(() => {
-        danceController.emit('musicChanged', 'All Too Well (TV) (10 minute version)');
+        danceController.emit('musicChanged', ['All Too Well (TV) (10 minute version)']);
       });
       getSingleListenerAdded('musicChanged');
     });
     it('useMusic unregisters exactly the same musicChanged listener on unmounting', () => {
       act(() => {
-        danceController.emit('musicChanged', 'some song here');
+        danceController.emit('musicChanged', ['some song here']);
       });
       const listenerAdded = getSingleListenerAdded('musicChanged');
       cleanup();
       expect(getSingleListenerRemoved('musicChanged')).toBe(listenerAdded);
     });
     it('useMusic refreshes the view when the music changes', async () => {
-      const newMusic = 'twinkle twinkle little star';
+      const newMusic = ['twinkle twinkle little star'];
       act(() => {
         danceController.emit('musicChanged', newMusic);
       });
@@ -207,7 +207,7 @@ describe('DanceAreaController Hooks', () => {
 
       const newDanceAreaController = new DanceAreaController({
         id: `id-${nanoid()}`,
-        music: `music-${nanoid()}`,
+        music: [],
         roundId: `round-${nanoid()}`,
         duration: 0,
         keySequence: [],

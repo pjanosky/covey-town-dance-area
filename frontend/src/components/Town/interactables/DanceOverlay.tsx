@@ -41,6 +41,7 @@ export function DanceLeaderboard(): JSX.Element {
       <Typography> 3. Slayter</Typography>
       <Typography> 4. Slayssie</Typography>
       <Typography> 5. Slaymud</Typography>
+      <Typography> 6. Test</Typography>
     </Box>
   );
 }

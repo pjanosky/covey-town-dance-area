@@ -9,6 +9,7 @@ import {
   Patch,
   Path,
   Post,
+  Query,
   Response,
   Route,
   Tags,
@@ -26,7 +27,9 @@ import {
   DanceArea,
 } from '../types/CoveyTownSocket';
 import PosterSessionAreaReal from './PosterSessionArea';
-import { isPosterSessionArea } from '../TestUtils';
+import { isDanceArea, isPosterSessionArea } from '../TestUtils';
+import DanceFloorArea from './DanceFloorArea';
+import InteractableArea from './InteractableArea';
 
 /**
  * This is the town route
@@ -304,6 +307,49 @@ export class TownsController extends Controller {
     };
     (<PosterSessionAreaReal>posterSessionArea).updateModel(updatedPosterSessionArea);
     return newStars;
+  }
+
+  /**
+   * Adds a track to the queue of a dance area.
+   *
+   * @param townID ID of the town in which to add the track
+   * @param posterSessionId interactable ID of the dance area
+   * @param sessionToken session token of the player making the request, must
+   *        match the session token returned when the player joined the town
+   *
+   * @throws InvalidParametersError if the session token is not valid, or if the
+   *          dance area specified does not exist
+   */
+  @Patch('{townID}/{danceAreaId}/queueTrack')
+  @Response<InvalidParametersError>(400, 'Invalid values specified')
+  public async queueDanceAreaTrack(
+    @Path() townID: string,
+    @Path() danceAreaId: string,
+    @Body() requestBody: { trackUrl: string },
+    @Header('X-Session-Token') sessionToken: string,
+  ): Promise<void> {
+    const curTown = this._townsStore.getTownByID(townID);
+    if (!curTown) {
+      throw new InvalidParametersError('Invalid town ID');
+    }
+    if (!curTown.getPlayerBySessionToken(sessionToken)) {
+      throw new InvalidParametersError('Invalid session ID');
+    }
+    const danceArea = curTown.getInteractable(danceAreaId);
+    if (!danceArea || !isDanceArea(danceArea)) {
+      throw new InvalidParametersError('Invalid dance area ID');
+    }
+
+    const newMusic = danceArea.music.concat(requestBody.trackUrl);
+    const updatedDanceArea: DanceArea = {
+      id: danceArea.id,
+      music: newMusic,
+      roundId: danceArea.roundId,
+      keySequence: danceArea.keySequence,
+      duration: danceArea.duration,
+      points: danceArea.points,
+    };
+    (danceArea as unknown as DanceFloorArea).updateModel(updatedDanceArea);
   }
 
   /**
