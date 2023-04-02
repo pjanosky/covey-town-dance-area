@@ -231,6 +231,7 @@ describe('TownController', () => {
         playerId: nanoid(),
         roundId: nanoid(),
         success: true,
+        keyPressed: 'one',
       };
       testController.emitDanceMove(testDanceMoveResult);
       expect(mockSocket.emit).toBeCalledWith('danceMove', testDanceMoveResult);
@@ -670,6 +671,7 @@ describe('TownController', () => {
           playerId: nanoid(),
           roundId: nanoid(),
           success: true,
+          keyPressed: 'one',
         };
         emitToTown('danceMove', result);
         expectControllerEvent('danceMove', result);
@@ -680,6 +682,7 @@ describe('TownController', () => {
           playerId: nanoid(),
           roundId: nanoid(),
           success: true,
+          keyPressed: 'one',
         };
         emitToTown('danceMove', result);
         expectNoControllerEvent('danceMove');

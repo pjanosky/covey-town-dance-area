@@ -1,3 +1,4 @@
+import { DanceMoveResult } from '../../../types/CoveyTownSocket';
 import Interactable, { KnownInteractableTypes } from '../Interactable';
 import { NumberKeyInputs } from '../TownGameScene';
 
@@ -83,5 +84,13 @@ export class DanceArea extends Interactable {
 
   getType(): KnownInteractableTypes {
     return 'danceArea';
+  }
+
+  /**
+   * Calls the passes an incoming dance move result to the town game scene.
+   * @param danceMoveResult the incoming dance move result
+   */
+  doDanceMove(danceMoveResult: DanceMoveResult) {
+    this._scene.doDanceMove(danceMoveResult);
   }
 }
