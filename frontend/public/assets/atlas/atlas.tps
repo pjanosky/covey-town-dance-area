@@ -2,11 +2,9 @@
 <data version="1.0">
     <struct type="Settings">
         <key>fileFormatVersion</key>
-        <int>4</int>
+        <int>6</int>
         <key>texturePackerVersion</key>
-        <string>4.3.3</string>
-        <key>fileName</key>
-        <string>C:/Users/mikewesthad/Documents/GitHub/phaser-3-tilemap-blog-posts/code/assets/atlas/atlas.tps</string>
+        <string>7.0.2</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -28,35 +26,29 @@
             </struct>
         </array>
         <key>allowRotation</key>
-        <false/>
+        <true/>
         <key>shapeDebug</key>
         <false/>
         <key>dpi</key>
         <uint>72</uint>
         <key>dataFormat</key>
-        <string>phaser-json-hash</string>
+        <string>json</string>
         <key>textureFileName</key>
-        <filename></filename>
+        <filename>atlas.png</filename>
         <key>flipPVR</key>
         <false/>
-        <key>pvrCompressionQuality</key>
-        <enum type="SettingsBase::PvrCompressionQuality">PVR_QUALITY_NORMAL</enum>
-        <key>atfCompressData</key>
-        <false/>
-        <key>mipMapMinSize</key>
-        <uint>32768</uint>
-        <key>etc1CompressionQuality</key>
-        <enum type="SettingsBase::Etc1CompressionQuality">ETC1_QUALITY_LOW_PERCEPTUAL</enum>
-        <key>etc2CompressionQuality</key>
-        <enum type="SettingsBase::Etc2CompressionQuality">ETC2_QUALITY_LOW_PERCEPTUAL</enum>
+        <key>pvrQualityLevel</key>
+        <uint>3</uint>
+        <key>astcQualityLevel</key>
+        <uint>2</uint>
+        <key>basisUniversalQualityLevel</key>
+        <uint>2</uint>
+        <key>etc1QualityLevel</key>
+        <uint>70</uint>
+        <key>etc2QualityLevel</key>
+        <uint>70</uint>
         <key>dxtCompressionMode</key>
         <enum type="SettingsBase::DxtCompressionMode">DXT_PERCEPTUAL</enum>
-        <key>jxrColorFormat</key>
-        <enum type="SettingsBase::JpegXrColorMode">JXR_YUV444</enum>
-        <key>jxrTrimFlexBits</key>
-        <uint>0</uint>
-        <key>jxrCompressionLevel</key>
-        <uint>0</uint>
         <key>ditherType</key>
         <enum type="SettingsBase::DitherType">NearestNeighbour</enum>
         <key>backgroundColor</key>
@@ -80,8 +72,6 @@
         <key>webpQualityLevel</key>
         <uint>101</uint>
         <key>textureSubPath</key>
-        <string></string>
-        <key>atfFormats</key>
         <string></string>
         <key>textureFormat</key>
         <enum type="SettingsBase::TextureFormat">png</enum>
@@ -129,22 +119,6 @@
                 <uint>1</uint>
             </struct>
         </struct>
-        <key>andEngine</key>
-        <struct type="AndEngine">
-            <key>minFilter</key>
-            <enum type="AndEngine::MinFilter">Linear</enum>
-            <key>packageName</key>
-            <string>Texture</string>
-            <key>wrap</key>
-            <struct type="AndEngineWrap">
-                <key>s</key>
-                <enum type="AndEngineWrap::Wrap">Clamp</enum>
-                <key>t</key>
-                <enum type="AndEngineWrap::Wrap">Clamp</enum>
-            </struct>
-            <key>magFilter</key>
-            <enum type="AndEngine::MagFilter">MagLinear</enum>
-        </struct>
         <key>dataFileNames</key>
         <map type="GFileNameMap">
             <key>data</key>
@@ -153,8 +127,8 @@
                 <filename>atlas.json</filename>
             </struct>
         </map>
-        <key>multiPack</key>
-        <false/>
+        <key>multiPackMode</key>
+        <enum type="SettingsBase::MultiPackMode">MultiPackOff</enum>
         <key>forceIdenticalLayout</key>
         <false/>
         <key>outputFormat</key>
@@ -169,15 +143,17 @@
         <key>autoAliasEnabled</key>
         <true/>
         <key>trimSpriteNames</key>
-        <true/>
+        <false/>
         <key>prependSmartFolderName</key>
         <false/>
+        <key>autodetectAnimations</key>
+        <true/>
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
             <double>1</double>
             <key>scaleMode</key>
-            <enum type="ScaleMode">Scale2x</enum>
+            <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
             <uint>1</uint>
             <key>trimThreshold</key>
@@ -197,29 +173,46 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">tuxemon-misa/misa-back-walk.000.png</key>
-            <key type="filename">tuxemon-misa/misa-back-walk.001.png</key>
-            <key type="filename">tuxemon-misa/misa-back-walk.002.png</key>
-            <key type="filename">tuxemon-misa/misa-back-walk.003.png</key>
-            <key type="filename">tuxemon-misa/misa-back.png</key>
-            <key type="filename">tuxemon-misa/misa-front-walk.000.png</key>
-            <key type="filename">tuxemon-misa/misa-front-walk.001.png</key>
-            <key type="filename">tuxemon-misa/misa-front-walk.002.png</key>
-            <key type="filename">tuxemon-misa/misa-front-walk.003.png</key>
-            <key type="filename">tuxemon-misa/misa-front.png</key>
-            <key type="filename">tuxemon-misa/misa-left-walk.000.png</key>
-            <key type="filename">tuxemon-misa/misa-left-walk.001.png</key>
-            <key type="filename">tuxemon-misa/misa-left-walk.002.png</key>
-            <key type="filename">tuxemon-misa/misa-left-walk.003.png</key>
-            <key type="filename">tuxemon-misa/misa-left.png</key>
-            <key type="filename">tuxemon-misa/misa-right-walk.000.png</key>
-            <key type="filename">tuxemon-misa/misa-right-walk.001.png</key>
-            <key type="filename">tuxemon-misa/misa-right-walk.002.png</key>
-            <key type="filename">tuxemon-misa/misa-right-walk.003.png</key>
-            <key type="filename">tuxemon-misa/misa-right.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-arms-up.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-arms-up.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.003.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-fail.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.003.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.003.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.004.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.003.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.003.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.000.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.001.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.002.png</key>
+            <key type="filename">../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.003.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
@@ -230,10 +223,50 @@
                 <false/>
             </struct>
         </map>
-        <key>fileList</key>
-        <array>
-            <filename>tuxemon-misa</filename>
-        </array>
+        <key>fileLists</key>
+        <map type="SpriteSheetMap">
+            <key>default</key>
+            <struct type="SpriteSheet">
+                <key>files</key>
+                <array>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-arms-up.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-arms-up.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back-walk.003.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-back.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-fail.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-flip.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front-walk.003.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-front.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.003.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-jump.004.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left-walk.003.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-left.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right-walk.003.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-right.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.000.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.001.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.002.png</filename>
+                    <filename>../spring-23-team-405/frontend/public/assets/atlas/tuxemon-misa/misa-spin.003.png</filename>
+                </array>
+            </struct>
+        </map>
         <key>ignoreFileList</key>
         <array/>
         <key>replaceList</key>

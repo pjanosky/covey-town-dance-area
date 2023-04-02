@@ -7,7 +7,7 @@ import React from 'react';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { cleanup, render, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
@@ -125,11 +125,9 @@ describe('Dance Overlay Tests', () => {
   describe('useHandleKeys', () => {
     beforeEach(() => {
       render(RenderUseHandleKeys(danceController, townController));
-      danceController.roundStart = new Date();
-    });
-
-    afterEach(() => {
-      cleanup();
+      act(() => {
+        danceController.roundStart = new Date();
+      });
     });
 
     it('Emits successful dance move result when the right key is pressed', async () => {
@@ -148,6 +146,7 @@ describe('Dance Overlay Tests', () => {
         playerId: townController.ourPlayer.id,
         success: true,
         roundId: danceArea.roundId,
+        keyPressed: 'one',
       };
       expect(danceControllerDanceMoveSpy).toHaveBeenCalledWith(result);
       expect(townControllerDanceMoveSpy).toHaveBeenCalledWith(result);
@@ -170,6 +169,7 @@ describe('Dance Overlay Tests', () => {
         playerId: townController.ourPlayer.id,
         success: false,
         roundId: danceArea.roundId,
+        keyPressed: 'four',
       };
       expect(danceControllerDanceMoveSpy).toHaveBeenCalledWith(result);
       expect(townControllerDanceMoveSpy).toHaveBeenCalledWith(result);
