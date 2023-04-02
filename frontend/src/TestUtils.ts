@@ -220,7 +220,7 @@ export async function mockTownControllerConnection(
       });
       responseToSendController.interactables.push({
         id: nanoid(),
-        music: nanoid(),
+        music: [],
         roundId: nanoid(),
         keySequence: [],
         duration: 0,

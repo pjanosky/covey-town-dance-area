@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import PlayerController from '../../classes/PlayerController';
 import TownController from '../../classes/TownController';
-import { PlayerLocation } from '../../types/CoveyTownSocket';
+import { DanceMoveResult, NumberKey, PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
@@ -58,6 +58,12 @@ export default class TownGameScene extends Phaser.Scene {
 
   private _numberKeys: NumberKeyInputs | undefined;
 
+  private _isDancing: boolean;
+
+  private _animationKey: string;
+
+  private _timer: ReturnType<typeof setTimeout> | undefined;
+
   /*
    * A "captured" key doesn't send events to the browser - they are trapped by Phaser
    * When pausing the game, we uncapture all keys, and when resuming, we re-capture them.
@@ -110,6 +116,8 @@ export default class TownGameScene extends Phaser.Scene {
     this._resourcePathPrefix = resourcePathPrefix;
     this.coveyTownController = coveyTownController;
     this._players = this.coveyTownController.players;
+    this._isDancing = false;
+    this._animationKey = 'misa-front';
   }
 
   preload() {
@@ -144,6 +152,10 @@ export default class TownGameScene extends Phaser.Scene {
     this.load.image(
       '16_Grocery_store_32x32',
       this._resourcePathPrefix + '/assets/tilesets/16_Grocery_store_32x32.png',
+    );
+    this.load.image(
+      'Dance_Tiles_32x32',
+      this._resourcePathPrefix + '/assets/tilesets/Dance_Tiles_32x32.png',
     );
     this.load.tilemapTiledJSON('map', this._resourcePathPrefix + '/assets/tilemaps/indoors.json');
     this.load.atlas(
@@ -191,6 +203,56 @@ export default class TownGameScene extends Phaser.Scene {
     return undefined;
   }
 
+  /**
+   * Get the number key that is currently pressed with lower numbers taking
+   * precedence over higher number of multiple keys are pressed at the same time.
+   *
+   * @returns The number key that is currently pressed of undefined if
+   * no key is pressed.
+   */
+  getPressedNumber(): NumberKey | undefined {
+    if (this._numberKeys?.one.isDown) {
+      return 'one';
+    } else if (this._numberKeys?.two.isDown) {
+      return 'two';
+    } else if (this._numberKeys?.three.isDown) {
+      return 'three';
+    } else if (this._numberKeys?.four.isDown) {
+      return 'four';
+    }
+    return undefined;
+  }
+
+  // checks which key was pressed in the dance move result and assigns a dance move to each key
+  doDanceMove(danceMoveResult: DanceMoveResult) {
+    this._isDancing = true;
+    const keyPressed = danceMoveResult.keyPressed;
+    const success = danceMoveResult.success;
+    if (success) {
+      if (keyPressed === 'one') {
+        this._animationKey = 'misa-spin';
+      } else if (keyPressed === 'two') {
+        this._animationKey = 'misa-flip';
+      } else if (keyPressed === 'three') {
+        this._animationKey = 'misa-arms';
+      } else if (keyPressed === 'four') {
+        this._animationKey = 'misa-jump';
+      }
+      // if the wrong key is pressed, show the misa-fail animation
+    } else {
+      this._animationKey = 'misa-fail';
+    }
+    clearTimeout(this._timer);
+    if (this._isDancing) {
+      this._timer = setTimeout(() => {
+        this._isDancing = false;
+        // once the dance move is complete, misa is back to the front facing position
+        const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
+        gameObjects?.sprite.setTexture('atlas', 'misa-front');
+      }, 500);
+    }
+  }
+
   moveOurPlayerTo(destination: Partial<PlayerLocation>) {
     const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
     if (!gameObjects) {
@@ -231,43 +293,46 @@ export default class TownGameScene extends Phaser.Scene {
       body.setVelocity(0);
 
       const primaryDirection = this.getNewMovementDirection();
-      switch (primaryDirection) {
-        case 'left':
-          body.setVelocityX(-speed);
-          gameObjects.sprite.anims.play('misa-left-walk', true);
-          break;
-        case 'right':
-          body.setVelocityX(speed);
-          gameObjects.sprite.anims.play('misa-right-walk', true);
-          break;
-        case 'front':
-          body.setVelocityY(speed);
-          gameObjects.sprite.anims.play('misa-front-walk', true);
-          break;
-        case 'back':
-          body.setVelocityY(-speed);
-          gameObjects.sprite.anims.play('misa-back-walk', true);
-          break;
-        default:
-          // Not moving
-          gameObjects.sprite.anims.stop();
-          // If we were moving, pick and idle frame to use
-          if (prevVelocity.x < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-left');
-          } else if (prevVelocity.x > 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-right');
-          } else if (prevVelocity.y < 0) {
-            gameObjects.sprite.setTexture('atlas', 'misa-back');
-          } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
-          break;
+      if (this._isDancing) {
+        gameObjects.sprite.anims.play(this._animationKey, true);
+      } else {
+        switch (primaryDirection) {
+          case 'left':
+            body.setVelocityX(-speed);
+            gameObjects.sprite.anims.play('misa-left-walk', true);
+            break;
+          case 'right':
+            body.setVelocityX(speed);
+            gameObjects.sprite.anims.play('misa-right-walk', true);
+            break;
+          case 'front':
+            body.setVelocityY(speed);
+            gameObjects.sprite.anims.play('misa-front-walk', true);
+            break;
+          case 'back':
+            body.setVelocityY(-speed);
+            gameObjects.sprite.anims.play('misa-back-walk', true);
+            break;
+          default:
+            // Not moving
+            gameObjects.sprite.anims.stop();
+            // If we were moving, pick and idle frame to use
+            if (prevVelocity.x < 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-left');
+            } else if (prevVelocity.x > 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-right');
+            } else if (prevVelocity.y < 0) {
+              gameObjects.sprite.setTexture('atlas', 'misa-back');
+            } else if (prevVelocity.y > 0) gameObjects.sprite.setTexture('atlas', 'misa-front');
+            break;
+        }
       }
-
       // Normalize and scale the velocity so that player can't move faster along a diagonal
       gameObjects.sprite.body.velocity.normalize().scale(speed);
 
       const isMoving = primaryDirection !== undefined;
       gameObjects.label.setX(body.x);
-      gameObjects.label.setY(body.y - 20);
+      gameObjects.label.setY(body.y - 43);
       const x = gameObjects.sprite.getBounds().centerX;
       const y = gameObjects.sprite.getBounds().centerY;
       //Move the sprite
@@ -344,6 +409,7 @@ export default class TownGameScene extends Phaser.Scene {
       '13_Conference_Hall_32x32',
       '14_Basement_32x32',
       '16_Grocery_store_32x32',
+      'Dance_Tiles_32x32',
     ].map(v => this.map.addTilesetImage(v));
 
     // Parameters: layer name (or index) from Tiled, tileset, x, y
@@ -430,13 +496,13 @@ export default class TownGameScene extends Phaser.Scene {
       .setOffset(0, 24)
       .setDepth(6);
     const label = this.add
-      .text(spawnPoint.x, spawnPoint.y - 20, '(You)', {
+      .text(spawnPoint.x, spawnPoint.y - 43, '(You)', {
         font: '18px monospace',
         color: '#000000',
         // padding: {x: 20, y: 10},
         backgroundColor: '#ffffff',
       })
-      .setDepth(6);
+      .setDepth(6); // changing this to 1 put the notes in front of the (You) label
     this.coveyTownController.ourPlayer.gameObjects = {
       sprite,
       label,
@@ -460,9 +526,9 @@ export default class TownGameScene extends Phaser.Scene {
       key: 'misa-left-walk',
       frames: anims.generateFrameNames('atlas', {
         prefix: 'misa-left-walk.',
-        start: 0,
-        end: 3,
-        zeroPad: 3,
+        start: 0, // specifies that the first frame should have index 0
+        end: 3, // specifies that the first frame should have index 3
+        zeroPad: 3, // the frame indices will be 000, 001, 002, 003
       }),
       frameRate: 10,
       repeat: -1,
@@ -496,6 +562,71 @@ export default class TownGameScene extends Phaser.Scene {
         start: 0,
         end: 3,
         zeroPad: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for 360 degree spin move
+    anims.create({
+      key: 'misa-spin', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-spin.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 3, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10, // this value overrides the duration
+      repeat: -1,
+    });
+
+    // anim for 180 degree flip move
+    anims.create({
+      key: 'misa-flip',
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-flip.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 1, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for arm movement dance
+    anims.create({
+      key: 'misa-arms', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-arms-up.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 1, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for jump movement
+    anims.create({
+      key: 'misa-jump', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-jump.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 4, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // anim for failed movement
+    anims.create({
+      key: 'misa-fail', // name of the animation
+      frames: anims.generateFrameNames('atlas', {
+        prefix: 'misa-fail.', // the prefix of the name of the png
+        start: 0, // the first frame has index 0
+        end: 0, // last frame has index 1
+        zeroPad: 3, // the frame indices will have 3 numbers (000, 001 in our case)
       }),
       frameRate: 10,
       repeat: -1,
@@ -535,7 +666,7 @@ export default class TownGameScene extends Phaser.Scene {
         .setOffset(0, 24);
       const label = this.add.text(
         player.location.x,
-        player.location.y - 20,
+        player.location.y - 43,
         player === this.coveyTownController.ourPlayer ? '(You)' : player.userName,
         {
           font: '18px monospace',

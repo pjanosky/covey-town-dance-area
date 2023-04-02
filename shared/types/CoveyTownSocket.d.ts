@@ -69,6 +69,8 @@ export type DanceMoveResult = {
   roundId: string | undefined;
   /** Whether the move was completed successfully */
   success: boolean;
+  /** The key that was pressed for this move */
+  keyPressed: NumberKey;
 };
 
 /**
@@ -136,7 +138,7 @@ export interface DanceArea {
   /** The url or song id of the current song. There will be no music playing
    * when the player joins the area (which is why music can be undefined).
    */
-  music: string | undefined;
+  music: string[];
   /** An ID representing the current round. This will be undefined if there
    * is no active round.
    */

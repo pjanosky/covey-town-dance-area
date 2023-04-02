@@ -105,7 +105,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"string","required":true},
-            "music": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}],"required":true},
+            "music": {"dataType":"array","array":{"dataType":"string"},"required":true},
             "roundId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}],"required":true},
             "keySequence": {"ref":"KeySequence","required":true},
             "duration": {"dataType":"double","required":true},
@@ -382,6 +382,34 @@ export function RegisterRoutes(app: express.Router) {
 
 
               const promise = controller.incrementPosterAreaStars.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.patch('/towns/:townID/:danceAreaId/queueTrack',
+            ...(fetchMiddlewares<RequestHandler>(TownsController)),
+            ...(fetchMiddlewares<RequestHandler>(TownsController.prototype.queueDanceAreaTrack)),
+
+            function TownsController_queueDanceAreaTrack(request: any, response: any, next: any) {
+            const args = {
+                    townID: {"in":"path","name":"townID","required":true,"dataType":"string"},
+                    danceAreaId: {"in":"path","name":"danceAreaId","required":true,"dataType":"string"},
+                    requestBody: {"in":"body","name":"requestBody","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"trackUrl":{"dataType":"string","required":true}}},
+                    sessionToken: {"in":"header","name":"X-Session-Token","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TownsController();
+
+
+              const promise = controller.queueDanceAreaTrack.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

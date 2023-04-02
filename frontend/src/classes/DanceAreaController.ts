@@ -12,7 +12,7 @@ export type DanceAreaEvents = {
    * A musicChanged event indicates that a new song is playing in the DanceArea.
    * @param music the title of the new song
    */
-  musicChanged: (music: string | undefined) => void;
+  musicChanged: (music: string[]) => void;
 
   /**
    * A roundChanged event indicates that a new round has begun, with a new
@@ -85,7 +85,7 @@ export type KeyResult = boolean | undefined;
 
 /**
  * A DanceAreaController manages the state for a DanceArea in the frontend app,
- * serving as a bridge between the music being played + key sequnence shown and the
+ * serving as a bridge between the music being played + key sequence shown and the
  * backend TownService. The TownService ensures that the players' points increase
  * when they do the right dance moves and get rated.
  *
@@ -96,7 +96,7 @@ export type KeyResult = boolean | undefined;
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _id: string;
 
-  private _music: string | undefined;
+  private _music: string[];
 
   private _roundId: string | undefined;
 
@@ -128,7 +128,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     this._roundId = model.roundId;
     this._keySequence = model.keySequence;
     this._duration = model.duration;
-    this._points = new Map(Object.entries(model));
+    this._points = new Map(Object.entries(model.points));
     this._keyResults = [];
   }
 
@@ -144,15 +144,17 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The music of the dance area, or undefined when the first player joins the area.
    */
-  public get music(): string | undefined {
+  public get music(): string[] {
     return this._music;
   }
 
   /**
    * If the music changes, set it to the new music and emit an update.
    */
-  public set music(music: string | undefined) {
-    if (this._music !== music) {
+  public set music(music: string[]) {
+    const equal =
+      this._music.length === music.length && this._music.every((track, i) => track === music[i]);
+    if (!equal) {
       this._music = music;
       this.emit('musicChanged', music);
     }
@@ -226,7 +228,9 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
    * an update.
    */
   public set points(points: Map<string, number>) {
-    if (this._points !== points) {
+    const same =
+      this._points.size === points.size && [...this._points].every(([k, v]) => points.get(k) === v);
+    if (!same) {
       this._points = points;
       this.emit('pointsChanged', points);
     }
@@ -295,10 +299,20 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   }
 
   /**
+   * Gets the first track in the queue if it's empty, otherwise returns undefined
+   */
+  public getCurrentTrack(): string | undefined {
+    if (this._music.length > 0) {
+      return this._music[0];
+    }
+    return undefined;
+  }
+
+  /**
    * Applies updates to this dance area controller's model, setting the music,
    * roundId, keySequence, duration, and points.
    *
-   * @param updatedModel the model from which we are getting the udpated properties
+   * @param updatedModel the model from which we are getting the updated properties
    */
   public updateFrom(updatedModel: DanceAreaModel): void {
     this.music = updatedModel.music;
@@ -315,7 +329,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
  * @param controller the given controller
  * @returns a string representing the music
  */
-export function useMusic(controller: DanceAreaController): string | undefined {
+export function useMusic(controller: DanceAreaController): string[] {
   const [music, setMusic] = useState(controller.music);
   useEffect(() => {
     controller.addListener('musicChanged', setMusic);
@@ -324,6 +338,32 @@ export function useMusic(controller: DanceAreaController): string | undefined {
     };
   }, [controller]);
   return music;
+}
+
+/**
+ * A hook that returns first song in the queue from the dance controller.
+ *
+ * @param controller the given controller
+ * @returns a string representing the music
+ */
+export function useCurrentTrack(controller: DanceAreaController): string | undefined {
+  const [track, setTrack] = useState(controller.getCurrentTrack());
+  useEffect(() => {
+    const onChange = (newMusic: string[]) => {
+      let newTrack: string | undefined = undefined;
+      if (newMusic.length > 0) {
+        newTrack = newMusic[0];
+      }
+      if (newTrack != track) {
+        setTrack(newTrack);
+      }
+    };
+    controller.addListener('musicChanged', onChange);
+    return () => {
+      controller.removeListener('musicChanged', onChange);
+    };
+  }, [controller, track]);
+  return track;
 }
 
 /**
