@@ -21,6 +21,7 @@ describe('DanceAreaController', () => {
     testArea = new DanceAreaController(testAreaModel);
     mockClear(townController);
     mockClear(mockListeners.musicChanged);
+    mockClear(mockListeners.currentTrackChanged);
     mockClear(mockListeners.roundIdChanged);
     mockClear(mockListeners.keySequenceChanged);
     mockClear(mockListeners.durationChanged);
@@ -28,6 +29,7 @@ describe('DanceAreaController', () => {
     mockClear(mockListeners.keyResultsChanged);
     mockClear(mockListeners.danceMove);
     testArea.addListener('musicChanged', mockListeners.musicChanged);
+    testArea.addListener('currentTrackChanged', mockListeners.currentTrackChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
     testArea.addListener('keySequenceChanged', mockListeners.keySequenceChanged);
     testArea.addListener('durationChanged', mockListeners.durationChanged);
@@ -46,6 +48,20 @@ describe('DanceAreaController', () => {
     test('does not emit an update if the music does not change', () => {
       testArea.music = testAreaModel.music;
       expect(mockListeners.musicChanged).not.toBeCalled();
+    });
+  });
+  describe('Tests get for the currentTrack property', () => {
+    test('updates the music property and emits a musicChanged event if the property changes', () => {
+      const newMusic = ['charli XCX', 'vroom vroom'];
+      testArea.music = newMusic;
+      expect(testArea.currentTrack).toEqual('charli XCX');
+      expect(mockListeners.currentTrackChanged).toBeCalledWith(newMusic[0]);
+    });
+    test('does not emit an update if the music does not change', () => {
+      testArea.music = ['song1', 'song2', 'song3'];
+      mockClear(mockListeners.currentTrackChanged);
+      testArea.music = testArea.music.concat('song4');
+      expect(mockListeners.currentTrackChanged).not.toBeCalled();
     });
   });
   describe('Tests get and set for the roundId property', () => {
@@ -151,6 +167,16 @@ describe('DanceAreaController', () => {
       };
       testArea.updateFrom(newDanceAreaModel);
       expect(testArea.id).toEqual(existingId);
+    });
+  });
+  describe('getCurrentTrack', () => {
+    it('getCurrentTrack returns the first track of there are track in the queue', () => {
+      testArea.music = ['Roman Holiday', 'Chun Li', 'Good Form'];
+      expect(testArea.currentTrack).toEqual('Roman Holiday');
+    });
+    it('getCurrentTrack returns the first track of there are track in the queue', () => {
+      testArea.music = [];
+      expect(testArea.currentTrack).toBeUndefined();
     });
   });
 });
