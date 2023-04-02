@@ -99,6 +99,7 @@ export function useHandleKeys(
           playerId: townController.ourPlayer.id,
           roundId: danceController.roundId,
           success: success,
+          keyPressed: key,
         };
 
         danceController.emit('danceMove', danceMoveResult);
@@ -116,6 +117,28 @@ export function useHandleKeys(
 }
 
 /**
+ * This hook adds a listener to the dance controller for when a dance move result is emitted to eventually be passed onto the town.
+ * @param danceAreaController the controller that listens for the event
+ * @param danceArea the dance are from which the event is passed onto the town
+ */
+export function useDanceAnimation(
+  danceAreaController: DanceAreaController,
+  danceArea: DanceAreaInteractable,
+) {
+  {
+    useEffect(() => {
+      const danceMove = (danceMoveResult: DanceMoveResult) => {
+        danceArea.doDanceMove(danceMoveResult);
+      };
+      danceAreaController.addListener('danceMove', danceMove);
+      return () => {
+        danceAreaController.removeListener('danceMove', danceMove);
+      };
+    }, [danceArea, danceAreaController]);
+  }
+}
+
+/**
  * Dance overlay displays all of the overlay components for a dance interactable area
  * including the keys the user needs to press, the leaderboard, and the music player.
  * It also handles key presses made by the user while in the area.
@@ -124,6 +147,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   const danceController = useDanceAreaController(danceArea.id);
   const townController = useTownController();
   useHandleKeys(danceController, townController);
+  useDanceAnimation(danceController, danceArea);
 
   return (
     <Box

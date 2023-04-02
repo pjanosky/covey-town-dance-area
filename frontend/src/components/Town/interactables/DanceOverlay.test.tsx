@@ -146,6 +146,7 @@ describe('Dance Overlay Tests', () => {
         playerId: townController.ourPlayer.id,
         success: true,
         roundId: danceArea.roundId,
+        keyPressed: 'one',
       };
       expect(danceControllerDanceMoveSpy).toHaveBeenCalledWith(result);
       expect(townControllerDanceMoveSpy).toHaveBeenCalledWith(result);
@@ -168,6 +169,7 @@ describe('Dance Overlay Tests', () => {
         playerId: townController.ourPlayer.id,
         success: false,
         roundId: danceArea.roundId,
+        keyPressed: 'four',
       };
       expect(danceControllerDanceMoveSpy).toHaveBeenCalledWith(result);
       expect(townControllerDanceMoveSpy).toHaveBeenCalledWith(result);

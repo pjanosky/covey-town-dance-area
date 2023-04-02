@@ -69,6 +69,8 @@ export type DanceMoveResult = {
   roundId: string | undefined;
   /** Whether the move was completed successfully */
   success: boolean;
+  /** The key that was pressed for this move */
+  keyPressed: NumberKey;
 };
 
 /**
