@@ -7,10 +7,9 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Input, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController, { useMusic } from '../../../classes/DanceAreaController';
-import { nanoid } from 'nanoid';
+import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
 import { Spotify } from 'react-spotify-embed';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
@@ -47,26 +46,15 @@ export function DanceLeaderboard(): JSX.Element {
   );
 }
 
-function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
+export function DanceMusicPlayer({
+  danceController,
+  townController,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+}): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
-  const allKeys: NumberKey[] = [
-    'one',
-    'one',
-    'two',
-    'two',
-    'three',
-    'three',
-    'four',
-    'four',
-    'four',
-    'four',
-  ];
-  const onClick = () => {
-    danceController.duration = 20;
-    danceController.keySequence = allKeys;
-    danceController.roundId = nanoid();
-  };
-  const music = useMusic(danceController);
+  const music = useCurrentTrack(danceController);
   const spotifyRegex =
     '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(album|track)(?::|/)((?:[0-9a-zA-Z]){22})/';
   if (music) {
@@ -79,12 +67,12 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
         <Spotify link={music} />
         <Input
           id='standard-basic'
-          placeholder='Enter spotify link here!'
+          placeholder='Enter a Spotify link to queue here!'
           fullWidth={true}
           onKeyDown={m => {
             if (m.key === 'Enter') {
               if (m.currentTarget.value.match(spotifyRegex)) {
-                danceController.music = m.currentTarget.value;
+                townController.queueDanceAreaTrack(danceController, m.currentTarget.value);
               } else {
                 m.currentTarget.value = '';
               }
@@ -98,11 +86,11 @@ function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Elemen
       <Box className={overlayComponent}>
         <Input
           id='standard-basic'
-          placeholder='Enter spotify link here!'
+          placeholder='Enter a Spotify link to queue here!'
           fullWidth={true}
           onKeyDown={m => {
             if (m.key === 'Enter') {
-              danceController.music = m.currentTarget.value;
+              townController.queueDanceAreaTrack(danceController, m.currentTarget.value);
             }
           }}
         />
@@ -209,7 +197,9 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
           </Grid>
           <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
             <Grid item>
-              <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+              <DanceMusicPlayer
+                danceController={danceController}
+                townController={townController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
               <DanceLeaderboard></DanceLeaderboard>
