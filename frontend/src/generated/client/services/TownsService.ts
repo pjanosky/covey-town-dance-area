@@ -293,7 +293,7 @@ export class TownsService {
      * @param xSessionToken session token of the player making the request, must
      * match the session token returned when the player joined the town
      * @param requestBody
-     * @returns string Ok
+     * @returns void
      * @throws ApiError
      */
     public queueDanceAreaTrack(
@@ -303,7 +303,7 @@ export class TownsService {
         requestBody: {
             trackUrl: string;
         },
-    ): CancelablePromise<Array<string>> {
+    ): CancelablePromise<void> {
         return this.httpRequest.request({
             method: 'PATCH',
             url: '/towns/{townID}/{danceAreaId}/queueTrack',
