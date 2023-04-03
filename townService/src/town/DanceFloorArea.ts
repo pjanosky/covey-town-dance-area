@@ -29,6 +29,8 @@ export default class DanceArea extends InteractableArea {
 
   private _playing = false;
 
+  private _roundTimeout: NodeJS.Timeout | undefined;
+
   public get music() {
     return this._music;
   }
@@ -86,6 +88,7 @@ export default class DanceArea extends InteractableArea {
       this._keySequence = [];
       this._duration = 0;
       this._points.clear();
+      clearTimeout(this._roundTimeout);
     }
     this._emitAreaChanged();
   }
@@ -99,7 +102,7 @@ export default class DanceArea extends InteractableArea {
       area._duration = 20;
       area._roundId = nanoid();
       area._keySequence = generateKeySequence();
-      setTimeout(DanceArea.updateRound, area.duration * 1000, area);
+      area._roundTimeout = setTimeout(DanceArea.updateRound, area.duration * 1000, area);
       area._emitAreaChanged();
     }
   }

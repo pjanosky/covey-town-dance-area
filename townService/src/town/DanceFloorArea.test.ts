@@ -1,3 +1,4 @@
+import { clear } from 'console';
 import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
@@ -30,6 +31,10 @@ describe('DanceArea', () => {
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
     keySequence = testArea.keySequence;
+  });
+  afterEach(() => {
+    testArea.remove(newPlayer);
+    jest.clearAllTimers();
   });
 
   describe('Getters', () => {
@@ -66,6 +71,7 @@ describe('DanceArea', () => {
         duration,
         points: { [extraPlayer.id]: 0 },
       });
+      testArea.remove(extraPlayer);
     });
     it("Clears the player's interactableID and emits an update for their location", () => {
       testArea.remove(newPlayer);
