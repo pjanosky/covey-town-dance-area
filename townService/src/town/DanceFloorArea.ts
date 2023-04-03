@@ -10,6 +10,7 @@ import {
   KeySequence,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
+import { generateKeySequence } from '../Utils';
 
 export default class DanceArea extends InteractableArea {
   private _music: string[];
@@ -97,7 +98,7 @@ export default class DanceArea extends InteractableArea {
     if (area._occupants.length > 0) {
       area._duration = 20;
       area._roundId = nanoid();
-      area._keySequence = ['one'];
+      area._keySequence = generateKeySequence();
       setTimeout(DanceArea.updateRound, area.duration * 1000, area);
       area._emitAreaChanged();
     }
