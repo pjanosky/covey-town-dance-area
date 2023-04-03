@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
 import { DanceMoveResult, DanceRating, KeySequence, NumberKey } from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
+import { DanceArea } from '../generated/client';
 
 /**
  * The events that a DanceAreaController can emit
@@ -433,4 +434,22 @@ export function useActiveRound(controller: DanceAreaController) {
   }, [controller]);
 
   return activeRound;
+}
+
+/**
+ * A hook that returns the current point values of all of the players in
+ * the area
+ *
+ * @param controller the given controller
+ * @returns a map from player id to points
+ */
+export function usePoints(controller: DanceAreaController): Map<string, number> {
+  const [points, setPoints] = useState(controller.points);
+  useEffect(() => {
+    controller.addListener('pointsChanged', setPoints);
+    return () => {
+      controller.removeListener('pointsChanged', setPoints);
+    };
+  }, [controller]);
+  return points;
 }
