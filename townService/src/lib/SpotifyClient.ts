@@ -10,13 +10,27 @@ export default class SpotifyClient implements IMusicClient {
 
   private _token: string | undefined;
 
-  public async getTrackData(url: string): Promise<TrackData> {
+  private _clientID: string | undefined;
+
+  private _clientSecret: string | undefined;
+
+  public constructor() {
+    this._clientID = process.env.SPOTIFY_CLIENT_ID;
+    this._clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  }
+
+  public async getTrackData(url: string): Promise<TrackData | undefined> {
+    if (!this._clientID || !this._clientSecret) {
+      return undefined;
+    }
+
     const now = new Date();
     if (!this._token || !this._expiration || now.getTime() > this._expiration.getTime()) {
       await this._requestNewToken();
     }
+    console.log(`🟩 token: ${this._token}`);
     if (!this._token) {
-      return { valid: false };
+      return undefined;
     }
     const trackID = this._parseTrackID(url);
     if (trackID) {
@@ -29,6 +43,12 @@ export default class SpotifyClient implements IMusicClient {
    * Parses a track ID from a spotify track link
    */
   private _parseTrackID(url: string): string | undefined {
+    const spotifyRegex =
+      '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(track)(?::|/)((?:[0-9a-zA-Z]){22})/';
+    if (!url.match(spotifyRegex)) {
+      return undefined;
+    }
+
     const path = new URL(url).pathname;
     const trackIdIndex = path.lastIndexOf('/');
     if (trackIdIndex < 0 || trackIdIndex + 1 >= path.length) {
@@ -41,16 +61,10 @@ export default class SpotifyClient implements IMusicClient {
    * Makes a request to the spotify web API to request an API token.
    */
   private async _requestNewToken() {
-    const clientID = process.env.SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-    if (!clientID || !clientSecret) {
-      return;
-    }
-
     try {
       const response = await axios.post(
         TOKEN_URL,
-        `grant_type=client_credentials&client_id=${clientID}&client_secret=${clientSecret}`,
+        `grant_type=client_credentials&client_id=${this._clientID}&client_secret=${this._clientSecret}`,
         {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         },
