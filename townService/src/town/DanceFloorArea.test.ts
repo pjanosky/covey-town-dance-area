@@ -2,7 +2,7 @@ import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
-import { KeySequence, TownEmitter } from '../types/CoveyTownSocket';
+import { DanceArea as DanceAreaModel, KeySequence, TownEmitter } from '../types/CoveyTownSocket';
 import DanceArea from './DanceFloorArea';
 
 describe('DanceArea', () => {
@@ -11,7 +11,7 @@ describe('DanceArea', () => {
   const townEmitter = mock<TownEmitter>();
   let newPlayer: Player;
   const id = nanoid();
-  const music = nanoid();
+  const music: string[] = ['test song'];
   const roundId = nanoid();
   const keySequence: KeySequence = [];
   const duration = 20;
@@ -24,6 +24,8 @@ describe('DanceArea', () => {
       testAreaBox,
       townEmitter,
     );
+    const playSongsSpy = jest.spyOn(testArea, 'playSongs');
+    playSongsSpy.mockImplementation(jest.fn(async () => {}));
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
@@ -79,14 +81,14 @@ describe('DanceArea', () => {
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
         id,
-        music: undefined,
+        music: [],
         roundId: '',
         keySequence: [],
         duration: 0,
         points: {},
       });
 
-      expect(testArea.music).toBeUndefined();
+      expect(testArea.music).toEqual([]);
       expect(testArea.roundId).toEqual('');
       expect(testArea.keySequence).toEqual([]);
       expect(testArea.duration).toEqual(0);
@@ -118,20 +120,21 @@ describe('DanceArea', () => {
   });
   test('[OMG2 updateModel] updateModel sets music, roundId, keySequence, duration and points', () => {
     const newId = 'spam';
-    const newMusic = 'random song';
+    const newMusic = ['random song'];
     const newRoundId = nanoid();
     const newKeySequence: KeySequence = ['one', 'two', 'three'];
     const newDuration = 45;
     const newPoints = { [newPlayer.id]: 23 };
-    testArea.updateModel({
+    const newModel: DanceAreaModel = {
       id: newId,
       music: newMusic,
       roundId: newRoundId,
       keySequence: newKeySequence,
       duration: newDuration,
       points: newPoints,
-    });
-    expect(testArea.music).toBe(newMusic);
+    };
+    testArea.updateModel(newModel);
+    expect(testArea.music).toEqual(newMusic);
     expect(testArea.id).toBe(id);
     expect(testArea.roundId).toBe(newRoundId);
     expect(testArea.keySequence).toEqual(newKeySequence);
@@ -157,7 +160,7 @@ describe('DanceArea', () => {
       // TODO: check implementation for expected initialization
       expect(val.boundingBox).toEqual({ x, y, width, height });
       expect(val.id).toEqual(name);
-      expect(val.music).toBeUndefined();
+      expect(val.music).toEqual([]);
       expect(val.roundId).toEqual('');
       expect(val.keySequence).toEqual([]);
       expect(val.duration).toEqual(0);

@@ -762,7 +762,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     } else {
       const newController = new DanceAreaController({
         id: danceArea.name,
-        music: undefined,
+        music: [],
         roundId: undefined,
         keySequence: [],
         duration: 0,
@@ -818,6 +818,20 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       this.townID,
       posterSessionArea.id,
       this.sessionToken,
+    );
+  }
+
+  /**
+   * Adds a track to the queue of the specified dance area.
+   * @param danceAreaController the dance area controller associated with the area to add the track
+   * @param trackUrl the url of the track
+   */
+  public async queueDanceAreaTrack(danceAreaController: DanceAreaController, trackUrl: string) {
+    return this._townsService.queueDanceAreaTrack(
+      this.townID,
+      danceAreaController.id,
+      this.sessionToken,
+      { trackUrl: trackUrl },
     );
   }
 
