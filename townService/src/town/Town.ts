@@ -212,20 +212,9 @@ export default class Town {
    * @param rating rating given
    */
   private _addPointsRating(sender: Player, recipient: Player, rating: DanceRating) {
-    const danceAreaSender = this._interactables.find(
-      dance => dance.id === sender.location.interactableID,
-    ) as DanceArea;
-
-    const danceAreaRecipient = this._interactables.find(
-      dance => dance.id === recipient.location.interactableID,
-    ) as DanceArea;
-
-    if (
-      isDanceArea(danceAreaSender) &&
-      isDanceArea(danceAreaRecipient) &&
-      danceAreaRecipient === danceAreaSender
-    ) {
-      danceAreaRecipient.addPoints(recipient, rating.rating);
+    const area = this._interactables.find(dance => dance.id === rating.interactableID);
+    if (area && area instanceof DanceArea) {
+      area.addPoints(recipient, rating.rating);
       this._broadcastEmitter.emit('danceRating', rating);
     }
   }
@@ -238,13 +227,11 @@ export default class Town {
    * @param result result of the dance move
    */
   private _addPointsSuccess(player: Player, result: DanceMoveResult) {
-    const danceArea = this._interactables.find(
-      dance => dance.id === player.location.interactableID,
-    ) as DanceArea | undefined;
+    const area = this._interactables.find(dance => dance.id === result.interactableID);
 
-    if (danceArea && isDanceArea(danceArea)) {
+    if (area && area instanceof DanceArea) {
       if (result.success) {
-        danceArea.addPoints(player, 1);
+        area.addPoints(player, 1);
       }
       this._broadcastEmitter.emit('danceMove', result);
     }
