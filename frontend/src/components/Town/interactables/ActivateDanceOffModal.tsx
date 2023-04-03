@@ -1,9 +1,6 @@
 import {
   Button,
-  FormControl,
-  FormLabel,
   Modal,
-  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
@@ -12,7 +9,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDanceAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import { DanceArea as DanceAreaModel } from '../../../types/CoveyTownSocket';
