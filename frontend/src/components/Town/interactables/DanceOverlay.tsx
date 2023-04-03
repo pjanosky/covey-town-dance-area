@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TownController, {
   useDanceAreaController,
   useInteractable,
@@ -9,8 +9,9 @@ import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController from '../../../classes/DanceAreaController';
+import DanceAreaController, { useActiveRound } from '../../../classes/DanceAreaController';
 import { nanoid } from 'nanoid';
+import ActivateDanceOffModal from './ActivateDanceOffModal';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -146,40 +147,54 @@ export function useDanceAnimation(
 export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const danceController = useDanceAreaController(danceArea.id);
   const townController = useTownController();
+  const roundId = useActiveRound(danceController);
   useHandleKeys(danceController, townController);
   useDanceAnimation(danceController, danceArea);
-
-  return (
-    <Box
-      width='100%'
-      height='100%'
-      position='relative'
-      display='flex'
-      alignItems='flex-end'
-      alignContent='flex-end'>
-      <Box position='sticky' bottom='0px' left='0px' right='0px' width='100%'>
-        <Grid
-          container
-          direction='row'
-          justifyContent='space-between'
-          alignItems='flex-end'
-          alignContent='flex-end'
-          wrap='nowrap'>
-          <Grid item>
-            <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
-          </Grid>
-          <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
+  if (!roundId) {
+    return (
+      <ActivateDanceOffModal
+        isOpen
+        close={() => {
+          // forces game to emit "viewingArea" event again so that
+          // repoening the modal works as expected
+          townController.interactEnd(danceArea);
+        }}
+        danceArea={danceArea}
+      />
+    );
+  } else {
+    return (
+      <Box
+        width='100%'
+        height='100%'
+        position='relative'
+        display='flex'
+        alignItems='flex-end'
+        alignContent='flex-end'>
+        <Box position='sticky' bottom='0px' left='0px' right='0px' width='100%'>
+          <Grid
+            container
+            direction='row'
+            justifyContent='space-between'
+            alignItems='flex-end'
+            alignContent='flex-end'
+            wrap='nowrap'>
             <Grid item>
-              <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+              <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
             </Grid>
-            <Grid item>
-              <DanceLeaderboard></DanceLeaderboard>
+            <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
+              <Grid item>
+                <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+              </Grid>
+              <Grid item>
+                <DanceLeaderboard></DanceLeaderboard>
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
+        </Box>
       </Box>
-    </Box>
-  );
+    );
+  }
 }
 
 /**

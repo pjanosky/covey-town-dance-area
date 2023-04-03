@@ -1,6 +1,7 @@
 import { DanceMoveResult } from '../../../types/CoveyTownSocket';
 import Interactable, { KnownInteractableTypes } from '../Interactable';
 import { NumberKeyInputs } from '../TownGameScene';
+import { DanceArea as DanceAreaModel } from '../../../types/CoveyTownSocket';
 
 /**
  * DanceArea handles all of the Phaser logic for a dance interactable
@@ -77,7 +78,7 @@ export class DanceArea extends Interactable {
     }
   }
 
-  interact(): void {
+  async interact(): Promise<void> {
     this._labelText?.setVisible(false);
     this._isInteracting = true;
   }

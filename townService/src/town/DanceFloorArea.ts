@@ -84,13 +84,13 @@ export default class DanceArea extends InteractableArea {
    * updates the round
    */
 
-  public updateRound(): void {
-    if (this._occupants.length > 0) {
-      this._duration = 20;
-      this._roundId = nanoid();
-      this._keySequence = ['one'];
-      setTimeout(this.updateRound, this.duration * 1000);
-      this._emitAreaChanged();
+  public static updateRound(area: DanceArea): void {
+    if (area._occupants.length > 0) {
+      area._duration = 20;
+      area._roundId = nanoid();
+      area._keySequence = ['one'];
+      setTimeout(DanceArea.updateRound, area.duration * 1000, area);
+      area._emitAreaChanged();
     }
   }
 
@@ -103,7 +103,7 @@ export default class DanceArea extends InteractableArea {
     super.add(player);
     // set roundID when area first becomes occupied;
     if (this._occupants.length === 1) {
-      this.updateRound();
+      DanceArea.updateRound(this);
     }
     this._points.set(player.id, 0);
     this._emitAreaChanged();
@@ -125,7 +125,7 @@ export default class DanceArea extends InteractableArea {
   /**
    * Updates the state of this PosterSessionArea, setting the poster, title, and stars properties
    *
-   * @param posterSessionArea updated model
+   * @param updatedModel updated model
    */
   public updateModel(updatedModel: DanceAreaModel) {
     this._music = updatedModel.music;

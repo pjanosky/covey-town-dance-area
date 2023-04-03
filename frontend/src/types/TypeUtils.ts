@@ -31,5 +31,5 @@ export function isPosterSessionArea(interactable: Interactable): interactable is
  * Test to see if an interactable is a dance area.
  */
 export function isDanceArea(interactable: Interactable): interactable is DanceArea {
-  return 'music' in interactable;
+  return 'keySequence' in interactable;
 }

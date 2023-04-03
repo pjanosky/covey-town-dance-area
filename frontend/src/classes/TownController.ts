@@ -18,6 +18,7 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
+  DanceArea as DanceAreaModel,
   DanceMoveResult,
   DanceRating,
 } from '../types/CoveyTownSocket';
@@ -625,6 +626,17 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
+   * Create a new poster session area, sending the request to the townService. Throws an error if the request
+   * is not successful. Does not immediately update local state about the new poster session area - it will be
+   * updated once the townService creates the area and emits an interactableUpdate
+   *
+   * @param newArea
+   */
+  async createDanceArea(newArea: DanceAreaModel) {
+    await this._townsService.createDanceArea(this.townID, this.sessionToken, newArea);
+  }
+
+  /**
    * Disconnect from the town, notifying the townService that we are leaving and returning
    * to the login page
    */
@@ -738,7 +750,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   /**
    * Retrieve the dance  area controller that corresponds to a dancaArea model, creating one if necessary
    *
-   * @param posterSessionArea
+   * @param danceArea
    * @returns
    */
   public getDanceAreaController(danceArea: DanceArea): DanceAreaController {

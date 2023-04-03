@@ -174,12 +174,6 @@
 			},
 			"NumberKey": {
 				"type": "string",
-				"enum": [
-					"one",
-					"two",
-					"three",
-					"four"
-				],
 				"description": "All the possible number keys that we will detect."
 			},
 			"KeySequence": {
