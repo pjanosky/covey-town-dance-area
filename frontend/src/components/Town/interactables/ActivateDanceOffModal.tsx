@@ -52,7 +52,7 @@ export default function BeginDanceOffModal({
       const request: DanceAreaModel = {
         id: danceAreaController.id,
         roundId,
-        music: undefined,
+        music: [],
         duration: 20,
         points: {},
         keySequence: [],

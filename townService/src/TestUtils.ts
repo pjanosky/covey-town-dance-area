@@ -209,5 +209,5 @@ export function isConversationArea(interactable: Interactable): interactable is 
 }
 
 export function isDanceArea(interactable: Interactable): interactable is DanceArea {
-  return 'keySequence' in interactable;
+  return 'music' in interactable;
 }

@@ -1,4 +1,5 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
+import { nanoid } from 'nanoid';
 import { IMusicClient } from '../lib/IMusicClient';
 import Player from '../lib/Player';
 import SpotifyClient from '../lib/SpotifyClient';
