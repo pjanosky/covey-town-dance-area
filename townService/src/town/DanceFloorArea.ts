@@ -10,6 +10,11 @@ import {
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
+/** The duration to use for tracks where the duration can not be found in milliseconds */
+const DEFAULT_TRACK_DURATION = 180000;
+/** The time to wait in between songs in milliseconds */
+const SONG_SPACING = 3000;
+
 export default class DanceArea extends InteractableArea {
   private _music: string[];
 
@@ -23,7 +28,7 @@ export default class DanceArea extends InteractableArea {
 
   private _trackTimeout: NodeJS.Timeout | undefined;
 
-  private _musicClient: IMusicClient;
+  private _musicClient: IMusicClient = new SpotifyClient();
 
   private _playing = false;
 
@@ -65,7 +70,6 @@ export default class DanceArea extends InteractableArea {
     this._keySequence = keySequence;
     this._duration = duration;
     this._points = new Map(Object.entries(points));
-    this._musicClient = new SpotifyClient();
   }
 
   /**
@@ -164,7 +168,6 @@ export default class DanceArea extends InteractableArea {
         music: [],
         roundId: '',
         keySequence: [],
-        // TODO: set initial values.... or make them undefined?
         duration: 0,
         points: {},
       },
@@ -178,7 +181,7 @@ export default class DanceArea extends InteractableArea {
    * Stops when the queue is empty. This method has no effect is music is
    * already playing.
    */
-  async playSongs() {
+  public async playSongs() {
     if (this._playing) {
       return;
     }
@@ -186,13 +189,10 @@ export default class DanceArea extends InteractableArea {
       this._playing = false;
       return;
     }
-
     this._playing = true;
-    const spotifyRegex =
-      '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(track)(?::|/)((?:[0-9a-zA-Z]){22})/';
-    if (this.music[0].match(spotifyRegex)) {
+    const trackData = await this._musicClient?.getTrackData(this.music[0]);
+    if (!trackData || trackData.valid) {
       // set a timer to go to the next song when this one finishes
-      const trackData = await this._musicClient.getTrackData(this.music[0]);
       clearTimeout(this._trackTimeout);
       this._trackTimeout = setTimeout(() => {
         if (this._music.length > 0) {
@@ -200,7 +200,7 @@ export default class DanceArea extends InteractableArea {
           this._emitAreaChanged();
         }
         this.playSongs();
-      }, trackData?.duration ?? 180000 + 5000);
+      }, trackData?.duration ?? DEFAULT_TRACK_DURATION + SONG_SPACING);
     } else {
       // this song isn't valid, remove it from the queue
       this._music = this._music.splice(1);

@@ -29,6 +29,7 @@ describe('DanceArea', () => {
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
+    jest.spyOn(DanceArea.prototype, 'playSongs').mockImplementation(async () => {});
   });
 
   describe('Getters', () => {
