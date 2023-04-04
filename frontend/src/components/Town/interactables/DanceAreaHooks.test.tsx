@@ -101,6 +101,18 @@ describe('DanceAreaController Hooks', () => {
     renderData = render(RenderDanceAreaHooks(danceController, townController));
   });
 
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   /**
    * Retrieve the listener passed to "addListener" for a given eventName
    * @throws Error if the addListener method was not invoked exactly once for the given eventName
@@ -141,20 +153,20 @@ describe('DanceAreaController Hooks', () => {
         danceController.emit('musicChanged', []);
       });
       act(() => {
-        danceController.emit('musicChanged', ['All Too Well (TV) (10 minute version)']);
+        danceController.emit('musicChanged', [{ url: 'All Too Well (TV) (10 minute version)' }]);
       });
       getSingleListenerAdded('musicChanged');
     });
     it('useMusic unregisters exactly the same musicChanged listener on unmounting', () => {
       act(() => {
-        danceController.emit('musicChanged', ['some song here']);
+        danceController.emit('musicChanged', [{ url: 'some song here' }]);
       });
       const listenerAdded = getSingleListenerAdded('musicChanged');
       cleanup();
       expect(getSingleListenerRemoved('musicChanged')).toBe(listenerAdded);
     });
     it('useMusic refreshes the view when the music changes', async () => {
-      const newMusic = ['twinkle twinkle little star'];
+      const newMusic = [{ url: 'twinkle twinkle little star' }];
       act(() => {
         danceController.emit('musicChanged', newMusic);
       });
@@ -318,25 +330,25 @@ describe('DanceAreaController Hooks', () => {
         danceController.emit('currentTrackChanged', undefined);
       });
       act(() => {
-        danceController.emit('currentTrackChanged', 'song1');
+        danceController.emit('currentTrackChanged', { url: 'song1' });
       });
       act(() => {
-        danceController.emit('currentTrackChanged', 'song2');
+        danceController.emit('currentTrackChanged', { url: 'song2' });
       });
       getSingleListenerAdded('currentTrackChanged');
     });
     it('useCurrentTrack unregisters exactly the same currentTrackChanged listener on unmounting', () => {
       act(() => {
-        danceController.emit('currentTrackChanged', 'song1');
+        danceController.emit('currentTrackChanged', { url: 'song1' });
       });
       const listenerAdded = getSingleListenerAdded('currentTrackChanged');
       cleanup();
       expect(getSingleListenerRemoved('currentTrackChanged')).toBe(listenerAdded);
     });
     it('useCurrentTrack refreshes the view when the first track in the queue changes', async () => {
-      const newMusic = ['song1', 'song2', 'song3'];
+      const newMusic = [{ url: 'song1' }, { url: 'song2' }, { url: 'song3' }];
       act(() => {
-        danceController.music = ['song1', 'song2', 'song3'];
+        danceController.music = newMusic;
       });
       expect(await renderData.findByText(`currentTrack-${newMusic[0]}`)).toBeVisible();
 

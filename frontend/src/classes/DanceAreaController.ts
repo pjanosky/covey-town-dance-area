@@ -1,7 +1,13 @@
 import { EventEmitter } from 'events';
 import { useEffect, useState } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { DanceMoveResult, DanceRating, KeySequence, NumberKey } from '../types/CoveyTownSocket';
+import {
+  DanceMoveResult,
+  DanceRating,
+  KeySequence,
+  NumberKey,
+  TrackInfo,
+} from '../types/CoveyTownSocket';
 import { DanceArea as DanceAreaModel } from '../types/CoveyTownSocket';
 
 /**
@@ -12,14 +18,14 @@ export type DanceAreaEvents = {
    * A musicChanged event indicates that a new song is playing in the DanceArea.
    * @param music the title of the new song
    */
-  musicChanged: (music: string[]) => void;
+  musicChanged: (music: TrackInfo[]) => void;
 
   /**
    * A currentTrackChanged indicates that the first track in the music queue has
    * changed.
    * @param music the first track in the queue
    */
-  currentTrackChanged: (track: string | undefined) => void;
+  currentTrackChanged: (track: TrackInfo | undefined) => void;
 
   /**
    * A roundChanged event indicates that a new round has begun, with a new
@@ -103,7 +109,7 @@ export type KeyResult = boolean | undefined;
 export default class DanceAreaController extends (EventEmitter as new () => TypedEventEmitter<DanceAreaEvents>) {
   private _id: string;
 
-  private _music: string[];
+  private _music: TrackInfo[];
 
   private _roundId: string | undefined;
 
@@ -151,14 +157,14 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * The music of the dance area, or undefined when the first player joins the area.
    */
-  public get music(): string[] {
+  public get music(): TrackInfo[] {
     return this._music;
   }
 
   /**
    * If the music changes, set it to the new music and emit an update.
    */
-  public set music(music: string[]) {
+  public set music(music: TrackInfo[]) {
     const equal =
       this._music.length === music.length && this._music.every((track, i) => track === music[i]);
     if (!equal) {
@@ -315,7 +321,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * Gets the first track in the queue if it's empty, otherwise returns undefined
    */
-  public get currentTrack(): string | undefined {
+  public get currentTrack(): TrackInfo | undefined {
     if (this._music.length > 0) {
       return this._music[0];
     }
@@ -343,7 +349,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
  * @param controller the given controller
  * @returns a string representing the music
  */
-export function useMusic(controller: DanceAreaController): string[] {
+export function useMusic(controller: DanceAreaController): TrackInfo[] {
   const [music, setMusic] = useState(controller.music);
   useEffect(() => {
     controller.addListener('musicChanged', setMusic);
@@ -360,7 +366,7 @@ export function useMusic(controller: DanceAreaController): string[] {
  * @param controller the given controller
  * @returns a string representing the music
  */
-export function useCurrentTrack(controller: DanceAreaController): string | undefined {
+export function useCurrentTrack(controller: DanceAreaController): TrackInfo | undefined {
   const [track, setTrack] = useState(controller.currentTrack);
   useEffect(() => {
     controller.addListener('currentTrackChanged', setTrack);
