@@ -5,6 +5,7 @@ import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
 import { DanceArea as DanceAreaModel, KeySequence, TownEmitter } from '../types/CoveyTownSocket';
 import DanceArea from './DanceFloorArea';
+import SpotifyClient from '../lib/SpotifyClient';
 
 describe('DanceArea', () => {
   const testAreaBox = { x: 100, y: 100, width: 100, height: 100 };
@@ -17,6 +18,7 @@ describe('DanceArea', () => {
   let keySequence: KeySequence;
   const duration = 20;
   let points: Record<string, number>;
+  let playSongsSpy: jest.SpyInstance<Promise<void>, []>;
 
   beforeEach(() => {
     mockClear(townEmitter);
@@ -25,11 +27,11 @@ describe('DanceArea', () => {
       testAreaBox,
       townEmitter,
     );
-    const playSongsSpy = jest.spyOn(testArea, 'playSongs');
-    playSongsSpy.mockImplementation(jest.fn(async () => {}));
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
+    jest.useFakeTimers();
+    playSongsSpy = jest.spyOn(DanceArea.prototype, 'playSongs').mockImplementation(async () => {});
     keySequence = testArea.keySequence;
   });
   afterEach(() => {
@@ -168,6 +170,35 @@ describe('DanceArea', () => {
       expect(val.duration).toEqual(0);
       expect(val.points).toEqual(new Map());
       expect(val.occupantsByID).toEqual([]);
+    });
+  });
+  describe('playSongs', () => {
+    it('play songs changes song after the duration of the song', async () => {
+      const newMusic = ['song1', 'song2'];
+      const model: DanceAreaModel = {
+        id: testArea.id,
+        music: newMusic,
+        roundId: undefined,
+        points: {},
+        keySequence: [],
+        duration: 0,
+      };
+      testArea.updateModel(model);
+
+      playSongsSpy.mockRestore();
+      const songDuration = 10000;
+      jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async _ => ({
+        valid: true,
+        duration: songDuration,
+      }));
+
+      await testArea.playSongs();
+      expect(testArea.music).toEqual(newMusic);
+      jest.advanceTimersByTime(songDuration + 5000);
+      expect(testArea.music).toEqual(['song2']);
+      jest.advanceTimersByTime(songDuration * 2);
+
+      playSongsSpy.mockImplementation(async () => {});
     });
   });
 });

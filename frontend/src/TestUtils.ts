@@ -148,6 +148,11 @@ export function mockTownController({
     Object.defineProperty(mockedController, 'danceAreas', { value: danceAreas });
     mockedController.emitDanceMove.mockImplementation(() => {});
     mockedController.emitDanceRating.mockImplementation(() => {});
+    mockedController.queueDanceAreaTrack.mockImplementation(
+      async (danceAreaController: DanceAreaController, trackUrl: string) => {
+        return danceAreaController.music.concat(trackUrl);
+      },
+    );
   }
   if (ourPlayer) {
     Object.defineProperty(mockedController, 'ourPlayer', { value: ourPlayer });
