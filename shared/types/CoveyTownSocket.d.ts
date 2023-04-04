@@ -122,7 +122,7 @@ export interface PosterSessionArea {
 }
 
 /** All the possible number keys that we will detect. */
-export type NumberKey =  string;
+export type NumberKey =  'one' | 'two' | 'three' | 'four';
 
 /**
  * Represents a sequence of keys that the user needs to press to

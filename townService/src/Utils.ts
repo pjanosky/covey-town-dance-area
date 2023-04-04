@@ -1,3 +1,4 @@
+import { KeySequence, NumberKey } from './types/CoveyTownSocket';
 /**
  * This function exists solely to help satisfy the linter + typechecker when it looks over the
  * stubbed (not yet implemented by you) functions. Remove calls to it as you go.
@@ -15,19 +16,13 @@ export function logError(err: any): void {
   console.trace(err);
 }
 
-enum KeyValue {
-  ONE = 'one',
-  TWO = 'two',
-  THREE = 'three',
-  FOUR = 'four',
+const KEYS: NumberKey[] = ['one', 'two', 'three', 'four'];
+
+function randomKey(): NumberKey {
+  const random = Math.floor(Math.random() * KEYS.length);
+  return KEYS[random];
 }
 
-function randomKey(): string {
-  const values = Object.values(KeyValue);
-  const random = Math.floor(Math.random() * values.length);
-  return values[random];
-}
-
-export function generateKeySequence(): string[] {
+export function generateKeySequence(): KeySequence {
   return Array(6).fill(0).map(randomKey);
 }
