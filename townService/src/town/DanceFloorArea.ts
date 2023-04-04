@@ -199,7 +199,7 @@ export default class DanceArea extends InteractableArea {
    * Stops when the queue is empty. This method has no effect is music is
    * already playing.
    */
-  public async _playSongs() {
+  private async _playSongs() {
     if (this.music.length === 0) {
       this._playing = false;
       return;
