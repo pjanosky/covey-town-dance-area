@@ -198,7 +198,6 @@ describe('DanceArea', () => {
       await expect(testArea.queueTrack('song1')).resolves.toEqual(true);
       await expect(testArea.queueTrack('song2')).resolves.toEqual(true);
 
-      await testArea._playSongs();
       expect(testArea.music).toEqual([
         {
           url: 'song1',
