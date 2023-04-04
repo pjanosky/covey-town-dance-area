@@ -89,6 +89,8 @@ export default class DanceArea extends InteractableArea {
       this._keySequence = [];
       this._duration = 0;
       this._points.clear();
+      clearTimeout(this._trackTimeout);
+      this._playing = false;
     }
     this._emitAreaChanged();
   }
@@ -138,7 +140,10 @@ export default class DanceArea extends InteractableArea {
     const trackInfo = await this._musicClient?.getTrackData(url);
     if (trackInfo) {
       this._music.push(trackInfo);
-      this.playSongs();
+      if (!this._playing) {
+        this._playSongs();
+      }
+      this._emitAreaChanged();
       return true;
     }
     return false;
@@ -194,10 +199,7 @@ export default class DanceArea extends InteractableArea {
    * Stops when the queue is empty. This method has no effect is music is
    * already playing.
    */
-  public async playSongs() {
-    if (this._playing) {
-      return;
-    }
+  public async _playSongs() {
     if (this.music.length === 0) {
       this._playing = false;
       return;
@@ -211,7 +213,7 @@ export default class DanceArea extends InteractableArea {
         this._music = this._music.splice(1);
         this._emitAreaChanged();
       }
-      this.playSongs();
+      this._playSongs();
     }, firstTrack.duration ?? DEFAULT_TRACK_DURATION + SONG_SPACING);
   }
 }

@@ -7,11 +7,19 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, Input, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
+<<<<<<< HEAD
 import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
 import { Spotify } from 'react-spotify-embed';
 import SelectMusicModal from './SelectMusicModal';
+=======
+import DanceAreaController, {
+  useCurrentTrack,
+  useMusic,
+} from '../../../classes/DanceAreaController';
+import { useToast } from '@chakra-ui/react';
+>>>>>>> 1e9cc2e (fix bug with queue timeout)
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -47,13 +55,18 @@ export function DanceLeaderboard(): JSX.Element {
   );
 }
 
+<<<<<<< HEAD
 export function DanceMusicPlayer({
+=======
+function DanceMusicPlayer({
+>>>>>>> 1e9cc2e (fix bug with queue timeout)
   danceController,
   townController,
 }: {
   danceController: DanceAreaController;
   townController: TownController;
 }): JSX.Element {
+<<<<<<< HEAD
   const [selectIsOpen, setSelectIsOpen] = useState(danceController.music === undefined);
   const music = useCurrentTrack(danceController);
 
@@ -74,6 +87,49 @@ export function DanceMusicPlayer({
       <Spotify link={music} />
       <Button>Add a song to queue! onClick={SelectMusicModal}</Button>
     </>
+=======
+  const overlayComponent = useOverlayComponentStyle();
+  const music = useMusic(danceController);
+  const currentTrack = useCurrentTrack(danceController);
+  const toast = useToast();
+  const [input, setInput] = useState('');
+
+  const onClick = async () => {
+    const success = await townController.queueDanceAreaTrack(danceController, input);
+    if (!success) {
+      toast({
+        title: 'Failed to queue track',
+        description: 'Make sure you are entering a valid spotify track URL',
+        status: 'error',
+      });
+    } else {
+      toast({
+        title: 'Added track to queue',
+        status: 'success',
+      });
+    }
+  };
+
+  return (
+    <Box className={overlayComponent}>
+      <div>
+        <Input onChange={e => setInput(e.target.value)}></Input>
+        <Button onClick={onClick}>Add Track</Button>
+        <span>
+          Current Track: {currentTrack?.url}, {currentTrack?.title}, {currentTrack?.artist},
+          {currentTrack?.album}
+        </span>
+        <span> Queue: </span>
+        {music.map((track, i) => {
+          return (
+            <span key={`track-${i}`}>
+              {track?.url}, {track?.title}, {track?.artist}, {track?.album}
+            </span>
+          );
+        })}
+      </div>
+    </Box>
+>>>>>>> 1e9cc2e (fix bug with queue timeout)
   );
 }
 
