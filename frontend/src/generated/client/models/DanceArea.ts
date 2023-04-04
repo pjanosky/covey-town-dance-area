@@ -4,6 +4,7 @@
 
 import type { KeySequence } from './KeySequence';
 import type { Record_string_number_ } from './Record_string_number_';
+import type { TrackInfo } from './TrackInfo';
 
 /**
  * DanceArea is the data model used to communicate the state of a DanceInteractableArea.
@@ -14,7 +15,7 @@ export type DanceArea = {
      * The url or song id of the current song. There will be no music playing
      * when the player joins the area (which is why music can be undefined).
      */
-    music: Array<string>;
+    music: Array<TrackInfo>;
     /**
      * An ID representing the current round. This will be undefined if there
      * is no active round.

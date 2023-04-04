@@ -36,7 +36,7 @@ describe('Test Spotify Client', () => {
     );
     expect(trackData).toBeUndefined();
   });
-  it('getTrackData return invalid track info for an invalid track', async () => {
+  it('getTrackData return undefined for an invalid track', async () => {
     process.env.SPOTIFY_CLIENT_ID = 'test';
     process.env.SPOTIFY_CLIENT_SECRET = 'test';
     const client = new SpotifyClient();
@@ -46,8 +46,7 @@ describe('Test Spotify Client', () => {
     }));
     jest.spyOn(axios, 'get').mockImplementation(async (url, config) => ({ duration: 3 }));
     const trackData = await client.getTrackData('not a valid id');
-    expect(trackData).toBeDefined();
-    expect(trackData?.valid).toEqual(false);
+    expect(trackData).toBeUndefined();
   });
   it('getTrackData return valid track info for an valid track', async () => {
     process.env.SPOTIFY_CLIENT_ID = 'test';
@@ -57,11 +56,18 @@ describe('Test Spotify Client', () => {
       status: 200,
       data: { access_token: 'token' },
     }));
-    jest.spyOn(axios, 'get').mockImplementation(async (url, config) => ({ duration: 3 }));
+    jest.spyOn(axios, 'get').mockImplementation(async (url, config) => ({
+      status: 200,
+      data: {
+        duration_ms: 30,
+        album: { name: 'album name' },
+        name: 'track name',
+        artists: { name: 'artist name' },
+      },
+    }));
     const trackData = await client.getTrackData(
       'https://open.spotify.com/track/0lsw4q8Jei7gEoV7kFe3DS',
     );
     expect(trackData).toBeDefined();
-    expect(trackData?.valid);
   });
 });
