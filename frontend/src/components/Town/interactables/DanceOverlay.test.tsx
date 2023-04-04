@@ -76,6 +76,18 @@ describe('Dance Overlay Tests', () => {
     danceControllerDanceMoveSpy = jest.spyOn(townController, 'emitDanceMove');
   });
 
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   describe('DanceKeyViewer', () => {
     it('The waiting message is shown when there is no active round', async () => {
       danceController.roundId = undefined;

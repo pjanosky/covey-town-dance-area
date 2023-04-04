@@ -7,6 +7,7 @@ import {
   TownEmitter,
   DanceArea as DanceAreaModel,
   KeySequence,
+  TrackInfo,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
@@ -16,7 +17,7 @@ const DEFAULT_TRACK_DURATION = 180000;
 const SONG_SPACING = 3000;
 
 export default class DanceArea extends InteractableArea {
-  private _music: string[];
+  private _music: TrackInfo[];
 
   private _roundId: string | undefined;
 
@@ -60,12 +61,12 @@ export default class DanceArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { id, music, roundId, keySequence, duration, points }: DanceAreaModel,
+    { id, roundId, keySequence, duration, points }: DanceAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
     super(id, coordinates, townEmitter);
-    this._music = music;
+    this._music = [];
     this._roundId = roundId;
     this._keySequence = keySequence;
     this._duration = duration;
@@ -122,13 +123,25 @@ export default class DanceArea extends InteractableArea {
    * @param posterSessionArea updated model
    */
   public updateModel(updatedModel: DanceAreaModel) {
-    this._music = updatedModel.music;
     this._roundId = updatedModel.roundId;
     this._keySequence = updatedModel.keySequence;
     this._duration = updatedModel.duration;
     this._points = new Map(Object.entries(updatedModel.points));
-    this.playSongs();
     this._emitAreaChanged();
+  }
+
+  /**
+   * Adds a track the queue and fetches track information on the song.
+   * @returns whether or not this track was valid and added to the queue.
+   */
+  public async queueTrack(url: string): Promise<boolean> {
+    const trackInfo = await this._musicClient?.getTrackData(url);
+    if (trackInfo) {
+      this._music.push(trackInfo);
+      this.playSongs();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -189,23 +202,16 @@ export default class DanceArea extends InteractableArea {
       this._playing = false;
       return;
     }
+
     this._playing = true;
-    const trackData = await this._musicClient?.getTrackData(this.music[0]);
-    if (!trackData || trackData.valid) {
-      // set a timer to go to the next song when this one finishes
-      clearTimeout(this._trackTimeout);
-      this._trackTimeout = setTimeout(() => {
-        if (this._music.length > 0) {
-          this._music = this._music.splice(1);
-          this._emitAreaChanged();
-        }
-        this.playSongs();
-      }, trackData?.duration ?? DEFAULT_TRACK_DURATION + SONG_SPACING);
-    } else {
-      // this song isn't valid, remove it from the queue
-      this._music = this._music.splice(1);
-      this._emitAreaChanged();
+    const firstTrack = this.music[0];
+    clearTimeout(this._trackTimeout);
+    this._trackTimeout = setTimeout(() => {
+      if (this._music.length > 0) {
+        this._music = this._music.splice(1);
+        this._emitAreaChanged();
+      }
       this.playSongs();
-    }
+    }, firstTrack.duration ?? DEFAULT_TRACK_DURATION + SONG_SPACING);
   }
 }

@@ -94,6 +94,26 @@ export type DanceRating = {
   rating: Rating;
 };
 
+/**
+ * A data type representing information about a track.
+ */
+export type TrackInfo = {
+  /** The url of the track */
+  url: string;
+
+  /** The title of the song */
+  title?: string;
+
+  /** The album it is on */
+  album?: string;
+
+  /** The artist the track belongs to */
+  artist?: string;
+
+  /** The duration of the track in milliseconds. */
+  duration?: number;
+};
+
 export interface ConversationArea {
   id: string;
   topic?: string;
@@ -138,7 +158,7 @@ export interface DanceArea {
   /** The url or song id of the current song. There will be no music playing
    * when the player joins the area (which is why music can be undefined).
    */
-  music: string[];
+  music: TrackInfo[];
   /** An ID representing the current round. This will be undefined if there
    * is no active round.
    */
