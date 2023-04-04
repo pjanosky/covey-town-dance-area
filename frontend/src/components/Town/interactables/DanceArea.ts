@@ -77,7 +77,7 @@ export class DanceArea extends Interactable {
     }
   }
 
-  async interact(): Promise<void> {
+  interact(): void {
     this._labelText?.setVisible(false);
     this._isInteracting = true;
   }
