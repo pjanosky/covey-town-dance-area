@@ -10,6 +10,7 @@ import DanceAreaController, {
   useKeyResults,
   useMusic,
   useActiveRound,
+  useCurrentTrack,
 } from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
@@ -40,6 +41,28 @@ function RenderDanceAreaHooks(
     <ChakraProvider>
       <TownControllerContext.Provider value={townController}>
         <HookComponents danceController={danceController}></HookComponents>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
+function CurrentTrackHookComponents({ danceController }: { danceController: DanceAreaController }) {
+  const currentTrack = useCurrentTrack(danceController);
+  return (
+    <div>
+      <span> {`currentTrack-${currentTrack}`}</span>
+    </div>
+  );
+}
+
+function RenderCurrentTrackHooks(
+  danceController: DanceAreaController,
+  townController: TownController,
+): JSX.Element {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <CurrentTrackHookComponents danceController={danceController}></CurrentTrackHookComponents>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -269,6 +292,58 @@ describe('DanceAreaController Hooks', () => {
         timeout: waitDuration + 1000,
       });
       expect(await renderData.findByText(`activeRound-${undefined}`)).toBeVisible();
+    });
+  });
+
+  describe('useCurrentTrack', () => {
+    beforeEach(() => {
+      danceController = new DanceAreaController({
+        id: nanoid(),
+        music: [],
+        roundId: nanoid(),
+        duration: 0,
+        keySequence: [],
+        points: {},
+      });
+      townController = mockTownController({ danceAreas: [danceController] });
+
+      addListenerSpy = jest.spyOn(danceController, 'addListener');
+      removeListenerSpy = jest.spyOn(danceController, 'removeListener');
+
+      renderData = render(RenderCurrentTrackHooks(danceController, townController));
+    });
+
+    it('useCurrentTrack registers exactly one currentTrackChanged listener', () => {
+      act(() => {
+        danceController.emit('currentTrackChanged', undefined);
+      });
+      act(() => {
+        danceController.emit('currentTrackChanged', 'song1');
+      });
+      act(() => {
+        danceController.emit('currentTrackChanged', 'song2');
+      });
+      getSingleListenerAdded('currentTrackChanged');
+    });
+    it('useCurrentTrack unregisters exactly the same currentTrackChanged listener on unmounting', () => {
+      act(() => {
+        danceController.emit('currentTrackChanged', 'song1');
+      });
+      const listenerAdded = getSingleListenerAdded('currentTrackChanged');
+      cleanup();
+      expect(getSingleListenerRemoved('currentTrackChanged')).toBe(listenerAdded);
+    });
+    it('useCurrentTrack refreshes the view when the first track in the queue changes', async () => {
+      const newMusic = ['song1', 'song2', 'song3'];
+      act(() => {
+        danceController.music = ['song1', 'song2', 'song3'];
+      });
+      expect(await renderData.findByText(`currentTrack-${newMusic[0]}`)).toBeVisible();
+
+      act(() => {
+        danceController.music = [];
+      });
+      expect(await renderData.findByText(`currentTrack-${undefined}`)).toBeVisible();
     });
   });
 });
