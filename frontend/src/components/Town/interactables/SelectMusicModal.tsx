@@ -47,7 +47,18 @@ export default function SelectMusicModal({
   const addToQueue = useCallback(async () => {
     if (music && townController) {
       try {
-        await townController.queueDanceAreaTrack(danceController, music);
+        const isQueued = await townController.queueDanceAreaTrack(danceController, music);
+        if (isQueued) {
+          toast({
+            title: 'Song added to queue!',
+            status: 'success',
+          });
+        } else {
+          toast({
+            title: 'Unable to add song to queue',
+            status: 'error',
+          });
+        }
         townController.unPause();
       } catch (err) {
         if (err instanceof Error) {
@@ -87,8 +98,8 @@ export default function SelectMusicModal({
             <FormControl>
               <FormLabel htmlFor='music'>Spotify URL</FormLabel>
               <Input
-                id='spotify'
-                name='spotify'
+                id='music'
+                name='music'
                 value={music}
                 onChange={e => setMusic(e.target.value)}
               />
@@ -96,7 +107,7 @@ export default function SelectMusicModal({
           </ModalBody>
           <ModalFooter>
             <Button colorScheme='blue' mr={3} onClick={addToQueue}>
-              Set music
+              Add to queue
             </Button>
             <Button onClick={closeModal}>Cancel</Button>
           </ModalFooter>

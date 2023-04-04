@@ -374,6 +374,7 @@ export function useCurrentTrack(controller: DanceAreaController): TrackInfo | un
       controller.removeListener('currentTrackChanged', setTrack);
     };
   }, [controller]);
+  console.log(track);
   return track;
 }
 
