@@ -626,8 +626,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   }
 
   /**
-   * Create a new poster session area, sending the request to the townService. Throws an error if the request
-   * is not successful. Does not immediately update local state about the new poster session area - it will be
+   * Create a new dance area, sending the request to the townService. Throws an error if the request
+   * is not successful. Does not immediately update local state about the new dance area - it will be
    * updated once the townService creates the area and emits an interactableUpdate
    *
    * @param newArea

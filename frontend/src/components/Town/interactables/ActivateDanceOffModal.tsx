@@ -88,7 +88,7 @@ export default function BeginDanceOffModal({
       }}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Begin Dance off in {danceAreaController?.id} </ModalHeader>
+        <ModalHeader>Begin Dance off in {danceAreaController?.id}? </ModalHeader>
         <ModalCloseButton />
         <form
           onSubmit={ev => {
