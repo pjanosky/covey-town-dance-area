@@ -28,6 +28,7 @@ export default class SpotifyClient implements IMusicClient {
     if (!this._token || !this._expiration || now.getTime() > this._expiration.getTime()) {
       await this._requestNewToken();
     }
+    console.log(`🟩 token: ${this._token}`);
     if (!this._token) {
       return undefined;
     }
