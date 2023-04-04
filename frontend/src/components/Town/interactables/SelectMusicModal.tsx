@@ -27,48 +27,61 @@ export default function SelectMusicModal({
   danceController: DanceAreaController;
   townController: TownController;
 }): JSX.Element {
-  const coveyTownController = townController;
-  const danceAreaController = danceController;
-
   const [music, setMusic] = useState<string>('');
-  const spotifyRegex =
-    '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(album|track)(?::|/)((?:[0-9a-zA-Z]){22})/';
 
   useEffect(() => {
     if (isOpen) {
-      coveyTownController.pause();
+      townController.pause();
     } else {
-      coveyTownController.unPause();
+      townController.unPause();
     }
-  }, [coveyTownController, isOpen]);
+  }, [townController, isOpen]);
 
   const closeModal = useCallback(() => {
-    coveyTownController.unPause();
+    townController.unPause();
     close();
-  }, [coveyTownController, close]);
+  }, [townController, close]);
 
   const toast = useToast();
+
+  const addToQueue = useCallback(async () => {
+    if (music && townController) {
+      try {
+        await townController.queueDanceAreaTrack(danceController, music);
+        townController.unPause();
+      } catch (err) {
+        if (err instanceof Error) {
+          toast({
+            title: 'Unable to add song to queue',
+            description: err.toString(),
+            status: 'error',
+          });
+        } else {
+          console.trace(err);
+          toast({
+            title: 'Unexpected Error',
+            status: 'error',
+          });
+        }
+      }
+    }
+  }, [music, townController, danceController, toast]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={() => {
         closeModal();
-        coveyTownController.unPause();
+        townController.unPause();
       }}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Enter a Spotify link to queue here!</ModalHeader>
         <ModalCloseButton />
         <form
-          onKeyDown={m => {
-            if (m.key === 'Enter') {
-              if (m.currentTarget.value.match(spotifyRegex)) {
-                coveyTownController.queueDanceAreaTrack(danceAreaController, m.currentTarget.value);
-              } else {
-                m.currentTarget.value = '';
-              }
-            }
+          onSubmit={link => {
+            link.preventDefault();
+            addToQueue();
           }}>
           <ModalBody pb={6}>
             <FormControl>
@@ -82,7 +95,7 @@ export default function SelectMusicModal({
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme='blue' mr={3}>
+            <Button colorScheme='blue' mr={3} onClick={addToQueue}>
               Set music
             </Button>
             <Button onClick={closeModal}>Cancel</Button>
