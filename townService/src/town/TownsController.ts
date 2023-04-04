@@ -227,7 +227,8 @@ export class TownsController extends Controller {
       throw new InvalidParametersError('Invalid session ID');
     }
     // add viewing area to the town, throw error if it fails
-    if (!curTown.addDanceArea(requestBody)) {
+    const success = await curTown.addDanceArea(requestBody);
+    if (!success) {
       throw new InvalidParametersError('Invalid dance area');
     }
   }
@@ -327,7 +328,7 @@ export class TownsController extends Controller {
     @Path() danceAreaId: string,
     @Body() requestBody: { trackUrl: string },
     @Header('X-Session-Token') sessionToken: string,
-  ): Promise<void> {
+  ): Promise<string[]> {
     const curTown = this._townsStore.getTownByID(townID);
     if (!curTown) {
       throw new InvalidParametersError('Invalid town ID');
@@ -350,6 +351,7 @@ export class TownsController extends Controller {
       points: danceArea.points,
     };
     (danceArea as unknown as DanceFloorArea).updateModel(updatedDanceArea);
+    return newMusic;
   }
 
   /**

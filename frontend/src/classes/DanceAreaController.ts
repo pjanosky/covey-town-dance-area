@@ -15,6 +15,13 @@ export type DanceAreaEvents = {
   musicChanged: (music: string[]) => void;
 
   /**
+   * A currentTrackChanged indicates that the first track in the music queue has
+   * changed.
+   * @param music the first track in the queue
+   */
+  currentTrackChanged: (track: string | undefined) => void;
+
+  /**
    * A roundChanged event indicates that a new round has begun, with a new
    * unique ID.
    *
@@ -155,6 +162,13 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     const equal =
       this._music.length === music.length && this._music.every((track, i) => track === music[i]);
     if (!equal) {
+      const currentTrack = this._music.length > 0 ? this._music[0] : undefined;
+      const newCurrentTrack = music.length > 0 ? music[0] : undefined;
+      if (currentTrack !== newCurrentTrack) {
+        this._music = music;
+        this.emit('currentTrackChanged', newCurrentTrack);
+      }
+
       this._music = music;
       this.emit('musicChanged', music);
     }
@@ -301,7 +315,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   /**
    * Gets the first track in the queue if it's empty, otherwise returns undefined
    */
-  public getCurrentTrack(): string | undefined {
+  public get currentTrack(): string | undefined {
     if (this._music.length > 0) {
       return this._music[0];
     }
@@ -347,22 +361,13 @@ export function useMusic(controller: DanceAreaController): string[] {
  * @returns a string representing the music
  */
 export function useCurrentTrack(controller: DanceAreaController): string | undefined {
-  const [track, setTrack] = useState(controller.getCurrentTrack());
+  const [track, setTrack] = useState(controller.currentTrack);
   useEffect(() => {
-    const onChange = (newMusic: string[]) => {
-      let newTrack: string | undefined = undefined;
-      if (newMusic.length > 0) {
-        newTrack = newMusic[0];
-      }
-      if (newTrack != track) {
-        setTrack(newTrack);
-      }
-    };
-    controller.addListener('musicChanged', onChange);
+    controller.addListener('currentTrackChanged', setTrack);
     return () => {
-      controller.removeListener('musicChanged', onChange);
+      controller.removeListener('currentTrackChanged', setTrack);
     };
-  }, [controller, track]);
+  }, [controller]);
   return track;
 }
 
