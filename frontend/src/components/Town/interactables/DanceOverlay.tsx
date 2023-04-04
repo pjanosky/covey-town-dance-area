@@ -9,17 +9,11 @@ import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Button, Grid, Input, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-<<<<<<< HEAD
-import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
-import { Spotify } from 'react-spotify-embed';
-import SelectMusicModal from './SelectMusicModal';
-=======
 import DanceAreaController, {
   useCurrentTrack,
   useMusic,
 } from '../../../classes/DanceAreaController';
 import { useToast } from '@chakra-ui/react';
->>>>>>> 1e9cc2e (fix bug with queue timeout)
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -55,39 +49,13 @@ export function DanceLeaderboard(): JSX.Element {
   );
 }
 
-<<<<<<< HEAD
-export function DanceMusicPlayer({
-=======
 function DanceMusicPlayer({
->>>>>>> 1e9cc2e (fix bug with queue timeout)
   danceController,
   townController,
 }: {
   danceController: DanceAreaController;
   townController: TownController;
 }): JSX.Element {
-<<<<<<< HEAD
-  const [selectIsOpen, setSelectIsOpen] = useState(danceController.music === undefined);
-  const music = useCurrentTrack(danceController);
-
-  if (!music) {
-    return (
-      <SelectMusicModal
-        isOpen={selectIsOpen}
-        close={() => {
-          setSelectIsOpen(false);
-        }}
-        danceController={danceController}
-        townController={townController}
-      />
-    );
-  }
-  return (
-    <>
-      <Spotify link={music} />
-      <Button>Add a song to queue! onClick={SelectMusicModal}</Button>
-    </>
-=======
   const overlayComponent = useOverlayComponentStyle();
   const music = useMusic(danceController);
   const currentTrack = useCurrentTrack(danceController);
@@ -129,7 +97,6 @@ function DanceMusicPlayer({
         })}
       </div>
     </Box>
->>>>>>> 1e9cc2e (fix bug with queue timeout)
   );
 }
 
