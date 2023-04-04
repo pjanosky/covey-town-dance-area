@@ -184,8 +184,8 @@ describe('DanceArea', () => {
       expect(val.occupantsByID).toEqual([]);
     });
   });
-  describe('playSongs', () => {
-    it('play songs changes song after the duration of the song', async () => {
+  describe('queueTrack', () => {
+    it('adds track to queue and changes song after the duration of the song', async () => {
       const songDuration = 10000;
       jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async url => ({
         url,
