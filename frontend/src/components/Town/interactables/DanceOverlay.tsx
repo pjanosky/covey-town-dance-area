@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TownController, {
   useDanceAreaController,
   useInteractable,
@@ -7,10 +7,11 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Grid, Input, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
 import { Spotify } from 'react-spotify-embed';
+import SelectMusicModal from './SelectMusicModal';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -53,50 +54,27 @@ export function DanceMusicPlayer({
   danceController: DanceAreaController;
   townController: TownController;
 }): JSX.Element {
-  const overlayComponent = useOverlayComponentStyle();
+  const [selectIsOpen, setSelectIsOpen] = useState(danceController.music === undefined);
   const music = useCurrentTrack(danceController);
-  const spotifyRegex =
-    '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(album|track)(?::|/)((?:[0-9a-zA-Z]){22})/';
-  if (music) {
+
+  if (!music) {
     return (
-      <Box
-        className={overlayComponent}
-        display='flex'
-        justifyContent='center'
-        flexDirection='column'>
-        <Spotify link={music} />
-        <Input
-          id='standard-basic'
-          placeholder='Enter a Spotify link to queue here!'
-          fullWidth={true}
-          onKeyDown={m => {
-            if (m.key === 'Enter') {
-              if (m.currentTarget.value.match(spotifyRegex)) {
-                townController.queueDanceAreaTrack(danceController, m.currentTarget.value);
-              } else {
-                m.currentTarget.value = '';
-              }
-            }
-          }}
-        />
-      </Box>
-    );
-  } else {
-    return (
-      <Box className={overlayComponent}>
-        <Input
-          id='standard-basic'
-          placeholder='Enter a Spotify link to queue here!'
-          fullWidth={true}
-          onKeyDown={m => {
-            if (m.key === 'Enter') {
-              townController.queueDanceAreaTrack(danceController, m.currentTarget.value);
-            }
-          }}
-        />
-      </Box>
+      <SelectMusicModal
+        isOpen={selectIsOpen}
+        close={() => {
+          setSelectIsOpen(false);
+        }}
+        danceController={danceController}
+        townController={townController}
+      />
     );
   }
+  return (
+    <>
+      <Spotify link={music} />
+      <Button>Add a song to queue! onClick={SelectMusicModal}</Button>
+    </>
+  );
 }
 
 /**
