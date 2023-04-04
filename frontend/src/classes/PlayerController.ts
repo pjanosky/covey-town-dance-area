@@ -73,9 +73,9 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
     }
   }
 
-  // do dance move --> same logic as the doDanceMove method in town game scene
+  // do a dance move: for all the other players in the town b/c the town game
+  // scene focuses on a single player
   public doDanceMove(danceMoveResult: DanceMoveResult) {
-    console.log('do dance move in player controller called');
     let timer: ReturnType<typeof setTimeout> = setTimeout(() => {});
     this._isDancing = true;
     const keyPressed = danceMoveResult.keyPressed;

@@ -264,7 +264,6 @@ export default class TownGameScene extends Phaser.Scene {
       // if the player exists, do the dance move result
       if (playerId) {
         playerId.doDanceMove(danceMoveResult);
-        console.log('other player dancing');
       }
     }
   }
