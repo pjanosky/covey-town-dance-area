@@ -33,8 +33,21 @@ function Queue(danceController: DanceAreaController): JSX.Element {
 
   return (
     <ul style={{ listStyleType: 'decimal' }}>
-      {arr.map(item => {
-        return <p key={item.toString()}>{item}</p>;
+      {arr.map((item, index) => {
+        return (
+          <React.Fragment key={item.toString()}>
+            <p>{item}</p>
+            {(index + 1) % 3 === 0 && index !== arr.length - 1 && (
+              <hr
+                style={{
+                  background: '#47B5FF',
+                  height: '2px',
+                  border: 'none',
+                }}
+              />
+            )}
+          </React.Fragment>
+        );
       })}
     </ul>
   );
@@ -137,7 +150,7 @@ export default function SelectMusicModal({
           </ModalFooter>
         </form>
         <ModalHeader>Current Queue</ModalHeader>
-        {Queue(danceController)}
+        <ModalBody> {Queue(danceController)} </ModalBody>
       </ModalContent>
     </Modal>
   );
