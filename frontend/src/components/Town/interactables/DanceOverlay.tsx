@@ -7,11 +7,16 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
 import SelectMusicModal from './SelectMusicModal';
 import { Spotify } from 'react-spotify-embed';
+import DanceAreaController, {
+  useCurrentTrack,
+  useMusic,
+  usePoints,
+} from '../../../classes/DanceAreaController';
+import { useToast } from '@chakra-ui/react';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -21,28 +26,85 @@ export type DanceControllerProps = { danceController: DanceAreaController };
 export function useOverlayComponentStyle(padding = 25) {
   const useStyles = makeStyles({
     overlayComponent: {
-      margin: '25px',
+      margin: '0px 25px 25px 25px',
       padding: `${padding}px`,
       borderRadius: '15px',
       backgroundColor: 'white',
-      width: '400px',
+      width: '275px',
     },
   });
 
   return useStyles().overlayComponent;
 }
 
-export function DanceLeaderboard(): JSX.Element {
-  const overlayComponent = useOverlayComponentStyle();
+function nameForPlayer(townController: TownController, playerId: string | undefined): string {
+  if (playerId === townController.ourPlayer.id) {
+    return 'You';
+  }
+  return townController.players.find(player => player.id === playerId)?.userName ?? 'Player';
+}
+
+function RatingModal(): JSX.Element {
+  return <></>;
+}
+
+function LeaderboardContent({
+  danceController,
+  townController,
+  onRate,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+  onRate: (playerId: string) => void;
+}): JSX.Element {
+  const points = usePoints(danceController);
+  const sortedPoints = [...points];
+  sortedPoints.sort((a, b) => a[1] - b[1]);
+
   return (
-    <Box className={overlayComponent}>
-      <Typography> Leaderboard (this is some mock data)</Typography>
-      <Typography> 1. Slaytie</Typography>
-      <Typography> 2. Slayleen</Typography>
-      <Typography> 3. Slayter</Typography>
-      <Typography> 4. Slayssie</Typography>
-      <Typography> 5. Slaymud</Typography>
-      <Typography> 6. Test</Typography>
+    <Box>
+      {sortedPoints.map(([playerId, score], i) => {
+        return (
+          <Button
+            fullWidth={true}
+            key={playerId}
+            onClick={() => {
+              onRate(playerId);
+            }}
+            style={{ padding: 0 }}>
+            <Box display='flex' justifyContent='space-between' width='100%'>
+              <span>
+                {i + 1}. {nameForPlayer(townController, playerId)}
+              </span>
+              <span>{score}</span>
+            </Box>
+          </Button>
+        );
+      })}
+    </Box>
+  );
+}
+
+export function DanceLeaderboard({
+  danceController,
+  townController,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+}): JSX.Element {
+  const overlayComponent = useOverlayComponentStyle(0);
+
+  return (
+    <Box className={overlayComponent} marginTop={0}>
+      <RatingModal></RatingModal>
+      <Typography style={{ padding: '15px 25px' }}>Leaderboard</Typography>
+      <Divider></Divider>
+      <Box overflow='auto' padding='25px' maxHeight='150px'>
+        <LeaderboardContent
+          danceController={danceController}
+          townController={townController}
+          onRate={() => {}}></LeaderboardContent>
+      </Box>
     </Box>
   );
 }
@@ -203,7 +265,9 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
                 townController={townController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
-              <DanceLeaderboard></DanceLeaderboard>
+              <DanceLeaderboard
+                danceController={danceController}
+                townController={townController}></DanceLeaderboard>
             </Grid>
           </Grid>
         </Grid>

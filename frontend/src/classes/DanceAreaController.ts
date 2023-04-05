@@ -374,7 +374,6 @@ export function useCurrentTrack(controller: DanceAreaController): TrackInfo | un
       controller.removeListener('currentTrackChanged', setTrack);
     };
   }, [controller]);
-  console.log(track);
   return track;
 }
 
@@ -445,4 +444,22 @@ export function useActiveRound(controller: DanceAreaController) {
   }, [controller]);
 
   return activeRound;
+}
+
+/**
+ * A hook that returns the current point values of all of the players in
+ * the area
+ *
+ * @param controller the given controller
+ * @returns a map from player id to points
+ */
+export function usePoints(controller: DanceAreaController): Map<string, number> {
+  const [points, setPoints] = useState(controller.points);
+  useEffect(() => {
+    controller.addListener('pointsChanged', setPoints);
+    return () => {
+      controller.removeListener('pointsChanged', setPoints);
+    };
+  }, [controller]);
+  return points;
 }
