@@ -83,7 +83,7 @@ export default class SpotifyClient implements IMusicClient {
     }
   }
 
- /**
+  /**
    * Makes a request to the spotify web API to request information about a track.
    */
   private async _makeApiRequest(trackUrl: string, trackId: string): Promise<TrackInfo | undefined> {
