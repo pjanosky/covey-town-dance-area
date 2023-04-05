@@ -687,22 +687,32 @@ describe('TownController', () => {
         emitToTown('danceMove', result);
         expectNoControllerEvent('danceMove');
       });
-      it('Forwards danceRating to controller when interactableID is valid', () => {
+      it('Forwards danceRating to controller when interactable ID and player ID is valid', () => {
         const rating: DanceRating = {
           interactableID: danceModel.id,
           sender: nanoid(),
-          recipient: nanoid(),
+          recipient: testController.ourPlayer.id,
           rating: 1,
         };
         emitToTown('danceRating', rating);
         expectControllerEvent('danceRating', rating);
       });
-      it('Does not forward danceRating to controller when interactableID is invalid', () => {
+      it('Does not forward danceRating to controller when interactable ID is invalid', () => {
         const rating: DanceRating = {
           interactableID: nanoid(),
           sender: nanoid(),
           recipient: nanoid(),
-          rating: 1,
+          rating: 2,
+        };
+        emitToTown('danceRating', rating);
+        expectNoControllerEvent('danceRating');
+      });
+      it('Does not forward danceRating to controller when player ID is invalid', () => {
+        const rating: DanceRating = {
+          interactableID: nanoid(),
+          sender: nanoid(),
+          recipient: nanoid(),
+          rating: 3,
         };
         emitToTown('danceRating', rating);
         expectNoControllerEvent('danceRating');

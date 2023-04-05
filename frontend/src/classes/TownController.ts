@@ -499,7 +499,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       const danceController = this._danceAreas.find(
         area => area.id === danceMoveResult.interactableID,
       );
-      if (danceController) {
+      if (danceController && danceMoveResult.playerId !== this.ourPlayer.id) {
         danceController.emit('danceMove', danceMoveResult);
       }
     });
@@ -510,7 +510,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      */
     this._socket.on('danceRating', danceRating => {
       const danceController = this._danceAreas.find(area => area.id === danceRating.interactableID);
-      if (danceController) {
+      if (danceController && danceRating.recipient === this.ourPlayer.id) {
         danceController.emit('danceRating', danceRating);
       }
     });
