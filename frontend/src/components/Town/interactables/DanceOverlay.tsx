@@ -7,12 +7,9 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, Input, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController, {
-  useCurrentTrack,
-  useMusic,
-} from '../../../classes/DanceAreaController';
+import DanceAreaController, { useCurrentTrack } from '../../../classes/DanceAreaController';
 import SelectMusicModal from './SelectMusicModal';
 import { Spotify } from 'react-spotify-embed';
 
@@ -57,7 +54,6 @@ function DanceMusicPlayer({
   danceController: DanceAreaController;
   townController: TownController;
 }): JSX.Element {
-  const music = useMusic(danceController);
   const overlayComponent = useOverlayComponentStyle();
   const currentTrack = useCurrentTrack(danceController);
   const [selectIsOpen, setSelectIsOpen] = useState(danceController.music === undefined);
