@@ -21,7 +21,7 @@ import {
   isDanceArea,
 } from '../TestUtils';
 import { TownsController } from './TownsController';
-import DanceArea from './DanceFloorArea';
+import SpotifyClient from '../lib/SpotifyClient';
 
 type TestTownData = {
   friendlyName: string;
@@ -371,7 +371,10 @@ describe('TownsController integration tests', () => {
     describe('Dance Area', () => {
       beforeAll(() => {
         jest.useFakeTimers();
-        jest.spyOn(DanceArea.prototype, 'playSongs').mockImplementation(async () => {});
+      });
+
+      afterEach(() => {
+        jest.clearAllTimers();
       });
 
       afterAll(() => {
@@ -442,30 +445,47 @@ describe('TownsController integration tests', () => {
       });
 
       describe('queueDanceAreaTrack', () => {
+        beforeEach(() => {
+          jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async url => ({
+            url,
+            duration: 180000,
+            title: 'title',
+            artist: 'artist',
+            album: 'album',
+          }));
+        });
+
         it('queueDanceAreaTrack adds a song the the queue', async () => {
           const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
           if (!danceArea) {
-            fail(
-              'Expected at least one poster session area to be returned in the initial join data',
-            );
+            fail('Expected at least one dance area to be returned in the initial join data');
           } else {
-            const music = ['song1', 'song2', 'song3'];
             const newDanceArea: DanceAreaModel = {
               id: danceArea.id,
               roundId: undefined,
-              music: music.slice(),
+              music: [],
               points: {},
               keySequence: [],
               duration: 0,
             };
             await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
             const newTrack = 'song4';
-            const newMusic = await controller.queueDanceAreaTrack(
+            const success = await controller.queueDanceAreaTrack(
               testingTown.townID,
               danceArea.id,
               { trackUrl: newTrack },
               sessionToken,
             );
+            expect(success).toEqual(true);
+            expect(danceArea.music).toEqual([
+              {
+                url: newTrack,
+                duration: 180000,
+                title: 'title',
+                artist: 'artist',
+                album: 'album',
+              },
+            ]);
           }
         });
       });

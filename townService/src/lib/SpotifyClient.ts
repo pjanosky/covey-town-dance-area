@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import { IMusicClient, TrackData } from './IMusicClient';
+import { IMusicClient } from './IMusicClient';
+import { TrackInfo } from '../types/CoveyTownSocket';
 
 const BASE_URL = 'https://api.spotify.com/v1';
 const END_POINT = 'tracks';
@@ -19,7 +20,7 @@ export default class SpotifyClient implements IMusicClient {
     this._clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
   }
 
-  public async getTrackData(url: string): Promise<TrackData | undefined> {
+  public async getTrackData(url: string): Promise<TrackInfo | undefined> {
     if (!this._clientID || !this._clientSecret) {
       return undefined;
     }
@@ -33,18 +34,16 @@ export default class SpotifyClient implements IMusicClient {
     }
     const trackID = this._parseTrackID(url);
     if (trackID) {
-      return this._makeApiRequest(trackID);
+      return this._makeApiRequest(url, trackID);
     }
-    return { valid: false };
+    return undefined;
   }
 
   /**
    * Parses a track ID from a spotify track link
    */
   private _parseTrackID(url: string): string | undefined {
-    const spotifyRegex =
-      '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(track)(?::|/)((?:[0-9a-zA-Z]){22})/';
-    if (!url.match(spotifyRegex)) {
+    if (url.indexOf('spotify.com') === -1 || url.indexOf('track') === -1) {
       return undefined;
     }
 
@@ -87,21 +86,25 @@ export default class SpotifyClient implements IMusicClient {
   /**
    * Makes a request to the spotify web API to request information about a track.
    */
-  private async _makeApiRequest(trackId: string): Promise<TrackData> {
+  private async _makeApiRequest(trackUrl: string, trackId: string): Promise<TrackInfo | undefined> {
     const url = `${BASE_URL}/${END_POINT}/${trackId}`;
     try {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${this._token}` },
       });
-      if (response.status !== 200) {
-        return { valid: false };
+
+      if (response.status !== 200 || !response.data) {
+        return undefined;
       }
       return {
-        valid: true,
+        url: trackUrl,
+        title: response.data.name,
+        album: response.data.album?.name,
+        artist: response.data.artists?.name,
         duration: response.data.duration_ms,
       };
     } catch (e) {
-      return { valid: false };
+      return undefined;
     }
   }
 }
