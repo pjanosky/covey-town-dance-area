@@ -13,8 +13,32 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import DanceAreaController from '../../../classes/DanceAreaController';
+import DanceAreaController, { useMusic } from '../../../classes/DanceAreaController';
 import TownController from '../../../classes/TownController';
+
+function Queue(danceController: DanceAreaController): JSX.Element {
+  const queue = useMusic(danceController);
+  let arr: string[] = [];
+  const title = 'Title: ';
+  const album = 'Album: ';
+  const artist = 'Artist: ';
+
+  for (let i = 0; i < queue.length; i++) {
+    arr = arr.concat(
+      title.concat(queue[i].title as string),
+      album.concat(queue[i].album as string),
+      artist.concat(queue[i].artist as string),
+    );
+  }
+
+  return (
+    <ul style={{ listStyleType: 'decimal' }}>
+      {arr.map(item => {
+        return <p key={item.toString()}>{item}</p>;
+      })}
+    </ul>
+  );
+}
 
 export default function SelectMusicModal({
   isOpen,
@@ -112,6 +136,8 @@ export default function SelectMusicModal({
             <Button onClick={closeModal}>Cancel</Button>
           </ModalFooter>
         </form>
+        <ModalHeader>Current Queue</ModalHeader>
+        {Queue(danceController)}
       </ModalContent>
     </Modal>
   );

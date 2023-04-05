@@ -13,7 +13,6 @@ import DanceAreaController, {
   useCurrentTrack,
   useMusic,
 } from '../../../classes/DanceAreaController';
-import { useToast } from '@chakra-ui/react';
 import SelectMusicModal from './SelectMusicModal';
 import { Spotify } from 'react-spotify-embed';
 
@@ -65,7 +64,7 @@ function DanceMusicPlayer({
 
   if (!currentTrack) {
     return (
-      <>
+      <Box className={overlayComponent}>
         <Button
           onClick={() => {
             setSelectIsOpen(true);
@@ -80,7 +79,7 @@ function DanceMusicPlayer({
           danceController={danceController}
           townController={townController}
         />
-      </>
+      </Box>
     );
   } else {
     return (
