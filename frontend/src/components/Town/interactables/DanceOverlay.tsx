@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TownController, {
   useDanceAreaController,
   useInteractable,
@@ -7,10 +7,14 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Divider, Grid, makeStyles, Button, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController, { usePoints } from '../../../classes/DanceAreaController';
-import { nanoid } from 'nanoid';
+import DanceAreaController, {
+  useCurrentTrack,
+  useMusic,
+  usePoints,
+} from '../../../classes/DanceAreaController';
+import { useToast } from '@chakra-ui/react';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -103,29 +107,53 @@ export function DanceLeaderboard({
   );
 }
 
-function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
+function DanceMusicPlayer({
+  danceController,
+  townController,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+}): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
-  const allKeys: NumberKey[] = [
-    'one',
-    'one',
-    'two',
-    'two',
-    'three',
-    'three',
-    'four',
-    'four',
-    'four',
-    'four',
-  ];
-  const onClick = () => {
-    danceController.duration = 20;
-    danceController.keySequence = allKeys;
-    danceController.roundId = nanoid();
+  const music = useMusic(danceController);
+  const currentTrack = useCurrentTrack(danceController);
+  const toast = useToast();
+  const [input, setInput] = useState('');
+
+  const onClick = async () => {
+    const success = await townController.queueDanceAreaTrack(danceController, input);
+    if (!success) {
+      toast({
+        title: 'Failed to queue track',
+        description: 'Make sure you are entering a valid spotify track URL',
+        status: 'error',
+      });
+    } else {
+      toast({
+        title: 'Added track to queue',
+        status: 'success',
+      });
+    }
   };
+
   return (
     <Box className={overlayComponent}>
-      <Button onClick={onClick}>Testing</Button>
-      <Typography> This is where the music player will be</Typography>
+      <div>
+        <Input onChange={e => setInput(e.target.value)}></Input>
+        <Button onClick={onClick}>Add Track</Button>
+        <span>
+          Current Track: {currentTrack?.url}, {currentTrack?.title}, {currentTrack?.artist},
+          {currentTrack?.album}
+        </span>
+        <span> Queue: </span>
+        {music.map((track, i) => {
+          return (
+            <span key={`track-${i}`}>
+              {track?.url}, {track?.title}, {track?.artist}, {track?.album}
+            </span>
+          );
+        })}
+      </div>
     </Box>
   );
 }
@@ -228,7 +256,9 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
           </Grid>
           <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
             <Grid item>
-              <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+              <DanceMusicPlayer
+                danceController={danceController}
+                townController={townController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
               <DanceLeaderboard

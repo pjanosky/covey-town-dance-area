@@ -117,13 +117,12 @@ describe('Dance Overlay Tests', () => {
     jest.useFakeTimers();
   });
 
-  afterEach(() => {
-    // ensure active round timer finishes before tests finish
-    jest.clearAllTimers();
-  });
-
   afterAll(() => {
     jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
   });
 
   describe('DanceKeyViewer', () => {
