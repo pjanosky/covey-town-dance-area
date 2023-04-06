@@ -62,7 +62,7 @@ describe('Test Spotify Client', () => {
         duration_ms: 30,
         album: { name: 'album name' },
         name: 'track name',
-        artists: { name: 'artist name' },
+        artists: [{ name: 'artist name' }],
       },
     }));
     const trackData = await client.getTrackData(
