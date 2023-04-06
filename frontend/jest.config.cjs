@@ -1,4 +1,4 @@
-const esModules = ['nanoid'].join('|');
+const esModules = ['nanoid', 'react-spotify-embed'].join('|');
 /*
 If, after upgrading/installing new dependencies, jest complains about 
 "cannot use import outside of module" and has a dependency in that trace, add the
