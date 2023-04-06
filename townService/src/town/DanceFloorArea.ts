@@ -1,4 +1,5 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
+import { nanoid } from 'nanoid';
 import { IMusicClient } from '../lib/IMusicClient';
 import Player from '../lib/Player';
 import SpotifyClient from '../lib/SpotifyClient';
@@ -10,6 +11,7 @@ import {
   TrackInfo,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
+import { generateKeySequence } from '../Utils';
 
 /** The duration to use for tracks where the duration can not be found in milliseconds */
 const DEFAULT_TRACK_DURATION = 180000;
@@ -32,6 +34,8 @@ export default class DanceArea extends InteractableArea {
   private _musicClient: IMusicClient = new SpotifyClient();
 
   private _playing = false;
+
+  private _roundTimeout: NodeJS.Timeout | undefined;
 
   public get music() {
     return this._music;
@@ -85,14 +89,29 @@ export default class DanceArea extends InteractableArea {
     this.points.delete(player.id);
     if (this._occupants.length === 0) {
       this._music = [];
-      this._roundId = '';
+      this._roundId = undefined;
       this._keySequence = [];
       this._duration = 0;
       this._points.clear();
       clearTimeout(this._trackTimeout);
       this._playing = false;
+      clearTimeout(this._roundTimeout);
     }
     this._emitAreaChanged();
+  }
+
+  /**
+   * updates the round
+   */
+
+  public static updateRound(area: DanceArea): void {
+    if (area._occupants.length > 0) {
+      area._duration = 20;
+      area._roundId = nanoid();
+      area._keySequence = generateKeySequence();
+      area._roundTimeout = setTimeout(DanceArea.updateRound, area.duration * 1000, area);
+      area._emitAreaChanged();
+    }
   }
 
   /**
@@ -102,6 +121,10 @@ export default class DanceArea extends InteractableArea {
    */
   public add(player: Player): void {
     super.add(player);
+    // set roundID when area first becomes occupied;
+    if (this._occupants.length === 1) {
+      DanceArea.updateRound(this);
+    }
     this._points.set(player.id, 0);
     this._emitAreaChanged();
   }
@@ -122,7 +145,7 @@ export default class DanceArea extends InteractableArea {
   /**
    * Updates the state of this PosterSessionArea, setting the poster, title, and stars properties
    *
-   * @param posterSessionArea updated model
+   * @param updatedModel updated model
    */
   public updateModel(updatedModel: DanceAreaModel) {
     this._roundId = updatedModel.roundId;
@@ -184,7 +207,7 @@ export default class DanceArea extends InteractableArea {
       {
         id: mapObject.name,
         music: [],
-        roundId: '',
+        roundId: undefined,
         keySequence: [],
         duration: 0,
         points: {},

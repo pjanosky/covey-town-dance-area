@@ -1,3 +1,4 @@
+import { clear } from 'console';
 import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
@@ -19,7 +20,7 @@ describe('DanceArea', () => {
   const id = nanoid();
   const music: TrackInfo[] = [{ url: 'test song' }];
   const roundId = nanoid();
-  const keySequence: KeySequence = [];
+  let keySequence: KeySequence;
   const duration = 20;
   let points: Record<string, number>;
 
@@ -33,6 +34,7 @@ describe('DanceArea', () => {
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
+    keySequence = testArea.keySequence;
   });
 
   beforeAll(() => {
@@ -50,9 +52,6 @@ describe('DanceArea', () => {
   describe('Getters', () => {
     it('Gets current music', () => {
       expect(testArea.music).toEqual([]);
-    });
-    it('Gets current round ID', () => {
-      expect(testArea.roundId).toEqual(roundId);
     });
     it('Gets current key sequence', () => {
       expect(testArea.keySequence).toEqual(keySequence);
@@ -79,11 +78,12 @@ describe('DanceArea', () => {
       expect(lastEmittedUpdate).toEqual({
         id,
         music: [],
-        roundId,
-        keySequence,
+        roundId: testArea.roundId,
+        keySequence: testArea.keySequence,
         duration,
         points: { [extraPlayer.id]: 0 },
       });
+      testArea.remove(extraPlayer);
     });
     it("Clears the player's interactableID and emits an update for their location", () => {
       testArea.remove(newPlayer);
@@ -98,14 +98,14 @@ describe('DanceArea', () => {
       expect(lastEmittedUpdate).toEqual({
         id,
         music: [],
-        roundId: '',
+        roundId: undefined,
         keySequence: [],
         duration: 0,
         points: {},
       });
 
       expect(testArea.music).toEqual([]);
-      expect(testArea.roundId).toEqual('');
+      expect(testArea.roundId).toEqual(undefined);
       expect(testArea.keySequence).toEqual([]);
       expect(testArea.duration).toEqual(0);
       expect(testArea.points.keys.length).toEqual(0);
@@ -125,14 +125,12 @@ describe('DanceArea', () => {
   });
   test('[OMG2 toModel] toModel sets the ID, music, roundId, keySequence, duration and points', () => {
     const model = testArea.toModel();
-    expect(model).toEqual({
-      id,
-      music: [],
-      roundId,
-      keySequence,
-      duration,
-      points,
-    });
+    expect(model.id).toEqual(id);
+    expect(model.music).toEqual([]);
+    expect(model.roundId).toEqual(testArea.roundId);
+    expect(model.keySequence).toEqual(keySequence);
+    expect(model.duration).toEqual(duration);
+    expect(model.points).toEqual(points);
   });
   test('[OMG2 updateModel] updateModel sets music, roundId, keySequence, duration and points', () => {
     const newId = 'spam';
@@ -177,7 +175,7 @@ describe('DanceArea', () => {
       expect(val.boundingBox).toEqual({ x, y, width, height });
       expect(val.id).toEqual(name);
       expect(val.music).toEqual([]);
-      expect(val.roundId).toEqual('');
+      expect(val.roundId).toEqual(undefined);
       expect(val.keySequence).toEqual([]);
       expect(val.duration).toEqual(0);
       expect(val.points).toEqual(new Map());
