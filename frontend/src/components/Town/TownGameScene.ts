@@ -225,12 +225,11 @@ export default class TownGameScene extends Phaser.Scene {
 
   // checks which key was pressed in the dance move result and assigns a dance move to each key
   doDanceMove(danceMoveResult: DanceMoveResult) {
-    this._isDancing = true;
-    const keyPressed = danceMoveResult.keyPressed;
-    const success = danceMoveResult.success;
-    const playerDancing = danceMoveResult.playerId;
     // check that our player is the one that emitted the dance move
-    if (playerDancing === this.coveyTownController.ourPlayer.id) {
+    if (danceMoveResult.playerId === this.coveyTownController.ourPlayer.id) {
+      this._isDancing = true;
+      const keyPressed = danceMoveResult.keyPressed;
+      const success = danceMoveResult.success;
       if (success) {
         if (keyPressed === 'one') {
           this._animationKey = 'misa-spin';
@@ -245,8 +244,8 @@ export default class TownGameScene extends Phaser.Scene {
       } else {
         this._animationKey = 'misa-fail';
       }
-      clearTimeout(this._timer);
       if (this._isDancing) {
+        clearTimeout(this._timer);
         this._timer = setTimeout(() => {
           this._isDancing = false;
           // once the dance move is complete, misa is back to the front facing position
