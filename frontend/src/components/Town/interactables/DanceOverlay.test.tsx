@@ -8,15 +8,21 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { render, waitFor } from '@testing-library/react';
-import { DanceLeaderboard, useHandleKeys } from './DanceOverlay';
+import { DanceLeaderboard, useCreateDanceArea, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 
-function HookComponent({ danceController }: { danceController: DanceAreaController }) {
+function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
   useHandleKeys(danceController, townController);
+  return <></>;
+}
+
+function CreateDanceAreaHook({ danceController }: { danceController: DanceAreaController }) {
+  const townController = useTownController();
+  useCreateDanceArea(danceController, townController);
   return <></>;
 }
 
@@ -27,7 +33,7 @@ function RenderUseHandleKeys(
   return (
     <ChakraProvider>
       <TownControllerContext.Provider value={townController}>
-        <HookComponent danceController={danceController}></HookComponent>
+        <HandleKeysHook danceController={danceController}></HandleKeysHook>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -53,6 +59,19 @@ function RenderLeaderboard(danceController: DanceAreaController, townController:
         <DanceLeaderboard
           danceController={danceController}
           townController={townController}></DanceLeaderboard>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
+function RenderCreateDanceAreaHook(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <CreateDanceAreaHook danceController={danceController}></CreateDanceAreaHook>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -261,6 +280,33 @@ describe('Dance Overlay Tests', () => {
       expect(danceControllerDanceMoveSpy).not.toHaveBeenCalled();
       expect(townControllerDanceMoveSpy).not.toHaveBeenCalled();
       expect(danceController.keyResults).toEqual([undefined, undefined, undefined]);
+    });
+  });
+
+  describe('useCreateDanceArea', () => {
+    let createDanceAreaSpy: jest.SpyInstance<Promise<void>, [danceController: DanceAreaController]>;
+    beforeEach(() => {
+      createDanceAreaSpy = jest
+        .spyOn(townController, 'createDanceArea')
+        .mockImplementation(async () => {});
+    });
+
+    it('Does not create dance area when round ID is defined', async () => {
+      danceController.roundId = nanoid();
+      render(RenderCreateDanceAreaHook(danceController, townController));
+      act(() => {
+        danceController.roundId = nanoid();
+      });
+      expect(createDanceAreaSpy).not.toBeCalled();
+    });
+
+    it('Creates dance area when round ID is defined', async () => {
+      danceController.roundId = nanoid();
+      render(RenderCreateDanceAreaHook(danceController, townController));
+      act(() => {
+        danceController.roundId = undefined;
+      });
+      expect(createDanceAreaSpy).toBeCalledWith(danceController);
     });
   });
 });

@@ -11,6 +11,7 @@ import DanceAreaController, {
   useMusic,
   useActiveRound,
   useCurrentTrack,
+  useRoundID,
 } from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
@@ -29,6 +30,16 @@ function HookComponents({ danceController }: { danceController: DanceAreaControl
       <span> {`keySequence-${keySequence}`} </span>
       <span> {`keyResults-${keyResults}`} </span>
       <span> {`activeRound-${activeRound}`} </span>
+    </div>
+  );
+}
+
+function RenderRoundID({ danceController }: { danceController: DanceAreaController }) {
+  const roundId = useRoundID(danceController);
+
+  return (
+    <div>
+      <span> {`roundId-${roundId}`}</span>
     </div>
   );
 }
@@ -63,6 +74,19 @@ function RenderCurrentTrackHooks(
     <ChakraProvider>
       <TownControllerContext.Provider value={townController}>
         <CurrentTrackHookComponents danceController={danceController}></CurrentTrackHookComponents>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
+function RenderRoundIDHook(
+  danceController: DanceAreaController,
+  townController: TownController,
+): JSX.Element {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <RenderRoundID danceController={danceController}></RenderRoundID>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -356,6 +380,57 @@ describe('DanceAreaController Hooks', () => {
         danceController.music = [];
       });
       expect(await renderData.findByText(`currentTrack-${undefined}`)).toBeVisible();
+    });
+  });
+
+  describe('useRoundId', () => {
+    beforeEach(() => {
+      danceController = new DanceAreaController({
+        id: nanoid(),
+        music: [],
+        roundId: nanoid(),
+        duration: 0,
+        keySequence: [],
+        points: {},
+      });
+      townController = mockTownController({ danceAreas: [danceController] });
+
+      addListenerSpy = jest.spyOn(danceController, 'addListener');
+      removeListenerSpy = jest.spyOn(danceController, 'removeListener');
+
+      renderData = render(RenderRoundIDHook(danceController, townController));
+    });
+    it('useRoundID registers exactly one roundIdChanged listener', () => {
+      act(() => {
+        danceController.emit('roundIdChanged', undefined);
+      });
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      getSingleListenerAdded('roundIdChanged');
+    });
+    it('useRoundID unregisters exactly the same roundIdChanged listener on unmounting', () => {
+      act(() => {
+        danceController.emit('roundIdChanged', nanoid());
+      });
+      const listenerAdded = getSingleListenerAdded('roundIdChanged');
+      cleanup();
+      expect(getSingleListenerRemoved('roundIdChanged')).toBe(listenerAdded);
+    });
+    it('useRoundID refreshes the view when the first track in the queue changes', async () => {
+      const newRoundId = nanoid();
+      act(() => {
+        danceController.roundId = newRoundId;
+      });
+      expect(await renderData.findByText(`roundId-${newRoundId}`)).toBeVisible();
+
+      act(() => {
+        danceController.roundId = undefined;
+      });
+      expect(await renderData.findByText(`roundId-${undefined}`)).toBeVisible();
     });
   });
 });
