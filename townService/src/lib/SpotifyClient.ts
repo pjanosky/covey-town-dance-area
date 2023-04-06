@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import { IMusicClient, TrackData } from './IMusicClient';
+import { IMusicClient } from './IMusicClient';
+import { TrackInfo } from '../types/CoveyTownSocket';
 
 const BASE_URL = 'https://api.spotify.com/v1';
 const END_POINT = 'tracks';
@@ -10,25 +11,42 @@ export default class SpotifyClient implements IMusicClient {
 
   private _token: string | undefined;
 
-  public async getTrackData(url: string): Promise<TrackData> {
+  private _clientID: string | undefined;
+
+  private _clientSecret: string | undefined;
+
+  public constructor() {
+    this._clientID = process.env.SPOTIFY_CLIENT_ID;
+    this._clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  }
+
+  public async getTrackData(url: string): Promise<TrackInfo | undefined> {
+    if (!this._clientID || !this._clientSecret) {
+      return undefined;
+    }
+
     const now = new Date();
     if (!this._token || !this._expiration || now.getTime() > this._expiration.getTime()) {
       await this._requestNewToken();
     }
     if (!this._token) {
-      return { valid: false };
+      return undefined;
     }
     const trackID = this._parseTrackID(url);
     if (trackID) {
-      return this._makeApiRequest(trackID);
+      return this._makeApiRequest(url, trackID);
     }
-    return { valid: false };
+    return undefined;
   }
 
   /**
    * Parses a track ID from a spotify track link
    */
   private _parseTrackID(url: string): string | undefined {
+    if (url.indexOf('spotify.com') === -1 || url.indexOf('track') === -1) {
+      return undefined;
+    }
+
     const path = new URL(url).pathname;
     const trackIdIndex = path.lastIndexOf('/');
     if (trackIdIndex < 0 || trackIdIndex + 1 >= path.length) {
@@ -41,16 +59,10 @@ export default class SpotifyClient implements IMusicClient {
    * Makes a request to the spotify web API to request an API token.
    */
   private async _requestNewToken() {
-    const clientID = process.env.SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-    if (!clientID || !clientSecret) {
-      return;
-    }
-
     try {
       const response = await axios.post(
         TOKEN_URL,
-        `grant_type=client_credentials&client_id=${clientID}&client_secret=${clientSecret}`,
+        `grant_type=client_credentials&client_id=${this._clientID}&client_secret=${this._clientSecret}`,
         {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         },
@@ -74,21 +86,25 @@ export default class SpotifyClient implements IMusicClient {
   /**
    * Makes a request to the spotify web API to request information about a track.
    */
-  private async _makeApiRequest(trackId: string): Promise<TrackData> {
+  private async _makeApiRequest(trackUrl: string, trackId: string): Promise<TrackInfo | undefined> {
     const url = `${BASE_URL}/${END_POINT}/${trackId}`;
     try {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${this._token}` },
       });
-      if (response.status !== 200) {
-        return { valid: false };
+
+      if (response.status !== 200 || !response.data) {
+        return undefined;
       }
       return {
-        valid: true,
+        url: trackUrl,
+        title: response.data.name,
+        album: response.data.album?.name,
+        artist: response.data.artists?.name,
         duration: response.data.duration_ms,
       };
     } catch (e) {
-      return { valid: false };
+      return undefined;
     }
   }
 }

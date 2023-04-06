@@ -2,7 +2,13 @@ import assert from 'assert';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import { Town } from '../api/Model';
-import { ConversationArea, Interactable, TownEmitter, ViewingArea } from '../types/CoveyTownSocket';
+import {
+  ConversationArea,
+  DanceArea as DanceAreaModel,
+  Interactable,
+  TownEmitter,
+  ViewingArea,
+} from '../types/CoveyTownSocket';
 import TownsStore from '../lib/TownsStore';
 import {
   createConversationForTesting,
@@ -12,8 +18,10 @@ import {
   isViewingArea,
   isConversationArea,
   MockedPlayer,
+  isDanceArea,
 } from '../TestUtils';
 import { TownsController } from './TownsController';
+import SpotifyClient from '../lib/SpotifyClient';
 
 type TestTownData = {
   friendlyName: string;
@@ -72,6 +80,8 @@ describe('TownsController integration tests', () => {
     process.env.TWILIO_ACCOUNT_SID = 'ACtesting';
     process.env.TWILIO_API_KEY_SID = 'testing';
     process.env.TWILIO_API_KEY_SECRET = 'testing';
+    process.env.SPOTIFY_CLIENT_ID = 'testing';
+    process.env.SPOTIFY_CLIENT_SECRET = 'testing';
   });
 
   beforeEach(async () => {
@@ -84,6 +94,7 @@ describe('TownsController integration tests', () => {
     TownsStore.initializeTownsStore(broadcastEmitter);
     controller = new TownsController();
   });
+
   describe('createTown', () => {
     it('Allows for multiple towns with the same friendlyName', async () => {
       const firstTown = await createTownForTesting();
@@ -354,6 +365,129 @@ describe('TownsController integration tests', () => {
         await expect(
           controller.createViewingArea(testingTown.townID, sessionToken, viewingArea),
         ).rejects.toThrow();
+      });
+    });
+
+    describe('Dance Area', () => {
+      beforeAll(() => {
+        jest.useFakeTimers();
+      });
+
+      afterEach(() => {
+        jest.clearAllTimers();
+      });
+
+      afterAll(() => {
+        jest.useRealTimers();
+      });
+
+      describe('[T1] Create Dance Area', () => {
+        it('Executes without error when creating a new dance area', async () => {
+          const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
+          if (!danceArea) {
+            fail('Expected at least one viewing area to be returned in the initial join data');
+          } else {
+            const newDanceArea: DanceAreaModel = {
+              id: danceArea.id,
+              roundId: undefined,
+              music: [],
+              points: {},
+              keySequence: [],
+              duration: 0,
+            };
+            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            // Check to see that the viewing area was successfully updated
+            const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
+            const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+            if (isDanceArea(updateMessage)) {
+              expect(updateMessage).toEqual(newDanceArea);
+            } else {
+              fail('Expected an interactableUpdate to be dispatched with the new viewing area');
+            }
+          }
+        });
+        it('Returns an error message if the town ID is invalid', async () => {
+          const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
+          const newDanceArea: DanceAreaModel = {
+            id: danceArea.id,
+            music: [],
+            roundId: undefined,
+            keySequence: [],
+            duration: 0,
+            points: {},
+          };
+          await expect(
+            controller.createDanceArea(nanoid(), sessionToken, newDanceArea),
+          ).rejects.toThrow();
+        });
+        it('Checks for a valid session token before creating a viewing area', async () => {
+          const invalidSessionToken = nanoid();
+          const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
+          const newDanceArea: DanceAreaModel = {
+            id: danceArea.id,
+            music: [],
+            roundId: undefined,
+            keySequence: [],
+            duration: 0,
+            points: {},
+          };
+          await expect(
+            controller.createDanceArea(testingTown.townID, invalidSessionToken, newDanceArea),
+          ).rejects.toThrow();
+        });
+        it('Returns an error message if addViewingArea returns false', async () => {
+          const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
+          danceArea.id = nanoid();
+          await expect(
+            controller.createDanceArea(testingTown.townID, sessionToken, danceArea),
+          ).rejects.toThrow();
+        });
+      });
+
+      describe('queueDanceAreaTrack', () => {
+        beforeEach(() => {
+          jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async url => ({
+            url,
+            duration: 180000,
+            title: 'title',
+            artist: 'artist',
+            album: 'album',
+          }));
+        });
+
+        it('queueDanceAreaTrack adds a song the the queue', async () => {
+          const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
+          if (!danceArea) {
+            fail('Expected at least one dance area to be returned in the initial join data');
+          } else {
+            const newDanceArea: DanceAreaModel = {
+              id: danceArea.id,
+              roundId: undefined,
+              music: [],
+              points: {},
+              keySequence: [],
+              duration: 0,
+            };
+            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            const newTrack = 'song4';
+            const success = await controller.queueDanceAreaTrack(
+              testingTown.townID,
+              danceArea.id,
+              { trackUrl: newTrack },
+              sessionToken,
+            );
+            expect(success).toEqual(true);
+            expect(danceArea.music).toEqual([
+              {
+                url: newTrack,
+                duration: 180000,
+                title: 'title',
+                artist: 'artist',
+                album: 'album',
+              },
+            ]);
+          }
+        });
       });
     });
   });

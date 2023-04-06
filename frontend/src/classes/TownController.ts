@@ -813,6 +813,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    * Adds a track to the queue of the specified dance area.
    * @param danceAreaController the dance area controller associated with the area to add the track
    * @param trackUrl the url of the track
+   * @returns whether this track was successfully added to the que
    */
   public async queueDanceAreaTrack(danceAreaController: DanceAreaController, trackUrl: string) {
     return this._townsService.queueDanceAreaTrack(

@@ -21,6 +21,7 @@ describe('DanceAreaController', () => {
     testArea = new DanceAreaController(testAreaModel);
     mockClear(townController);
     mockClear(mockListeners.musicChanged);
+    mockClear(mockListeners.currentTrackChanged);
     mockClear(mockListeners.roundIdChanged);
     mockClear(mockListeners.keySequenceChanged);
     mockClear(mockListeners.durationChanged);
@@ -28,6 +29,7 @@ describe('DanceAreaController', () => {
     mockClear(mockListeners.keyResultsChanged);
     mockClear(mockListeners.danceMove);
     testArea.addListener('musicChanged', mockListeners.musicChanged);
+    testArea.addListener('currentTrackChanged', mockListeners.currentTrackChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
     testArea.addListener('keySequenceChanged', mockListeners.keySequenceChanged);
     testArea.addListener('durationChanged', mockListeners.durationChanged);
@@ -38,14 +40,28 @@ describe('DanceAreaController', () => {
 
   describe('Tests get and set for the music property', () => {
     test('updates the music property and emits a musicChanged event if the property changes', () => {
-      const newMusic = ['charli XCX'];
+      const newMusic = [{ url: 'charli XCX' }];
       testArea.music = newMusic;
-      expect(testArea.music).toEqual(['charli XCX']); // get check
+      expect(testArea.music).toEqual(newMusic); // get check
       expect(mockListeners.musicChanged).toBeCalledWith(newMusic); // set check
     });
     test('does not emit an update if the music does not change', () => {
       testArea.music = testAreaModel.music;
       expect(mockListeners.musicChanged).not.toBeCalled();
+    });
+  });
+  describe('Tests get for the currentTrack property', () => {
+    test('updates the music property and emits a musicChanged event if the property changes', () => {
+      const newMusic = [{ url: 'charli XCX' }, { url: 'vroom vroom' }];
+      testArea.music = newMusic;
+      expect(testArea.currentTrack).toEqual(newMusic[0]);
+      expect(mockListeners.currentTrackChanged).toBeCalledWith(newMusic[0]);
+    });
+    test('does not emit an update if the music does not change', () => {
+      testArea.music = [{ url: 'song1' }, { url: 'song2' }, { url: 'song3' }];
+      mockClear(mockListeners.currentTrackChanged);
+      testArea.music = testArea.music.concat({ url: 'song4' });
+      expect(mockListeners.currentTrackChanged).not.toBeCalled();
     });
   });
   describe('Tests get and set for the roundId property', () => {
@@ -124,14 +140,14 @@ describe('DanceAreaController', () => {
       const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: testAreaModel.id,
-        music: ['Gaddi Red Challenger'],
+        music: [{ url: 'Gaddi Red Challenger' }],
         roundId: 'round 2',
         keySequence: keySeq,
         duration: 60,
         points: newPoints,
       };
       testArea.updateFrom(newDanceAreaModel);
-      expect(testArea.music).toEqual(['Gaddi Red Challenger']);
+      expect(testArea.music).toEqual([{ url: 'Gaddi Red Challenger' }]);
       expect(testArea.roundId).toBe('round 2');
       expect(testArea.keySequence).toEqual(['one', 'two']);
       expect(testArea.duration).toBe(60);
@@ -143,7 +159,7 @@ describe('DanceAreaController', () => {
       const newPoints = { player1: 10 };
       const newDanceAreaModel = {
         id: nanoid(),
-        music: ['Gaddi Red Challenger'],
+        music: [{ url: 'Gaddi Red Challenger' }],
         roundId: 'round 2',
         keySequence: keySeq,
         duration: 60,
@@ -151,6 +167,16 @@ describe('DanceAreaController', () => {
       };
       testArea.updateFrom(newDanceAreaModel);
       expect(testArea.id).toEqual(existingId);
+    });
+  });
+  describe('getCurrentTrack', () => {
+    it('getCurrentTrack returns the first track of there are track in the queue', () => {
+      testArea.music = [{ url: 'Roman Holiday' }, { url: 'Chun Li' }, { url: 'Good Form' }];
+      expect(testArea.currentTrack).toEqual({ url: 'Roman Holiday' });
+    });
+    it('getCurrentTrack returns the first track of there are track in the queue', () => {
+      testArea.music = [];
+      expect(testArea.currentTrack).toBeUndefined();
     });
   });
 });

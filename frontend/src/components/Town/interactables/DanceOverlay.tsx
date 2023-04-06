@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TownController, {
   useDanceAreaController,
   useInteractable,
@@ -7,10 +7,14 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
-import DanceAreaController from '../../../classes/DanceAreaController';
-import { nanoid } from 'nanoid';
+import DanceAreaController, {
+  useCurrentTrack,
+  useMusic,
+  usePoints,
+} from '../../../classes/DanceAreaController';
+import { useToast } from '@chakra-ui/react';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -20,55 +24,136 @@ export type DanceControllerProps = { danceController: DanceAreaController };
 export function useOverlayComponentStyle(padding = 25) {
   const useStyles = makeStyles({
     overlayComponent: {
-      margin: '25px',
+      margin: '0px 25px 25px 25px',
       padding: `${padding}px`,
       borderRadius: '15px',
       backgroundColor: 'white',
-      width: '300px',
+      width: '275px',
     },
   });
 
   return useStyles().overlayComponent;
 }
 
-export function DanceLeaderboard(): JSX.Element {
-  const overlayComponent = useOverlayComponentStyle();
+function nameForPlayer(townController: TownController, playerId: string | undefined): string {
+  if (playerId === townController.ourPlayer.id) {
+    return 'You';
+  }
+  return townController.players.find(player => player.id === playerId)?.userName ?? 'Player';
+}
+
+function RatingModal(): JSX.Element {
+  return <></>;
+}
+
+function LeaderboardContent({
+  danceController,
+  townController,
+  onRate,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+  onRate: (playerId: string) => void;
+}): JSX.Element {
+  const points = usePoints(danceController);
+  const sortedPoints = [...points];
+  sortedPoints.sort((a, b) => a[1] - b[1]);
+
   return (
-    <Box className={overlayComponent}>
-      <Typography> Leaderboard (this is some mock data)</Typography>
-      <Typography> 1. Slaytie</Typography>
-      <Typography> 2. Slayleen</Typography>
-      <Typography> 3. Slayter</Typography>
-      <Typography> 4. Slayssie</Typography>
-      <Typography> 5. Slaymud</Typography>
-      <Typography> 6. Test</Typography>
+    <Box>
+      {sortedPoints.map(([playerId, score], i) => {
+        return (
+          <Button
+            fullWidth={true}
+            key={playerId}
+            onClick={() => {
+              onRate(playerId);
+            }}
+            style={{ padding: 0 }}>
+            <Box display='flex' justifyContent='space-between' width='100%'>
+              <span>
+                {i + 1}. {nameForPlayer(townController, playerId)}
+              </span>
+              <span>{score}</span>
+            </Box>
+          </Button>
+        );
+      })}
     </Box>
   );
 }
 
-function DanceMusicPlayer({ danceController }: DanceControllerProps): JSX.Element {
+export function DanceLeaderboard({
+  danceController,
+  townController,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+}): JSX.Element {
+  const overlayComponent = useOverlayComponentStyle(0);
+
+  return (
+    <Box className={overlayComponent} marginTop={0}>
+      <RatingModal></RatingModal>
+      <Typography style={{ padding: '15px 25px' }}>Leaderboard</Typography>
+      <Divider></Divider>
+      <Box overflow='auto' padding='25px' maxHeight='150px'>
+        <LeaderboardContent
+          danceController={danceController}
+          townController={townController}
+          onRate={() => {}}></LeaderboardContent>
+      </Box>
+    </Box>
+  );
+}
+
+function DanceMusicPlayer({
+  danceController,
+  townController,
+}: {
+  danceController: DanceAreaController;
+  townController: TownController;
+}): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
-  const allKeys: NumberKey[] = [
-    'one',
-    'one',
-    'two',
-    'two',
-    'three',
-    'three',
-    'four',
-    'four',
-    'four',
-    'four',
-  ];
-  const onClick = () => {
-    danceController.duration = 20;
-    danceController.keySequence = allKeys;
-    danceController.roundId = nanoid();
+  const music = useMusic(danceController);
+  const currentTrack = useCurrentTrack(danceController);
+  const toast = useToast();
+  const [input, setInput] = useState('');
+
+  const onClick = async () => {
+    const success = await townController.queueDanceAreaTrack(danceController, input);
+    if (!success) {
+      toast({
+        title: 'Failed to queue track',
+        description: 'Make sure you are entering a valid spotify track URL',
+        status: 'error',
+      });
+    } else {
+      toast({
+        title: 'Added track to queue',
+        status: 'success',
+      });
+    }
   };
+
   return (
     <Box className={overlayComponent}>
-      <Button onClick={onClick}>Testing</Button>
-      <Typography> This is where the music player will be</Typography>
+      <div>
+        <Input onChange={e => setInput(e.target.value)}></Input>
+        <Button onClick={onClick}>Add Track</Button>
+        <span>
+          Current Track: {currentTrack?.url}, {currentTrack?.title}, {currentTrack?.artist},
+          {currentTrack?.album}
+        </span>
+        <span> Queue: </span>
+        {music.map((track, i) => {
+          return (
+            <span key={`track-${i}`}>
+              {track?.url}, {track?.title}, {track?.artist}, {track?.album}
+            </span>
+          );
+        })}
+      </div>
     </Box>
   );
 }
@@ -171,10 +256,14 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
           </Grid>
           <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
             <Grid item>
-              <DanceMusicPlayer danceController={danceController}></DanceMusicPlayer>
+              <DanceMusicPlayer
+                danceController={danceController}
+                townController={townController}></DanceMusicPlayer>
             </Grid>
             <Grid item>
-              <DanceLeaderboard></DanceLeaderboard>
+              <DanceLeaderboard
+                danceController={danceController}
+                townController={townController}></DanceLeaderboard>
             </Grid>
           </Grid>
         </Grid>

@@ -8,7 +8,7 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { render, waitFor } from '@testing-library/react';
-import { useHandleKeys } from './DanceOverlay';
+import { DanceLeaderboard, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
@@ -46,6 +46,18 @@ function RenderDanceKeyViewer(
   );
 }
 
+function RenderLeaderboard(danceController: DanceAreaController, townController: TownController) {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <DanceLeaderboard
+          danceController={danceController}
+          townController={townController}></DanceLeaderboard>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
 describe('Dance Overlay Tests', () => {
   let danceArea: DanceArea;
   let danceController: DanceAreaController;
@@ -53,6 +65,7 @@ describe('Dance Overlay Tests', () => {
   let danceControllerDanceMoveSpy: jest.SpyInstance<void, [danceMoveResult: DanceMoveResult]>;
   let townControllerDanceMoveSpy: jest.SpyInstance<void, [danceMoveResult: DanceMoveResult]>;
   let ourPlayer: PlayerController;
+  let otherPlayers: PlayerController[];
 
   beforeEach(() => {
     danceArea = {
@@ -71,9 +84,45 @@ describe('Dance Overlay Tests', () => {
       x: 0,
       y: 0,
     });
-    townController = mockTownController({ danceAreas: [danceController], ourPlayer: ourPlayer });
+    otherPlayers = [
+      new PlayerController(nanoid(), 'person0', {
+        moving: false,
+        rotation: 'front',
+        x: 0,
+        y: 0,
+      }),
+      new PlayerController(nanoid(), 'person1', {
+        moving: false,
+        rotation: 'front',
+        x: 0,
+        y: 0,
+      }),
+      new PlayerController(nanoid(), 'person2', {
+        moving: false,
+        rotation: 'front',
+        x: 0,
+        y: 0,
+      }),
+    ];
+    townController = mockTownController({
+      danceAreas: [danceController],
+      ourPlayer: ourPlayer,
+      players: otherPlayers,
+    });
     townControllerDanceMoveSpy = jest.spyOn(townController, 'emitDanceMove');
     danceControllerDanceMoveSpy = jest.spyOn(townController, 'emitDanceMove');
+  });
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
   });
 
   describe('DanceKeyViewer', () => {
@@ -92,6 +141,28 @@ describe('Dance Overlay Tests', () => {
       expect(await renderData.findByText('1')).toBeVisible();
       expect(await renderData.findByText('2')).toBeVisible();
       expect(await renderData.findByText('3')).toBeVisible();
+    });
+  });
+
+  describe('Dance Leaderboard', () => {
+    it('Displays the points for all the players in the area', async () => {
+      const points = new Map();
+      points.set(ourPlayer.id, 30);
+      points.set(otherPlayers[0].id, 45);
+      points.set(otherPlayers[1].id, 3);
+      points.set(otherPlayers[2].id, 28);
+      danceController.points = points;
+
+      const renderData = render(RenderLeaderboard(danceController, townController));
+
+      expect(await renderData.findByText('1. person1')).toBeVisible();
+      expect(await renderData.findByText('2. person2')).toBeVisible();
+      expect(await renderData.findByText('3. You')).toBeVisible();
+      expect(await renderData.findByText('4. person0')).toBeVisible();
+      expect(await renderData.findByText('30')).toBeVisible();
+      expect(await renderData.findByText('45')).toBeVisible();
+      expect(await renderData.findByText('3')).toBeVisible();
+      expect(await renderData.findByText('28')).toBeVisible();
     });
   });
 

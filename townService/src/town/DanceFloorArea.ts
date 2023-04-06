@@ -7,11 +7,17 @@ import {
   TownEmitter,
   DanceArea as DanceAreaModel,
   KeySequence,
+  TrackInfo,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
+/** The duration to use for tracks where the duration can not be found in milliseconds */
+const DEFAULT_TRACK_DURATION = 180000;
+/** The time to wait in between songs in milliseconds */
+const SONG_SPACING = 3000;
+
 export default class DanceArea extends InteractableArea {
-  private _music: string[];
+  private _music: TrackInfo[];
 
   private _roundId: string | undefined;
 
@@ -23,7 +29,7 @@ export default class DanceArea extends InteractableArea {
 
   private _trackTimeout: NodeJS.Timeout | undefined;
 
-  private _musicClient: IMusicClient;
+  private _musicClient: IMusicClient = new SpotifyClient();
 
   private _playing = false;
 
@@ -55,17 +61,16 @@ export default class DanceArea extends InteractableArea {
    * @param townEmitter a broadcast emitter that can be used to emit updates to players
    */
   public constructor(
-    { id, music, roundId, keySequence, duration, points }: DanceAreaModel,
+    { id, roundId, keySequence, duration, points }: DanceAreaModel,
     coordinates: BoundingBox,
     townEmitter: TownEmitter,
   ) {
     super(id, coordinates, townEmitter);
-    this._music = music;
+    this._music = [];
     this._roundId = roundId;
     this._keySequence = keySequence;
     this._duration = duration;
     this._points = new Map(Object.entries(points));
-    this._musicClient = new SpotifyClient();
   }
 
   /**
@@ -84,6 +89,8 @@ export default class DanceArea extends InteractableArea {
       this._keySequence = [];
       this._duration = 0;
       this._points.clear();
+      clearTimeout(this._trackTimeout);
+      this._playing = false;
     }
     this._emitAreaChanged();
   }
@@ -118,13 +125,28 @@ export default class DanceArea extends InteractableArea {
    * @param posterSessionArea updated model
    */
   public updateModel(updatedModel: DanceAreaModel) {
-    this._music = updatedModel.music;
     this._roundId = updatedModel.roundId;
     this._keySequence = updatedModel.keySequence;
     this._duration = updatedModel.duration;
     this._points = new Map(Object.entries(updatedModel.points));
-    this.playSongs();
     this._emitAreaChanged();
+  }
+
+  /**
+   * Adds a track the queue and fetches track information on the song.
+   * @returns whether or not this track was valid and added to the queue.
+   */
+  public async queueTrack(url: string): Promise<boolean> {
+    const trackInfo = await this._musicClient?.getTrackData(url);
+    if (trackInfo) {
+      this._music.push(trackInfo);
+      if (!this._playing) {
+        this._playSongs();
+      }
+      this._emitAreaChanged();
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -164,7 +186,6 @@ export default class DanceArea extends InteractableArea {
         music: [],
         roundId: '',
         keySequence: [],
-        // TODO: set initial values.... or make them undefined?
         duration: 0,
         points: {},
       },
@@ -178,34 +199,21 @@ export default class DanceArea extends InteractableArea {
    * Stops when the queue is empty. This method has no effect is music is
    * already playing.
    */
-  async playSongs() {
-    if (this._playing) {
-      return;
-    }
+  private async _playSongs() {
     if (this.music.length === 0) {
       this._playing = false;
       return;
     }
 
     this._playing = true;
-    const spotifyRegex =
-      '/^(?:spotify:|(?:https?://(?:open|play).spotify.com/))(?:embed)?/?(track)(?::|/)((?:[0-9a-zA-Z]){22})/';
-    if (this.music[0].match(spotifyRegex)) {
-      // set a timer to go to the next song when this one finishes
-      const trackData = await this._musicClient.getTrackData(this.music[0]);
-      clearTimeout(this._trackTimeout);
-      this._trackTimeout = setTimeout(() => {
-        if (this._music.length > 0) {
-          this._music = this._music.splice(1);
-          this._emitAreaChanged();
-        }
-        this.playSongs();
-      }, trackData?.duration ?? 180000 + 5000);
-    } else {
-      // this song isn't valid, remove it from the queue
-      this._music = this._music.splice(1);
-      this._emitAreaChanged();
-      this.playSongs();
-    }
+    const firstTrack = this.music[0];
+    clearTimeout(this._trackTimeout);
+    this._trackTimeout = setTimeout(() => {
+      if (this._music.length > 0) {
+        this._music = this._music.splice(1);
+        this._emitAreaChanged();
+      }
+      this._playSongs();
+    }, firstTrack.duration ?? DEFAULT_TRACK_DURATION + SONG_SPACING);
   }
 }
