@@ -22,6 +22,8 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
 
   private _isDancing: boolean;
 
+  private _timer: ReturnType<typeof setTimeout> | undefined;
+
   constructor(id: string, userName: string, location: PlayerLocation) {
     super();
     this._id = id;
@@ -76,7 +78,6 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
   // do a dance move: for all the other players in the town b/c the town game
   // scene focuses on a single player
   public doDanceMove(danceMoveResult: DanceMoveResult) {
-    let timer: ReturnType<typeof setTimeout> = setTimeout(() => {});
     this._isDancing = true;
     const keyPressed = danceMoveResult.keyPressed;
     const success = danceMoveResult.success;
@@ -96,9 +97,9 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
       } else {
         sprite.anims.play('misa-fail', true);
       }
-      clearTimeout(timer);
+      clearTimeout(this._timer);
       if (this._isDancing) {
-        timer = setTimeout(() => {
+        this._timer = setTimeout(() => {
           this._isDancing = false;
           sprite.anims.stop();
           // once the dance move is complete, misa is back to the front facing position
