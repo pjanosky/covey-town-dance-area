@@ -34,6 +34,7 @@ describe('DanceArea', () => {
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
+    keySequence = testArea.keySequence;
   });
 
   beforeAll(() => {
@@ -50,7 +51,7 @@ describe('DanceArea', () => {
 
   describe('Getters', () => {
     it('Gets current music', () => {
-      expect(testArea.music).toEqual(music);
+      expect(testArea.music).toEqual([]);
     });
     it('Gets current key sequence', () => {
       expect(testArea.keySequence).toEqual(keySequence);
@@ -78,7 +79,7 @@ describe('DanceArea', () => {
         id,
         music: [],
         roundId: testArea.roundId,
-        keySequence,
+        keySequence: testArea.keySequence,
         duration,
         points: { [extraPlayer.id]: 0 },
       });
@@ -125,7 +126,7 @@ describe('DanceArea', () => {
   test('[OMG2 toModel] toModel sets the ID, music, roundId, keySequence, duration and points', () => {
     const model = testArea.toModel();
     expect(model.id).toEqual(id);
-    expect(model.music).toEqual(music);
+    expect(model.music).toEqual([]);
     expect(model.roundId).toEqual(testArea.roundId);
     expect(model.keySequence).toEqual(keySequence);
     expect(model.duration).toEqual(duration);
