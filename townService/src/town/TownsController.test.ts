@@ -385,7 +385,7 @@ describe('TownsController integration tests', () => {
         it('Executes without error when creating a new dance area', async () => {
           const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
           if (!danceArea) {
-            fail('Expected at least one viewing area to be returned in the initial join data');
+            fail('Expected at least one dance area to be returned in the initial join data');
           } else {
             const newDanceArea: DanceAreaModel = {
               id: danceArea.id,
@@ -395,14 +395,16 @@ describe('TownsController integration tests', () => {
               keySequence: [],
               duration: 0,
             };
-            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            await controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: newDanceArea.id,
+            });
             // Check to see that the viewing area was successfully updated
             const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
             const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
             if (isDanceArea(updateMessage)) {
-              expect(updateMessage).toEqual(newDanceArea);
+              expect(updateMessage).toEqual(danceArea);
             } else {
-              fail('Expected an interactableUpdate to be dispatched with the new viewing area');
+              fail('Expected an interactableUpdate to be dispatched with the new dance area');
             }
           }
         });
@@ -417,10 +419,12 @@ describe('TownsController integration tests', () => {
             points: {},
           };
           await expect(
-            controller.createDanceArea(nanoid(), sessionToken, newDanceArea),
+            controller.createDanceArea(nanoid(), sessionToken, {
+              danceAreaId: newDanceArea.id,
+            }),
           ).rejects.toThrow();
         });
-        it('Checks for a valid session token before creating a viewing area', async () => {
+        it('Checks for a valid session token before creating a dance area', async () => {
           const invalidSessionToken = nanoid();
           const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
           const newDanceArea: DanceAreaModel = {
@@ -432,14 +436,18 @@ describe('TownsController integration tests', () => {
             points: {},
           };
           await expect(
-            controller.createDanceArea(testingTown.townID, invalidSessionToken, newDanceArea),
+            controller.createDanceArea(testingTown.townID, invalidSessionToken, {
+              danceAreaId: newDanceArea.id,
+            }),
           ).rejects.toThrow();
         });
-        it('Returns an error message if addViewingArea returns false', async () => {
+        it('Returns an error message if addDanceArea returns false', async () => {
           const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
           danceArea.id = nanoid();
           await expect(
-            controller.createDanceArea(testingTown.townID, sessionToken, danceArea),
+            controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: danceArea.id,
+            }),
           ).rejects.toThrow();
         });
       });
@@ -468,7 +476,9 @@ describe('TownsController integration tests', () => {
               keySequence: [],
               duration: 0,
             };
-            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            await controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: newDanceArea.id,
+            });
             const newTrack = 'song4';
             const success = await controller.queueDanceAreaTrack(
               testingTown.townID,

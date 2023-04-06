@@ -418,17 +418,17 @@ export default class Town {
    * @param danceArea Information describing the dance area to create.
    *
    * @returns True if the dance area was created or false if there is no known
-   * dance area with the specified ID or if there is already an active dance area
-   * with the specified ID or if there is no music URL specified
+   * dance area with the specified ID
    */
-  public addDanceArea(danceArea: DanceAreaModel): boolean {
-    const area = this._interactables.find(eachArea => eachArea.id === danceArea.id) as DanceArea;
-    if (!area || area.roundId) {
+  public addDanceArea(danceAreaId: string): boolean {
+    const area = this._interactables.find(eachArea => eachArea.id === danceAreaId) as DanceArea;
+    if (!area) {
       return false;
     }
-    area.updateModel(danceArea);
-    area.addPlayersWithinBounds(this._players);
-    this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    if (!area.roundId) {
+      area.addPlayersWithinBounds(this._players);
+      this._broadcastEmitter.emit('interactableUpdate', area.toModel());
+    }
     return true;
   }
 
