@@ -171,93 +171,6 @@
 				],
 				"type": "object",
 				"additionalProperties": false
-			},
-			"TrackInfo": {
-				"properties": {
-					"duration": {
-						"type": "number",
-						"format": "double",
-						"description": "The duration of the track in milliseconds."
-					},
-					"artist": {
-						"type": "string",
-						"description": "The artist the track belongs to"
-					},
-					"album": {
-						"type": "string",
-						"description": "The album it is on"
-					},
-					"title": {
-						"type": "string",
-						"description": "The title of the song"
-					},
-					"url": {
-						"type": "string",
-						"description": "The url of the track"
-					}
-				},
-				"required": [
-					"url"
-				],
-				"type": "object",
-				"description": "A data type representing information about a track."
-			},
-			"NumberKey": {
-				"type": "string",
-				"description": "All the possible number keys that we will detect."
-			},
-			"KeySequence": {
-				"items": {
-					"$ref": "#/components/schemas/NumberKey"
-				},
-				"type": "array",
-				"description": "Represents a sequence of keys that the user needs to press to\nperform a dance sequence."
-			},
-			"Record_string.number_": {
-				"properties": {},
-				"type": "object",
-				"description": "Construct a type with a set of properties K of type T"
-			},
-			"DanceArea": {
-				"description": "DanceArea is the data model used to communicate the state of a DanceInteractableArea.",
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"music": {
-						"items": {
-							"$ref": "#/components/schemas/TrackInfo"
-						},
-						"type": "array",
-						"description": "The url or song id of the current song. There will be no music playing\nwhen the player joins the area (which is why music can be undefined)."
-					},
-					"roundId": {
-						"type": "string",
-						"description": "An ID representing the current round. This will be undefined if there\nis no active round."
-					},
-					"keySequence": {
-						"$ref": "#/components/schemas/KeySequence",
-						"description": "The current number of"
-					},
-					"duration": {
-						"type": "number",
-						"format": "double",
-						"description": "The duration of the current round in seconds"
-					},
-					"points": {
-						"$ref": "#/components/schemas/Record_string.number_",
-						"description": "A map from each player's ID to the number of points they have"
-					}
-				},
-				"required": [
-					"id",
-					"music",
-					"keySequence",
-					"duration",
-					"points"
-				],
-				"type": "object",
-				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -666,7 +579,15 @@
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/DanceArea",
+								"properties": {
+									"danceAreaId": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"danceAreaId"
+								],
+								"type": "object",
 								"description": "The new dance area to create"
 							}
 						}

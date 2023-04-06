@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ConversationArea } from '../models/ConversationArea';
-import type { DanceArea } from '../models/DanceArea';
 import type { PosterSessionArea } from '../models/PosterSessionArea';
 import type { Town } from '../models/Town';
 import type { TownCreateParams } from '../models/TownCreateParams';
@@ -206,7 +205,9 @@ export class TownsService {
     public createDanceArea(
         townId: string,
         xSessionToken: string,
-        requestBody: DanceArea,
+        requestBody: {
+            danceAreaId: string;
+        },
     ): CancelablePromise<void> {
         return this.httpRequest.request({
             method: 'POST',

@@ -18,7 +18,6 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
-  DanceArea as DanceAreaModel,
   DanceMoveResult,
   DanceRating,
 } from '../types/CoveyTownSocket';
@@ -630,10 +629,12 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    * is not successful. Does not immediately update local state about the new dance area - it will be
    * updated once the townService creates the area and emits an interactableUpdate
    *
-   * @param newArea
+   * @param danceController the dance area controller of the dance area to create
    */
-  async createDanceArea(newArea: DanceAreaModel) {
-    await this._townsService.createDanceArea(this.townID, this.sessionToken, newArea);
+  async createDanceArea(danceController: DanceAreaController) {
+    await this._townsService.createDanceArea(this.townID, this.sessionToken, {
+      danceAreaId: danceController.id,
+    });
   }
 
   /**

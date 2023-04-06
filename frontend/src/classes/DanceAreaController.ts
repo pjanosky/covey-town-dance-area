@@ -463,3 +463,20 @@ export function usePoints(controller: DanceAreaController): Map<string, number> 
   }, [controller]);
   return points;
 }
+
+/**
+ *  A hook that returns the current round ID of the dance area controller
+ *
+ * @param controller the given controller
+ * @returns a map from player id to points
+ */
+export function useRoundID(controller: DanceAreaController): string | undefined {
+  const [roundID, setRoundID] = useState(controller.roundId);
+  useEffect(() => {
+    controller.addListener('roundIdChanged', setRoundID);
+    return () => {
+      controller.removeListener('roundIdChanged', setRoundID);
+    };
+  }, [controller]);
+  return roundID;
+}
