@@ -395,7 +395,9 @@ describe('TownsController integration tests', () => {
               keySequence: [],
               duration: 0,
             };
-            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            await controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: newDanceArea.id,
+            });
             // Check to see that the viewing area was successfully updated
             const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
             const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
@@ -417,7 +419,9 @@ describe('TownsController integration tests', () => {
             points: {},
           };
           await expect(
-            controller.createDanceArea(nanoid(), sessionToken, newDanceArea),
+            controller.createDanceArea(nanoid(), sessionToken, {
+              danceAreaId: newDanceArea.id,
+            }),
           ).rejects.toThrow();
         });
         it('Checks for a valid session token before creating a viewing area', async () => {
@@ -432,14 +436,18 @@ describe('TownsController integration tests', () => {
             points: {},
           };
           await expect(
-            controller.createDanceArea(testingTown.townID, invalidSessionToken, newDanceArea),
+            controller.createDanceArea(testingTown.townID, invalidSessionToken, {
+              danceAreaId: newDanceArea.id,
+            }),
           ).rejects.toThrow();
         });
         it('Returns an error message if addViewingArea returns false', async () => {
           const danceArea = interactables.find(isDanceArea) as DanceAreaModel;
           danceArea.id = nanoid();
           await expect(
-            controller.createDanceArea(testingTown.townID, sessionToken, danceArea),
+            controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: danceArea.id,
+            }),
           ).rejects.toThrow();
         });
       });
@@ -468,7 +476,9 @@ describe('TownsController integration tests', () => {
               keySequence: [],
               duration: 0,
             };
-            await controller.createDanceArea(testingTown.townID, sessionToken, newDanceArea);
+            await controller.createDanceArea(testingTown.townID, sessionToken, {
+              danceAreaId: newDanceArea.id,
+            });
             const newTrack = 'song4';
             const success = await controller.queueDanceAreaTrack(
               testingTown.townID,
