@@ -78,12 +78,11 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
   // do a dance move: for all the other players in the town b/c the town game
   // scene focuses on a single player
   public doDanceMove(danceMoveResult: DanceMoveResult) {
-    this._isDancing = true;
-    const keyPressed = danceMoveResult.keyPressed;
-    const success = danceMoveResult.success;
     if (this.gameObjects) {
       const { sprite } = this.gameObjects;
-      if (success) {
+      if (danceMoveResult.success) {
+        this._isDancing = true;
+        const keyPressed = danceMoveResult.keyPressed;
         if (keyPressed === 'one') {
           sprite.anims.play('misa-spin', true);
         } else if (keyPressed === 'two') {
@@ -97,8 +96,8 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
       } else {
         sprite.anims.play('misa-fail', true);
       }
-      clearTimeout(this._timer);
       if (this._isDancing) {
+        clearTimeout(this._timer);
         this._timer = setTimeout(() => {
           this._isDancing = false;
           sprite.anims.stop();
