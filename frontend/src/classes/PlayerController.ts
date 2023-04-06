@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import TypedEmitter from 'typed-emitter';
-import { Player as PlayerModel, PlayerLocation } from '../types/CoveyTownSocket';
+import { DanceMoveResult, Player as PlayerModel, PlayerLocation } from '../types/CoveyTownSocket';
 
 export type PlayerEvents = {
   movement: (newLocation: PlayerLocation) => void;
@@ -20,11 +20,14 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
 
   public gameObjects?: PlayerGameObjects;
 
+  private _isDancing: boolean;
+
   constructor(id: string, userName: string, location: PlayerLocation) {
     super();
     this._id = id;
     this._userName = userName;
     this._location = location;
+    this._isDancing = false;
   }
 
   set location(newLocation: PlayerLocation) {
@@ -45,6 +48,10 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
     return this._id;
   }
 
+  get isDancing(): boolean {
+    return this._isDancing;
+  }
+
   toPlayerModel(): PlayerModel {
     return { id: this.id, userName: this.userName, location: this.location };
   }
@@ -56,12 +63,47 @@ export default class PlayerController extends (EventEmitter as new () => TypedEm
       sprite.setX(this.location.x);
       sprite.setY(this.location.y);
       label.setX(this.location.x);
-      label.setY(this.location.y + 20);
+      label.setY(this.location.y - 43);
       if (this.location.moving) {
         sprite.anims.play(`misa-${this.location.rotation}-walk`, true);
       } else {
         sprite.anims.stop();
         sprite.setTexture('atlas', `misa-${this.location.rotation}`);
+      }
+    }
+  }
+
+  // do a dance move: for all the other players in the town b/c the town game
+  // scene focuses on a single player
+  public doDanceMove(danceMoveResult: DanceMoveResult) {
+    let timer: ReturnType<typeof setTimeout> = setTimeout(() => {});
+    this._isDancing = true;
+    const keyPressed = danceMoveResult.keyPressed;
+    const success = danceMoveResult.success;
+    if (this.gameObjects) {
+      const { sprite } = this.gameObjects;
+      if (success) {
+        if (keyPressed === 'one') {
+          sprite.anims.play('misa-spin', true);
+        } else if (keyPressed === 'two') {
+          sprite.anims.play('misa-flip', true);
+        } else if (keyPressed === 'three') {
+          sprite.anims.play('misa-arms', true);
+        } else if (keyPressed === 'four') {
+          sprite.anims.play('misa-jump', true);
+        }
+        // if the wrong key is pressed, show the misa-fail animation
+      } else {
+        sprite.anims.play('misa-fail', true);
+      }
+      clearTimeout(timer);
+      if (this._isDancing) {
+        timer = setTimeout(() => {
+          this._isDancing = false;
+          sprite.anims.stop();
+          // once the dance move is complete, misa is back to the front facing position
+          this.gameObjects?.sprite.setTexture('atlas', 'misa-front');
+        }, 500);
       }
     }
   }

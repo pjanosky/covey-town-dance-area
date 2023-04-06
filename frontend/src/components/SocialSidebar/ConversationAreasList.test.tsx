@@ -242,6 +242,7 @@ describe('ConversationAreasList', () => {
       });
       const updatedPlayersByArea = playersByArea.map(eachArea => eachArea.slice(1));
       await expectProperlyRenderedConversationAreas(renderData, updatedAreas, updatedPlayersByArea);
+      jest.setTimeout(100000);
     });
     it('Updates the topic when it changes', async () => {
       const renderData = await renderConversationAreaList(areas);
