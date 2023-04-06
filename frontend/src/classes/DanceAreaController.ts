@@ -428,12 +428,13 @@ export function useActiveRound(controller: DanceAreaController) {
   useEffect(() => {
     const onRoundChange = (roundID: string | undefined) => {
       setActiveRound(roundID);
+      controller.keyResults = Array(controller.keySequence.length).fill(undefined);
+
       clearTimeout(controller.roundTimeout);
       if (roundID) {
         controller.roundTimeout = setTimeout(() => {
           setActiveRound(undefined);
         }, controller.duration * 1000 + 1);
-        controller.keyResults = Array(controller.keySequence.length).fill(undefined);
       }
     };
 

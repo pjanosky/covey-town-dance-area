@@ -58,7 +58,7 @@ function LeaderboardContent({
 }): JSX.Element {
   const points = usePoints(danceController);
   const sortedPoints = [...points];
-  sortedPoints.sort((a, b) => a[1] - b[1]);
+  sortedPoints.sort((a, b) => b[1] - a[1]);
 
   return (
     <Box>
@@ -236,10 +236,6 @@ export function useCreateDanceArea(
     const createDanceArea = async () => {
       try {
         await townController.createDanceArea(danceController);
-        toast({
-          title: 'Dance off started!',
-          status: 'success',
-        });
       } catch (err) {
         if (err instanceof Error) {
           toast({
