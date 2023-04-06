@@ -18,7 +18,6 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
   PosterSessionArea as PosterSessionAreaModel,
-  DanceArea as DanceAreaModel,
   DanceMoveResult,
   DanceRating,
 } from '../types/CoveyTownSocket';
