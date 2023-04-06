@@ -172,6 +172,36 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TrackInfo": {
+				"properties": {
+					"duration": {
+						"type": "number",
+						"format": "double",
+						"description": "The duration of the track in milliseconds."
+					},
+					"artist": {
+						"type": "string",
+						"description": "The artist the track belongs to"
+					},
+					"album": {
+						"type": "string",
+						"description": "The album it is on"
+					},
+					"title": {
+						"type": "string",
+						"description": "The title of the song"
+					},
+					"url": {
+						"type": "string",
+						"description": "The url of the track"
+					}
+				},
+				"required": [
+					"url"
+				],
+				"type": "object",
+				"description": "A data type representing information about a track."
+			},
 			"NumberKey": {
 				"type": "string",
 				"description": "All the possible number keys that we will detect."
@@ -196,7 +226,7 @@
 					},
 					"music": {
 						"items": {
-							"type": "string"
+							"$ref": "#/components/schemas/TrackInfo"
 						},
 						"type": "array",
 						"description": "The url or song id of the current song. There will be no music playing\nwhen the player joins the area (which is why music can be undefined)."
@@ -776,10 +806,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
-										"type": "string"
-									},
-									"type": "array"
+									"type": "boolean"
 								}
 							}
 						}

@@ -250,7 +250,6 @@ export function DanceKeyViewer({ danceController }: DanceControllerProps) {
   const overlayComponent = useOverlayComponentStyle(0);
   useEffect(() => {
     // start the round when the component mounts to sync with animation
-    console.log(`component mounted: ${new Date().getTime()}`);
     danceController.roundStart = new Date();
   }, [activeRound, danceController]);
 

@@ -500,7 +500,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
       const danceController = this._danceAreas.find(
         area => area.id === danceMoveResult.interactableID,
       );
-      if (danceController) {
+      if (danceController && danceMoveResult.playerId !== this.ourPlayer.id) {
         danceController.emit('danceMove', danceMoveResult);
       }
     });
@@ -511,7 +511,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      */
     this._socket.on('danceRating', danceRating => {
       const danceController = this._danceAreas.find(area => area.id === danceRating.interactableID);
-      if (danceController) {
+      if (danceController && danceRating.recipient === this.ourPlayer.id) {
         danceController.emit('danceRating', danceRating);
       }
     });
@@ -825,6 +825,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    * Adds a track to the queue of the specified dance area.
    * @param danceAreaController the dance area controller associated with the area to add the track
    * @param trackUrl the url of the track
+   * @returns whether this track was successfully added to the que
    */
   public async queueDanceAreaTrack(danceAreaController: DanceAreaController, trackUrl: string) {
     return this._townsService.queueDanceAreaTrack(

@@ -3,7 +3,12 @@ import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
-import { DanceArea as DanceAreaModel, KeySequence, TownEmitter } from '../types/CoveyTownSocket';
+import {
+  DanceArea as DanceAreaModel,
+  KeySequence,
+  TownEmitter,
+  TrackInfo,
+} from '../types/CoveyTownSocket';
 import DanceArea from './DanceFloorArea';
 import SpotifyClient from '../lib/SpotifyClient';
 
@@ -13,12 +18,11 @@ describe('DanceArea', () => {
   const townEmitter = mock<TownEmitter>();
   let newPlayer: Player;
   const id = nanoid();
-  const music: string[] = ['test song'];
+  const music: TrackInfo[] = [{ url: 'test song' }];
   const roundId = nanoid();
   let keySequence: KeySequence;
   const duration = 20;
   let points: Record<string, number>;
-  let playSongsSpy: jest.SpyInstance<Promise<void>, []>;
 
   beforeEach(() => {
     mockClear(townEmitter);
@@ -30,13 +34,18 @@ describe('DanceArea', () => {
     newPlayer = new Player(nanoid(), mock<TownEmitter>());
     testArea.add(newPlayer);
     points = { [newPlayer.id]: 0 };
-    jest.useFakeTimers();
-    playSongsSpy = jest.spyOn(DanceArea.prototype, 'playSongs').mockImplementation(async () => {});
-    keySequence = testArea.keySequence;
   });
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
   afterEach(() => {
-    testArea.remove(newPlayer);
     jest.clearAllTimers();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   describe('Getters', () => {
@@ -67,7 +76,7 @@ describe('DanceArea', () => {
       const lastEmittedUpdate = getLastEmittedEvent(townEmitter, 'interactableUpdate');
       expect(lastEmittedUpdate).toEqual({
         id,
-        music,
+        music: [],
         roundId: testArea.roundId,
         keySequence,
         duration,
@@ -124,7 +133,7 @@ describe('DanceArea', () => {
   });
   test('[OMG2 updateModel] updateModel sets music, roundId, keySequence, duration and points', () => {
     const newId = 'spam';
-    const newMusic = ['random song'];
+    const newMusic = [{ url: 'random song' }];
     const newRoundId = nanoid();
     const newKeySequence: KeySequence = ['one', 'two', 'three'];
     const newDuration = 45;
@@ -138,7 +147,7 @@ describe('DanceArea', () => {
       points: newPoints,
     };
     testArea.updateModel(newModel);
-    expect(testArea.music).toEqual(newMusic);
+    expect(testArea.music).toEqual([]);
     expect(testArea.id).toBe(id);
     expect(testArea.roundId).toBe(newRoundId);
     expect(testArea.keySequence).toEqual(newKeySequence);
@@ -172,33 +181,47 @@ describe('DanceArea', () => {
       expect(val.occupantsByID).toEqual([]);
     });
   });
-  describe('playSongs', () => {
-    it('play songs changes song after the duration of the song', async () => {
-      const newMusic = ['song1', 'song2'];
-      const model: DanceAreaModel = {
-        id: testArea.id,
-        music: newMusic,
-        roundId: undefined,
-        points: {},
-        keySequence: [],
-        duration: 0,
-      };
-      testArea.updateModel(model);
-
-      playSongsSpy.mockRestore();
+  describe('queueTrack', () => {
+    it('adds track to queue and changes song after the duration of the song', async () => {
       const songDuration = 10000;
-      jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async _ => ({
-        valid: true,
+      jest.spyOn(SpotifyClient.prototype, 'getTrackData').mockImplementation(async url => ({
+        url,
         duration: songDuration,
+        title: 'title',
+        artist: 'artist',
+        album: 'album',
       }));
 
-      await testArea.playSongs();
-      expect(testArea.music).toEqual(newMusic);
-      jest.advanceTimersByTime(songDuration + 5000);
-      expect(testArea.music).toEqual(['song2']);
-      jest.advanceTimersByTime(songDuration * 2);
+      await expect(testArea.queueTrack('song1')).resolves.toEqual(true);
+      await expect(testArea.queueTrack('song2')).resolves.toEqual(true);
 
-      playSongsSpy.mockImplementation(async () => {});
+      expect(testArea.music).toEqual([
+        {
+          url: 'song1',
+          duration: songDuration,
+          title: 'title',
+          artist: 'artist',
+          album: 'album',
+        },
+        {
+          url: 'song2',
+          duration: songDuration,
+          title: 'title',
+          artist: 'artist',
+          album: 'album',
+        },
+      ]);
+      jest.advanceTimersByTime(songDuration + 5000);
+      expect(testArea.music).toEqual([
+        {
+          url: 'song2',
+          duration: songDuration,
+          title: 'title',
+          artist: 'artist',
+          album: 'album',
+        },
+      ]);
+      jest.advanceTimersByTime(songDuration * 2);
     });
   });
 });

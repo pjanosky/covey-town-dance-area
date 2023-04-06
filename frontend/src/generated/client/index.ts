@@ -20,6 +20,7 @@ export type { Town } from './models/Town';
 export type { TownCreateParams } from './models/TownCreateParams';
 export type { TownCreateResponse } from './models/TownCreateResponse';
 export type { TownSettingsUpdate } from './models/TownSettingsUpdate';
+export type { TrackInfo } from './models/TrackInfo';
 export type { ViewingArea } from './models/ViewingArea';
 
 export { TownsService } from './services/TownsService';

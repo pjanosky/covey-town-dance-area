@@ -86,6 +86,11 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TrackInfo": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"duration":{"dataType":"double"},"artist":{"dataType":"string"},"album":{"dataType":"string"},"title":{"dataType":"string"},"url":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "NumberKey": {
         "dataType": "refAlias",
         "type": {"dataType":"string","validators":{}},
@@ -105,7 +110,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"string","required":true},
-            "music": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "music": {"dataType":"array","array":{"dataType":"refAlias","ref":"TrackInfo"},"required":true},
             "roundId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"undefined"}],"required":true},
             "keySequence": {"ref":"KeySequence","required":true},
             "duration": {"dataType":"double","required":true},
