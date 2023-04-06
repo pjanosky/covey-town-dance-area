@@ -423,7 +423,7 @@ export default class Town {
    */
   public addDanceArea(danceArea: DanceAreaModel): boolean {
     const area = this._interactables.find(eachArea => eachArea.id === danceArea.id) as DanceArea;
-    if (!area) {
+    if (!area || area.roundId) {
       return false;
     }
     area.updateModel(danceArea);
