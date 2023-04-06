@@ -104,13 +104,16 @@ export default class DanceArea extends InteractableArea {
    * updates the round
    */
 
-  public static updateRound(area: DanceArea): void {
-    if (area._occupants.length > 0) {
-      area._duration = 20;
-      area._roundId = nanoid();
-      area._keySequence = generateKeySequence();
-      area._roundTimeout = setTimeout(DanceArea.updateRound, area.duration * 1000, area);
-      area._emitAreaChanged();
+  public updateRound(): void {
+    if (this._occupants.length > 0) {
+      this._duration = 20;
+      this._roundId = nanoid();
+      this._keySequence = generateKeySequence();
+      clearTimeout(this._roundTimeout);
+      this._roundTimeout = setTimeout(() => {
+        this.updateRound();
+      }, this.duration * 1000);
+      this._emitAreaChanged();
     }
   }
 
@@ -123,7 +126,7 @@ export default class DanceArea extends InteractableArea {
     super.add(player);
     // set roundID when area first becomes occupied;
     if (this._occupants.length === 1) {
-      DanceArea.updateRound(this);
+      this.updateRound();
     }
     this._points.set(player.id, 0);
     this._emitAreaChanged();

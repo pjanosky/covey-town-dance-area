@@ -217,7 +217,7 @@ export class TownsController extends Controller {
   public async createDanceArea(
     @Path() townID: string,
     @Header('X-Session-Token') sessionToken: string,
-    @Body() requestBody: DanceArea,
+    @Body() requestBody: { danceAreaId: string },
   ): Promise<void> {
     // download file here TODO
     const curTown = this._townsStore.getTownByID(townID);
@@ -228,7 +228,7 @@ export class TownsController extends Controller {
       throw new InvalidParametersError('Invalid session ID');
     }
     // add viewing area to the town, throw error if it fails
-    const success = await curTown.addDanceArea(requestBody);
+    const success = await curTown.addDanceArea(requestBody.danceAreaId);
     if (!success) {
       throw new InvalidParametersError('Invalid dance area');
     }
