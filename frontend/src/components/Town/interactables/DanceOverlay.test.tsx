@@ -174,10 +174,10 @@ describe('Dance Overlay Tests', () => {
 
       const renderData = render(RenderLeaderboard(danceController, townController));
 
-      expect(await renderData.findByText('1. person1')).toBeVisible();
-      expect(await renderData.findByText('2. person2')).toBeVisible();
-      expect(await renderData.findByText('3. You')).toBeVisible();
-      expect(await renderData.findByText('4. person0')).toBeVisible();
+      expect(await renderData.findByText('1. person0')).toBeVisible();
+      expect(await renderData.findByText('2. You')).toBeVisible();
+      expect(await renderData.findByText('3. person2')).toBeVisible();
+      expect(await renderData.findByText('4. person1')).toBeVisible();
       expect(await renderData.findByText('30')).toBeVisible();
       expect(await renderData.findByText('45')).toBeVisible();
       expect(await renderData.findByText('3')).toBeVisible();
