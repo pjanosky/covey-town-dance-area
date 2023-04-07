@@ -1,33 +1,23 @@
 import { mock, mockClear, MockProxy } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
-import TownController from './TownController';
 import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
-import { DanceArea, KeySequence } from '../types/CoveyTownSocket';
+import { DanceArea, KeySequence, TrackInfo } from '../types/CoveyTownSocket';
 
 describe('DanceAreaController', () => {
   let testArea: DanceAreaController;
   let testAreaModel: DanceArea;
-  const townController: MockProxy<TownController> = mock<TownController>();
-  const mockListeners = mock<DanceAreaEvents>();
+  let mockListeners: ReturnType<typeof mock<DanceAreaEvents>>;
   beforeEach(() => {
     testAreaModel = {
       id: nanoid(),
-      music: [],
+      music: [{ url: 'test-song' }],
       roundId: nanoid(),
       keySequence: [],
       duration: 0,
       points: {},
     };
     testArea = new DanceAreaController(testAreaModel);
-    mockClear(townController);
-    mockClear(mockListeners.musicChanged);
-    mockClear(mockListeners.currentTrackChanged);
-    mockClear(mockListeners.roundIdChanged);
-    mockClear(mockListeners.keySequenceChanged);
-    mockClear(mockListeners.durationChanged);
-    mockClear(mockListeners.pointsChanged);
-    mockClear(mockListeners.keyResultsChanged);
-    mockClear(mockListeners.danceMove);
+    mockListeners = mock<DanceAreaEvents>();
     testArea.addListener('musicChanged', mockListeners.musicChanged);
     testArea.addListener('currentTrackChanged', mockListeners.currentTrackChanged);
     testArea.addListener('roundIdChanged', mockListeners.roundIdChanged);
@@ -36,7 +26,12 @@ describe('DanceAreaController', () => {
     testArea.addListener('pointsChanged', mockListeners.pointsChanged);
     testArea.addListener('keyResultsChanged', mockListeners.keyResultsChanged);
     testArea.addListener('danceMove', mockListeners.danceMove);
+    testArea.addListener('activeRoundChanged', mockListeners.activeRoundChanged);
   });
+
+  beforeAll(() => jest.useFakeTimers());
+  afterEach(() => jest.clearAllTimers());
+  afterAll(() => jest.useRealTimers());
 
   describe('Tests get and set for the music property', () => {
     test('updates the music property and emits a musicChanged event if the property changes', () => {
@@ -169,14 +164,61 @@ describe('DanceAreaController', () => {
       expect(testArea.id).toEqual(existingId);
     });
   });
-  describe('getCurrentTrack', () => {
-    it('getCurrentTrack returns the first track of there are track in the queue', () => {
-      testArea.music = [{ url: 'Roman Holiday' }, { url: 'Chun Li' }, { url: 'Good Form' }];
+  describe('currentTrack', () => {
+    it('getCurrentTrack returns the first track if there are track in the queue', () => {
+      const newMusic = [{ url: 'Roman Holiday' }, { url: 'Chun Li' }, { url: 'Good Form' }];
+      testArea.music = newMusic;
       expect(testArea.currentTrack).toEqual({ url: 'Roman Holiday' });
+      expect(mockListeners.currentTrackChanged).toBeCalledWith(newMusic[0]);
     });
-    it('getCurrentTrack returns the first track of there are track in the queue', () => {
-      testArea.music = [];
+    it('getCurrentTrack returns undefined if there are track in the queue', () => {
+      const newMusic: TrackInfo[] = [];
+      testArea.music = newMusic;
       expect(testArea.currentTrack).toBeUndefined();
+      expect(mockListeners.currentTrackChanged).toBeCalledWith(undefined);
+    });
+    it('does not emit an event if the first track does not change', () => {
+      testArea.music = testArea.music.slice();
+      expect(mockListeners.currentTrackChanged).not.toBeCalledWith(undefined);
+    });
+  });
+
+  describe('activeRound', () => {
+    it('test get and set for activeRound', () => {
+      const newRound = nanoid();
+      testArea.activeRound = newRound;
+      expect(testArea.activeRound).toEqual(newRound);
+      expect(mockListeners.activeRoundChanged).toHaveBeenCalledWith(newRound);
+    });
+    it('does not emit event if the activeRound does not change', () => {
+      const newRound = testArea.activeRound;
+      testArea.activeRound = newRound;
+      expect(mockListeners.activeRoundChanged).not.toHaveBeenCalled();
+    });
+    it('activeRound returns the round ID if the round duration has not passed', () => {
+      const duration = 5;
+      const newRoundId = nanoid();
+      testArea.duration = duration;
+      testArea.roundId = newRoundId;
+      expect(testArea.activeRound).toEqual(newRoundId);
+      expect(mockListeners.activeRoundChanged).toBeCalledWith(newRoundId);
+    });
+    it('activeRound returns the undefined if the round duration has passed', () => {
+      const duration = 5;
+      const newRoundId = nanoid();
+      testArea.duration = duration;
+      testArea.roundId = newRoundId;
+      expect(testArea.activeRound).toEqual(newRoundId);
+      expect(mockListeners.activeRoundChanged).toBeCalledWith(newRoundId);
+      mockListeners.activeRoundChanged.mockClear();
+      jest.advanceTimersByTime(duration * 1000 + 1000);
+      expect(testArea.activeRound).toEqual(undefined);
+      expect(mockListeners.activeRoundChanged).toBeCalledWith(undefined);
+    });
+    it('does not emit an event if the round ID does not change', () => {
+      const newRoundId = testArea.roundId;
+      testArea.roundId = newRoundId;
+      expect(mockListeners.activeRoundChanged).not.toBeCalled();
     });
   });
 });

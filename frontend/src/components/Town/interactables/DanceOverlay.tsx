@@ -13,7 +13,7 @@ import DanceAreaController, {
   useCurrentTrack,
   useMusic,
   usePoints,
-  useRoundID,
+  useRoundId,
 } from '../../../classes/DanceAreaController';
 import { useToast } from '@chakra-ui/react';
 
@@ -229,7 +229,7 @@ export function useCreateDanceArea(
   danceController: DanceAreaController,
   townController: TownController,
 ) {
-  const roundID = useRoundID(danceController);
+  const roundID = useRoundId(danceController);
   const toast = useToast();
 
   useEffect(() => {
