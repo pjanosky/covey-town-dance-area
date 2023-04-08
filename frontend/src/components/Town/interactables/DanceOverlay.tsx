@@ -16,6 +16,7 @@ import DanceAreaController, {
   useRoundId,
 } from '../../../classes/DanceAreaController';
 import { useToast } from '@chakra-ui/react';
+import RatingModal from './RatingModal';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -43,18 +44,12 @@ function nameForPlayer(townController: TownController, playerId: string | undefi
   return townController.players.find(player => player.id === playerId)?.userName ?? 'Player';
 }
 
-function RatingModal(): JSX.Element {
-  return <></>;
-}
-
 function LeaderboardContent({
   danceController,
   townController,
-  onRate,
 }: {
   danceController: DanceAreaController;
   townController: TownController;
-  onRate: (playerId: string) => void;
 }): JSX.Element {
   const points = usePoints(danceController);
   const sortedPoints = [...points];
@@ -68,9 +63,18 @@ function LeaderboardContent({
             fullWidth={true}
             key={playerId}
             onClick={() => {
-              onRate(playerId);
+              setSelectIsOpen(true);
             }}
             style={{ padding: 0 }}>
+            <RatingModal
+              isOpen={selectIsOpen}
+              close={() => {
+                setSelectIsOpen(false);
+              }}
+              danceController={danceController}
+              townController={townController}
+              playerId={playerId}></RatingModal>
+            ;
             <Box display='flex' justifyContent='space-between' width='100%'>
               <span>
                 {i + 1}. {nameForPlayer(townController, playerId)}
@@ -95,14 +99,12 @@ export function DanceLeaderboard({
 
   return (
     <Box className={overlayComponent} marginTop={0}>
-      <RatingModal></RatingModal>
       <Typography style={{ padding: '15px 25px' }}>Leaderboard</Typography>
       <Divider></Divider>
       <Box overflow='auto' padding='25px' maxHeight='150px'>
         <LeaderboardContent
           danceController={danceController}
-          townController={townController}
-          onRate={() => {}}></LeaderboardContent>
+          townController={townController}></LeaderboardContent>
       </Box>
     </Box>
   );
