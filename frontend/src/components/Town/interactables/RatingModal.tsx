@@ -57,7 +57,6 @@ export default function RatingModal({
           recipient: playerId,
           rating: rating,
         };
-        danceController.emit('danceRating', danceRating);
         townController.emitDanceRating(danceRating);
         closeModal();
         toast({
