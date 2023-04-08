@@ -57,6 +57,9 @@ function LeaderboardContent({
   const points = usePoints(danceController);
   const sortedPoints = [...points];
   sortedPoints.sort((a, b) => b[1] - a[1]);
+  const [selectIsOpen, setSelectIsOpen] = useState(false);
+  const [recipient, setRecipient] = useState('');
+  const toast = useToast();
 
   return (
     <Box>
