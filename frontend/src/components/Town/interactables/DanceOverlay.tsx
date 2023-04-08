@@ -6,7 +6,7 @@ import TownController, {
 import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
-import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
+import { DanceMoveResult, DanceRating, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import DanceAreaController, {
@@ -37,7 +37,10 @@ export function useOverlayComponentStyle(padding = 25) {
   return useStyles().overlayComponent;
 }
 
-function nameForPlayer(townController: TownController, playerId: string | undefined): string {
+export function nameForPlayer(
+  townController: TownController,
+  playerId: string | undefined,
+): string {
   if (playerId === townController.ourPlayer.id) {
     return 'You';
   }
@@ -57,24 +60,32 @@ function LeaderboardContent({
 
   return (
     <Box>
+      <RatingModal
+        isOpen={selectIsOpen}
+        close={() => {
+          setSelectIsOpen(false);
+        }}
+        danceController={danceController}
+        townController={townController}
+        playerId={recipient}></RatingModal>
       {sortedPoints.map(([playerId, score], i) => {
         return (
           <Button
             fullWidth={true}
             key={playerId}
             onClick={() => {
-              setSelectIsOpen(true);
+              if (playerId === townController.ourPlayer.id) {
+                toast({
+                  title: 'Unable to rate player',
+                  description: 'You cannot rate yourself, you silly goose!',
+                  status: 'error',
+                });
+              } else {
+                setRecipient(playerId);
+                setSelectIsOpen(true);
+              }
             }}
             style={{ padding: 0 }}>
-            <RatingModal
-              isOpen={selectIsOpen}
-              close={() => {
-                setSelectIsOpen(false);
-              }}
-              danceController={danceController}
-              townController={townController}
-              playerId={playerId}></RatingModal>
-            ;
             <Box display='flex' justifyContent='space-between' width='100%'>
               <span>
                 {i + 1}. {nameForPlayer(townController, playerId)}
@@ -262,6 +273,36 @@ export function useCreateDanceArea(
 }
 
 /**
+ * This hook adds a listener for when a dance rating is emitted and to notify the recipient of a rating.
+ * @param danceController dance area controller
+ * @param townController town controller
+ */
+export function useHandleRatings(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  {
+    const toast = useToast();
+    useEffect(() => {
+      const danceRatingToast = (danceRating: DanceRating) => {
+        const sender = nameForPlayer(townController, danceRating.sender);
+        const rate = danceRating.rating.toString();
+        if (sender)
+          toast({
+            title: 'Rating received!',
+            description: 'Epic! '.concat(sender, ' sent you ', rate, ' points.'),
+            status: 'info',
+          });
+      };
+      danceController.addListener('danceRating', danceRatingToast);
+      return () => {
+        danceController.removeListener('danceRating', danceRatingToast);
+      };
+    }, [danceController, toast, townController]);
+  }
+}
+
+/**
  * Dance overlay displays all of the overlay components for a dance interactable area
  * including the keys the user needs to press, the leaderboard, and the music player.
  * It also handles key presses made by the user while in the area.
@@ -272,6 +313,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   useHandleKeys(danceController, townController);
   useDanceAnimation(danceController, danceArea);
   useCreateDanceArea(danceController, townController);
+  useHandleRatings(danceController, townController);
 
   return (
     <Box
