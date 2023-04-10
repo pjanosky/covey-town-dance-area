@@ -85,7 +85,7 @@ export default function RatingModal({
         }
       }
     }
-  }, [rating, townController, danceController, playerId, toast]);
+  }, [rating, townController, danceController.id, playerId, closeModal, toast]);
 
   return (
     <Modal
