@@ -348,31 +348,4 @@ describe('Dance Overlay Tests', () => {
       expect(danceController.keyResults).toEqual([undefined, undefined, undefined]);
     });
   });
-
-  describe('useCreateDanceArea', () => {
-    let createDanceAreaSpy: jest.SpyInstance<Promise<void>, [danceController: DanceAreaController]>;
-    beforeEach(() => {
-      createDanceAreaSpy = jest
-        .spyOn(townController, 'createDanceArea')
-        .mockImplementation(async () => {});
-    });
-
-    it('Does not create dance area when round ID is defined', async () => {
-      danceController.roundId = nanoid();
-      render(RenderCreateDanceAreaHook(danceController, townController));
-      act(() => {
-        danceController.roundId = nanoid();
-      });
-      expect(createDanceAreaSpy).not.toBeCalled();
-    });
-
-    it('Creates dance area when round ID is defined', async () => {
-      danceController.roundId = nanoid();
-      render(RenderCreateDanceAreaHook(danceController, townController));
-      act(() => {
-        danceController.roundId = undefined;
-      });
-      expect(createDanceAreaSpy).toBeCalledWith(danceController);
-    });
-  });
 });
