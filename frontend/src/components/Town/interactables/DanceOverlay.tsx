@@ -109,6 +109,11 @@ export function DanceLeaderboard({
   );
 }
 
+/**
+ * Displays the Spotify Player for the dance area.
+ * @param musicPlayerParams dance controller and town controller
+ * @returns music player component
+ */
 function DanceMusicPlayer({
   danceController,
   townController,
@@ -141,9 +146,10 @@ function DanceMusicPlayer({
     );
   } else {
     return (
-      <Box className={overlayComponent}>
+      <Box>
         <Spotify link={currentTrack.url}> </Spotify>
         <Button
+          className={overlayComponent}
           onClick={() => {
             setSelectIsOpen(true);
           }}>
