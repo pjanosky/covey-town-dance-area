@@ -8,7 +8,7 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { RenderResult, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { DanceLeaderboard, useCreateDanceArea, useHandleKeys } from './DanceOverlay';
+import { DanceLeaderboard, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
@@ -19,12 +19,6 @@ import RatingModal from './RatingModal';
 function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
   useHandleKeys(danceController, townController);
-  return <></>;
-}
-
-function CreateDanceAreaHook({ danceController }: { danceController: DanceAreaController }) {
-  const townController = useTownController();
-  useCreateDanceArea(danceController, townController);
   return <></>;
 }
 
@@ -61,19 +55,6 @@ function RenderLeaderboard(danceController: DanceAreaController, townController:
         <DanceLeaderboard
           danceController={danceController}
           townController={townController}></DanceLeaderboard>
-      </TownControllerContext.Provider>
-    </ChakraProvider>
-  );
-}
-
-function RenderCreateDanceAreaHook(
-  danceController: DanceAreaController,
-  townController: TownController,
-) {
-  return (
-    <ChakraProvider>
-      <TownControllerContext.Provider value={townController}>
-        <CreateDanceAreaHook danceController={danceController}></CreateDanceAreaHook>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
