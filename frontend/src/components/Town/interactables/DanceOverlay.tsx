@@ -14,9 +14,10 @@ import { Spotify } from 'react-spotify-embed';
 import DanceAreaController, {
   useCurrentTrack,
   usePoints,
-  useActiveRound,
+  useRoundID,
 } from '../../../classes/DanceAreaController';
 import ActivateDanceOffModal from './ActivateDanceOffModal';
+import { useToast } from '@chakra-ui/react';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -228,6 +229,44 @@ export function useDanceAnimation(
   }
 }
 
+export function useCreateDanceArea(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  const roundID = useRoundID(danceController);
+  const toast = useToast();
+
+  useEffect(() => {
+    const createDanceArea = async () => {
+      try {
+        await townController.createDanceArea(danceController);
+        toast({
+          title: 'Dance off started!',
+          status: 'success',
+        });
+      } catch (err) {
+        if (err instanceof Error) {
+          toast({
+            title: 'unable to begin dance off',
+            description: err.toString(),
+            status: 'error',
+          });
+        } else {
+          console.trace(err);
+          toast({
+            title: 'Unexpected Error',
+            status: 'error',
+          });
+        }
+      }
+    };
+
+    if (!roundID) {
+      createDanceArea();
+    }
+  }, [danceController, roundID, toast, townController]);
+}
+
 /**
  * Dance overlay displays all of the overlay components for a dance interactable area
  * including the keys the user needs to press, the leaderboard, and the music player.
@@ -236,58 +275,45 @@ export function useDanceAnimation(
 export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }): JSX.Element {
   const danceController = useDanceAreaController(danceArea.id);
   const townController = useTownController();
-  const roundId = useActiveRound(danceController);
   useHandleKeys(danceController, townController);
   useDanceAnimation(danceController, danceArea);
-  if (!roundId) {
-    return (
-      <ActivateDanceOffModal
-        isOpen
-        close={() => {
-          // forces game to emit "viewingArea" event again so that
-          // repoening the modal works as expected
-          townController.interactEnd(danceArea);
-        }}
-        danceArea={danceArea}
-      />
-    );
-  } else {
-    return (
-      <Box
-        width='100%'
-        height='100%'
-        position='relative'
-        display='flex'
-        alignItems='flex-end'
-        alignContent='flex-end'>
-        <Box position='sticky' bottom='0px' left='0px' right='0px' width='100%'>
-          <Grid
-            container
-            direction='row'
-            justifyContent='space-between'
-            alignItems='flex-end'
-            alignContent='flex-end'
-            wrap='nowrap'>
+  useCreateDanceArea(danceController, townController);
+
+  return (
+    <Box
+      width='100%'
+      height='100%'
+      position='relative'
+      display='flex'
+      alignItems='flex-end'
+      alignContent='flex-end'>
+      <Box position='sticky' bottom='0px' left='0px' right='0px' width='100%'>
+        <Grid
+          container
+          direction='row'
+          justifyContent='space-between'
+          alignItems='flex-end'
+          alignContent='flex-end'
+          wrap='nowrap'>
+          <Grid item>
+            <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
+          </Grid>
+          <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
             <Grid item>
-              <DanceKeyViewer danceController={danceController}></DanceKeyViewer>
+              <DanceMusicPlayer
+                danceController={danceController}
+                townController={townController}></DanceMusicPlayer>
             </Grid>
-            <Grid container item direction='column' alignItems='flex-end' alignContent='flex-end'>
-              <Grid item>
-                <DanceMusicPlayer
-                  danceController={danceController}
-                  townController={townController}></DanceMusicPlayer>
-              </Grid>
-              <Grid item>
-                <DanceLeaderboard
-                  danceController={danceController}
-                  townController={townController}></DanceLeaderboard>
-              </Grid>
+            <Grid item>
+              <DanceLeaderboard
+                danceController={danceController}
+                townController={townController}></DanceLeaderboard>
             </Grid>
           </Grid>
-        </Box>
+        </Grid>
       </Box>
-    );
-  }
+    </Box>
+  );
 }
 
 /**
