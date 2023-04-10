@@ -8,7 +8,12 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { render, waitFor } from '@testing-library/react';
-import { DanceLeaderboard, useCreateDanceArea, useHandleKeys } from './DanceOverlay';
+import {
+  DanceLeaderboard,
+  DanceMusicPlayer,
+  useCreateDanceArea,
+  useHandleKeys,
+} from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
@@ -77,6 +82,20 @@ function RenderCreateDanceAreaHook(
   );
 }
 
+function RenderDanceMusicPlayer(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <DanceMusicPlayer
+          danceController={danceController}
+          townController={townController}></DanceMusicPlayer>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
 describe('Dance Overlay Tests', () => {
   let danceArea: DanceArea;
   let danceController: DanceAreaController;

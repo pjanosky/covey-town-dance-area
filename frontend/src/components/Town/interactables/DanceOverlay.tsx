@@ -114,7 +114,7 @@ export function DanceLeaderboard({
  * @param musicPlayerParams dance controller and town controller
  * @returns music player component
  */
-function DanceMusicPlayer({
+export function DanceMusicPlayer({
   danceController,
   townController,
 }: {
