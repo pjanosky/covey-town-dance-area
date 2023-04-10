@@ -228,28 +228,44 @@ export default class TownGameScene extends Phaser.Scene {
     this._isDancing = true;
     const keyPressed = danceMoveResult.keyPressed;
     const success = danceMoveResult.success;
-    if (success) {
-      if (keyPressed === 'one') {
-        this._animationKey = 'misa-spin';
-      } else if (keyPressed === 'two') {
-        this._animationKey = 'misa-flip';
-      } else if (keyPressed === 'three') {
-        this._animationKey = 'misa-arms';
-      } else if (keyPressed === 'four') {
-        this._animationKey = 'misa-jump';
+    const playerDancing = danceMoveResult.playerId;
+    // check that our player is the one that emitted the dance move
+    if (playerDancing === this.coveyTownController.ourPlayer.id) {
+      if (success) {
+        if (keyPressed === 'one') {
+          this._animationKey = 'misa-spin';
+        } else if (keyPressed === 'two') {
+          this._animationKey = 'misa-flip';
+        } else if (keyPressed === 'three') {
+          this._animationKey = 'misa-arms';
+        } else if (keyPressed === 'four') {
+          this._animationKey = 'misa-jump';
+        }
+        // if the wrong key is pressed, show the misa-fail animation
+      } else {
+        this._animationKey = 'misa-fail';
       }
-      // if the wrong key is pressed, show the misa-fail animation
+      clearTimeout(this._timer);
+      if (this._isDancing) {
+        this._timer = setTimeout(() => {
+          this._isDancing = false;
+          // once the dance move is complete, misa is back to the front facing position
+          const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
+          gameObjects?.sprite.anims.stop();
+          gameObjects?.sprite.setTexture('atlas', 'misa-front');
+        }, 500);
+      }
     } else {
-      this._animationKey = 'misa-fail';
-    }
-    clearTimeout(this._timer);
-    if (this._isDancing) {
-      this._timer = setTimeout(() => {
-        this._isDancing = false;
-        // once the dance move is complete, misa is back to the front facing position
-        const gameObjects = this.coveyTownController.ourPlayer.gameObjects;
-        gameObjects?.sprite.setTexture('atlas', 'misa-front');
-      }, 500);
+      // find the player that is dancing in the dance move result in the list
+      // of players in the town
+      const playerId = this.coveyTownController.players.find(
+        player => player.id === danceMoveResult.playerId,
+      );
+      // if the player exists, do the dance move result
+      if (playerId) {
+        playerId.doDanceMove(danceMoveResult);
+        console.log('other player dancing');
+      }
     }
   }
 
