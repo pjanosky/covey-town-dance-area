@@ -16,7 +16,6 @@ import DanceAreaController, {
   usePoints,
   useRoundId,
 } from '../../../classes/DanceAreaController';
-import ActivateDanceOffModal from './ActivateDanceOffModal';
 import { useToast } from '@chakra-ui/react';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
