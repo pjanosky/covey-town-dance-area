@@ -18,6 +18,11 @@ import TownController from '../../../classes/TownController';
 import { Rating } from '../../../types/CoveyTownSocket';
 import { nameForPlayer } from './DanceOverlay';
 
+/**
+ * The modal where a user can rate another user on their dance moves.
+ * @param modalParams includes if the modal is open, how to close the modal, dance controller, town controller, player to be rated
+ * @returns frontend rating modal
+ */
 export default function RatingModal({
   isOpen,
   close,

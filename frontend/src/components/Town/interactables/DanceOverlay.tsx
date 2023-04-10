@@ -37,6 +37,12 @@ export function useOverlayComponentStyle(padding = 25) {
   return useStyles().overlayComponent;
 }
 
+/**
+ * Returns the username of the given player in the given town.
+ * @param townController town controller
+ * @param playerId player id
+ * @returns player's username
+ */
 export function nameForPlayer(
   townController: TownController,
   playerId: string | undefined,
@@ -47,6 +53,9 @@ export function nameForPlayer(
   return townController.players.find(player => player.id === playerId)?.userName ?? 'Player';
 }
 
+/**
+ * Frontend contents of the dance area leaderboard.
+ */
 function LeaderboardContent({
   danceController,
   townController,
@@ -102,6 +111,9 @@ function LeaderboardContent({
   );
 }
 
+/**
+ * Wraps the leaderboard contents in a box component.
+ */
 export function DanceLeaderboard({
   danceController,
   townController,
@@ -241,6 +253,11 @@ export function useDanceAnimation(
   }
 }
 
+/**
+ * Sends the backend a request to create a dance area when requested.
+ * @param danceController dance controller
+ * @param townController town controller
+ */
 export function useCreateDanceArea(
   danceController: DanceAreaController,
   townController: TownController,
