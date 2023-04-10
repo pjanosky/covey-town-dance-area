@@ -96,7 +96,6 @@ export default function SelectMusicModal({
             status: 'error',
           });
         }
-        townController.unPause();
       } catch (err) {
         if (err instanceof Error) {
           toast({

@@ -123,11 +123,11 @@ export function DanceMusicPlayer({
 }): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
   const currentTrack = useCurrentTrack(danceController);
-  const [selectIsOpen, setSelectIsOpen] = useState(danceController.music === undefined);
+  const [selectIsOpen, setSelectIsOpen] = useState(false);
 
   if (!currentTrack) {
     return (
-      <Box className={overlayComponent} title='Queue'>
+      <Box className={overlayComponent} title='Queue' textAlign='center'>
         <Button
           onClick={() => {
             setSelectIsOpen(true);
@@ -147,14 +147,19 @@ export function DanceMusicPlayer({
   } else {
     return (
       <Box>
-        <Spotify link={currentTrack.url} title='Spotify'></Spotify>
-        <Button
-          className={overlayComponent}
-          onClick={() => {
-            setSelectIsOpen(true);
-          }}>
-          Add to queue!
-        </Button>
+        <Spotify
+          wide
+          link={currentTrack.url}
+          title='Spotify'
+          style={{ marginBottom: '25px', width: '95%' }}></Spotify>
+        <Box className={overlayComponent} textAlign='center'>
+          <Button
+            onClick={() => {
+              setSelectIsOpen(true);
+            }}>
+            Add to queue!
+          </Button>
+        </Box>
         <SelectMusicModal
           isOpen={selectIsOpen}
           close={() => {
