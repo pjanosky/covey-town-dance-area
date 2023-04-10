@@ -7,7 +7,7 @@ import React from 'react';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import {
   DanceLeaderboard,
   DanceMusicPlayer,
@@ -18,6 +18,7 @@ import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
+import userEvent from '@testing-library/user-event';
 
 function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
@@ -336,6 +337,12 @@ describe('Dance Overlay Tests', () => {
       const renderData = render(RenderDanceMusicPlayer(danceController, townController));
       expect(await renderData.findByText('Add to queue!')).toBeVisible();
       expect(await renderData.findByTitle('Queue')).toBeVisible();
+    });
+    it('Displays the music modal when the add to queue button is pressed', async () => {
+      let renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      userEvent.click(renderData.getByText('Add to queue!'));
+      renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Enter a Spotify link to queue here!')).toBeVisible();
     });
     it('Displays add to queue button and player when music is set in the area', async () => {
       danceController.music = [
