@@ -14,7 +14,7 @@ import { Spotify } from 'react-spotify-embed';
 import DanceAreaController, {
   useCurrentTrack,
   usePoints,
-  useRoundID,
+  useRoundId,
 } from '../../../classes/DanceAreaController';
 import ActivateDanceOffModal from './ActivateDanceOffModal';
 import { useToast } from '@chakra-ui/react';
@@ -233,7 +233,7 @@ export function useCreateDanceArea(
   danceController: DanceAreaController,
   townController: TownController,
 ) {
-  const roundID = useRoundID(danceController);
+  const roundID = useRoundId(danceController);
   const toast = useToast();
 
   useEffect(() => {

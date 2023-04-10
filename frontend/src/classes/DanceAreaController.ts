@@ -36,6 +36,14 @@ export type DanceAreaEvents = {
   roundIdChanged: (roundId: string | undefined) => void;
 
   /**
+   * A roundChanged event indicates that a new round has begun
+   * or the current round's duration has passed
+   *
+   * @param roundId the new unique ID
+   */
+  activeRoundChanged: (activeRound: string | undefined) => void;
+
+  /**
    * A keySequenceChanged event indicates that there is a new key sequence for
    * the players to follow.
    *
@@ -112,6 +120,8 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
   private _music: TrackInfo[];
 
   private _roundId: string | undefined;
+
+  private _activeRound: string | undefined;
 
   private _keySequence: KeySequence;
 
@@ -195,6 +205,38 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
     if (this._roundId !== roundId) {
       this._roundId = roundId;
       this.emit('roundIdChanged', roundId);
+
+      // if the round has changed, clear the key results and update the active round
+      this.keyResults = new Array(this.keySequence.length).fill(undefined);
+      this.activeRound = roundId;
+      clearTimeout(this.roundTimeout);
+      if (roundId) {
+        console.log(`setting timeout to ${this.duration * 1000}`);
+        this.roundTimeout = setTimeout(() => {
+          console.log('exectuting timeout');
+          this.activeRound = undefined;
+        }, this.duration * 1000);
+      }
+    }
+  }
+
+  /**
+   * Get the id of the current active round or undefined if there is no
+   * active round. A round is active if the current round ID is defined
+   * and the duration of the round has not passed.
+   */
+  public get activeRound(): string | undefined {
+    return this._activeRound;
+  }
+
+  /**
+   * Sets the current active round an emits an update to listeners
+   * if it has changed.
+   */
+  public set activeRound(activeRound: string | undefined) {
+    if (this._activeRound !== activeRound) {
+      this._activeRound = activeRound;
+      this.emit('activeRoundChanged', activeRound);
     }
   }
 
@@ -272,7 +314,7 @@ export default class DanceAreaController extends (EventEmitter as new () => Type
       this._keyResults.every((key, i) => key === keyResults[i]);
     if (!equal) {
       this._keyResults = keyResults.slice();
-      this.emit('keyResultsChanged', this._keyResults);
+      this.emit('keyResultsChanged', keyResults);
     }
   }
 
@@ -426,21 +468,9 @@ export function useActiveRound(controller: DanceAreaController) {
   const [activeRound, setActiveRound] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const onRoundChange = (roundID: string | undefined) => {
-      setActiveRound(roundID);
-      controller.keyResults = Array(controller.keySequence.length).fill(undefined);
-
-      clearTimeout(controller.roundTimeout);
-      if (roundID) {
-        controller.roundTimeout = setTimeout(() => {
-          setActiveRound(undefined);
-        }, controller.duration * 1000 + 1);
-      }
-    };
-
-    controller.addListener('roundIdChanged', onRoundChange);
+    controller.addListener('activeRoundChanged', setActiveRound);
     return () => {
-      controller.removeListener('roundIdChanged', onRoundChange);
+      controller.removeListener('activeRoundChanged', setActiveRound);
     };
   }, [controller]);
 
@@ -471,7 +501,7 @@ export function usePoints(controller: DanceAreaController): Map<string, number> 
  * @param controller the given controller
  * @returns a map from player id to points
  */
-export function useRoundID(controller: DanceAreaController): string | undefined {
+export function useRoundId(controller: DanceAreaController): string | undefined {
   const [roundID, setRoundID] = useState(controller.roundId);
   useEffect(() => {
     controller.addListener('roundIdChanged', setRoundID);
