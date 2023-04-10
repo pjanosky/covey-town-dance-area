@@ -7,12 +7,14 @@ import React from 'react';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { render, waitFor } from '@testing-library/react';
+import { RenderResult, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { DanceLeaderboard, useCreateDanceArea, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
+import userEvent from '@testing-library/user-event';
+import RatingModal from './RatingModal';
 
 function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
@@ -182,6 +184,70 @@ describe('Dance Overlay Tests', () => {
       expect(await renderData.findByText('45')).toBeVisible();
       expect(await renderData.findByText('3')).toBeVisible();
       expect(await renderData.findByText('28')).toBeVisible();
+    });
+
+    it('Opens the rating modal when player is clicked', async () => {
+      const points = new Map();
+      points.set(ourPlayer.id, 30);
+      points.set(otherPlayers[0].id, 45);
+      points.set(otherPlayers[1].id, 3);
+      points.set(otherPlayers[2].id, 28);
+      danceController.points = points;
+
+      let renderData = render(RenderLeaderboard(danceController, townController));
+
+      userEvent.click(renderData.getByText('1. person0'));
+      renderData = render(RenderLeaderboard(danceController, townController));
+      expect(await renderData.findByText('Enter your rating for person0 here!')).toBeVisible();
+    });
+  });
+
+  describe('RatingModal', () => {
+    let renderData: RenderResult;
+    beforeEach(() => {
+      const points = new Map();
+      points.set(ourPlayer.id, 30);
+      points.set(otherPlayers[0].id, 45);
+      points.set(otherPlayers[1].id, 3);
+      points.set(otherPlayers[2].id, 28);
+      danceController.points = points;
+
+      renderData = render(
+        <ChakraProvider>
+          <TownControllerContext.Provider value={townController}>
+            <RatingModal
+              isOpen={true}
+              close={() => {}}
+              danceController={danceController}
+              townController={townController}
+              playerId={otherPlayers[0].id}></RatingModal>
+          </TownControllerContext.Provider>
+        </ChakraProvider>,
+      );
+    });
+
+    it('Correctly sets the number of points in the slider', async () => {
+      const ratingInputElement = renderData.getByLabelText(
+        'Rate the player points',
+      ) as HTMLInputElement;
+      fireEvent.change(ratingInputElement, { target: { value: '3' } });
+      expect(ratingInputElement.value).toBe('3');
+    });
+
+    it('Closes the modal when send button is submitted', async () => {
+      const ratingInputElement = renderData.getByLabelText(
+        'Rate the player points',
+      ) as HTMLInputElement;
+      const send = screen.getByRole('button', { name: 'Send' });
+      fireEvent.change(ratingInputElement, { target: { value: '3' } });
+      fireEvent.submit(send);
+      expect(send).not.toBeVisible();
+    });
+
+    it('Closes the modal when cancel button is submitted', async () => {
+      const cancel = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.submit(cancel);
+      expect(cancel).not.toBeVisible();
     });
   });
 
