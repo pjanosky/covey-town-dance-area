@@ -1,4 +1,4 @@
-import { mock, mockClear, MockProxy } from 'jest-mock-extended';
+import { mock, mockClear } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import DanceAreaController, { DanceAreaEvents } from './DanceAreaController';
 import { DanceArea, KeySequence, TrackInfo } from '../types/CoveyTownSocket';

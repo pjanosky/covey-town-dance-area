@@ -112,7 +112,7 @@ function RenderMusicModal(danceController: DanceAreaController, townController: 
     </ChakraProvider>
   );
 }
-        
+
 describe('Dance Overlay Tests', () => {
   let danceArea: DanceArea;
   let danceController: DanceAreaController;
