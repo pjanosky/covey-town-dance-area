@@ -96,6 +96,7 @@ function RenderDanceMusicPlayer(
     </ChakraProvider>
   );
 }
+
 describe('Dance Overlay Tests', () => {
   let danceArea: DanceArea;
   let danceController: DanceAreaController;
@@ -326,6 +327,29 @@ describe('Dance Overlay Tests', () => {
         danceController.roundId = undefined;
       });
       expect(createDanceAreaSpy).toBeCalledWith(danceController);
+    });
+  });
+
+  describe('DanceMusicPlayer', () => {
+    it('Displays add to queue button when no music is set in the area', async () => {
+      danceController.music = [];
+      const renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Add to queue!')).toBeVisible();
+      expect(await renderData.findByTitle('Queue')).toBeVisible();
+    });
+    it('Displays add to queue button and player when music is set in the area', async () => {
+      danceController.music = [
+        {
+          url: 'https://open.spotify.com/track/5Y35SjAfXjjG0sFQ3KOxmm?si=df34d9f960514271',
+          duration: 18100,
+          title: 'Nobody Gets Me',
+          artist: 'SZA',
+          album: 'SOS',
+        },
+      ];
+      const renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Add to queue!')).toBeVisible();
+      expect(await renderData.findByTitle('Spotify')).toBeVisible();
     });
   });
 });

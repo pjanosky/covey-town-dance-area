@@ -127,7 +127,7 @@ export function DanceMusicPlayer({
 
   if (!currentTrack) {
     return (
-      <Box className={overlayComponent}>
+      <Box className={overlayComponent} title='Queue'>
         <Button
           onClick={() => {
             setSelectIsOpen(true);
@@ -147,7 +147,7 @@ export function DanceMusicPlayer({
   } else {
     return (
       <Box>
-        <Spotify link={currentTrack.url}> </Spotify>
+        <Spotify link={currentTrack.url} title='Spotify'></Spotify>
         <Button
           className={overlayComponent}
           onClick={() => {
