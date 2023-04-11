@@ -7,7 +7,7 @@ import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, DanceRating, NumberKey } from '../../../types/CoveyTownSocket';
-import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import SelectMusicModal from './SelectMusicModal';
 import { Spotify } from 'react-spotify-embed';

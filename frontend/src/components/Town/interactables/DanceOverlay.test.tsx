@@ -8,12 +8,7 @@ import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
 import { RenderResult, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import {
-  DanceLeaderboard,
-  DanceMusicPlayer,
-  useCreateDanceArea,
-  useHandleKeys,
-} from './DanceOverlay';
+import { DanceLeaderboard, DanceMusicPlayer, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
