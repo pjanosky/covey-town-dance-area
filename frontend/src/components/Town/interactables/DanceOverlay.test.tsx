@@ -207,22 +207,33 @@ describe('Dance Overlay Tests', () => {
       );
     });
 
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
     it('Correctly sets the number of points in the slider', async () => {
       const ratingInputElement = renderData.getByLabelText(
-        'Rate the player points',
+        'Rate the player 3 points',
       ) as HTMLInputElement;
       fireEvent.change(ratingInputElement, { target: { value: '3' } });
       expect(ratingInputElement.value).toBe('3');
     });
 
     it('Closes the modal when send button is submitted', async () => {
+      const townRatingSpy = jest.spyOn(townController, 'emitDanceRating');
       const ratingInputElement = renderData.getByLabelText(
-        'Rate the player points',
+        'Rate the player 3 points',
       ) as HTMLInputElement;
       const send = screen.getByRole('button', { name: 'Send' });
       fireEvent.change(ratingInputElement, { target: { value: '3' } });
       fireEvent.submit(send);
       expect(send).not.toBeVisible();
+      expect(townRatingSpy).toHaveBeenCalledWith({
+        interactableID: danceController.id,
+        sender: townController.ourPlayer.id,
+        recipient: otherPlayers[0].id,
+        rating: 3,
+      });
     });
 
     it('Closes the modal when cancel button is submitted', async () => {
