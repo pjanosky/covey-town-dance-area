@@ -32,6 +32,17 @@ To create an account and configure your local environment:
 | `TWILIO_API_KEY_SECRET` | The secret for the API key you created.   |
 | `TWILIO_API_AUTH_TOKEN` | Visible on your twilio account dashboard. |
 
+You will also need a spotify developers account for the music queue in the dance areas to work correctly.
+
+1. Go to [Spotify](https://developer.spotify.com) and create a spotify account.
+2. On the developer dashboard, create a new app.
+3. Add the following values to the same `.env` file in the `townService` directory.
+
+| Config Value            | Description                                 |
+| ----------------------- | ------------------------------------------- |
+| `SPOTIFY_CLIENT_ID`     | Visible in the settings tab of the new app. |
+| `SPOTIFY_CLIENT_SECRET` | Visible in the settings tab of the new app. |
+
 ### Starting the backend
 
 Once your backend is configured, you can start it by running `npm start` in the `townService` directory (the first time you run it, you will also need to run `npm install`).

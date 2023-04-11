@@ -96,11 +96,15 @@ export default class SpotifyClient implements IMusicClient {
       if (response.status !== 200 || !response.data) {
         return undefined;
       }
+      const artists: string[] = response.data.artists.map(
+        (artist: { name: string }) => artist.name,
+      );
+
       return {
         url: trackUrl,
         title: response.data.name,
         album: response.data.album?.name,
-        artist: response.data.artists?.name,
+        artist: artists.join(', '),
         duration: response.data.duration_ms,
       };
     } catch (e) {

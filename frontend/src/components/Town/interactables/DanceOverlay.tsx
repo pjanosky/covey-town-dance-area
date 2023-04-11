@@ -9,9 +9,10 @@ import { DanceArea as DanceAreaInteractable } from './DanceArea';
 import { DanceMoveResult, DanceRating, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Divider, Grid, Input, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
+import SelectMusicModal from './SelectMusicModal';
+import { Spotify } from 'react-spotify-embed';
 import DanceAreaController, {
   useCurrentTrack,
-  useMusic,
   usePoints,
   useRoundId,
 } from '../../../classes/DanceAreaController';
@@ -136,7 +137,12 @@ export function DanceLeaderboard({
   );
 }
 
-function DanceMusicPlayer({
+/**
+ * Displays the Spotify Player for the dance area.
+ * @param musicPlayerParams dance controller and town controller
+ * @returns music player component
+ */
+export function DanceMusicPlayer({
   danceController,
   townController,
 }: {
@@ -144,47 +150,55 @@ function DanceMusicPlayer({
   townController: TownController;
 }): JSX.Element {
   const overlayComponent = useOverlayComponentStyle();
-  const music = useMusic(danceController);
   const currentTrack = useCurrentTrack(danceController);
-  const toast = useToast();
-  const [input, setInput] = useState('');
+  const [selectIsOpen, setSelectIsOpen] = useState(false);
 
-  const onClick = async () => {
-    const success = await townController.queueDanceAreaTrack(danceController, input);
-    if (!success) {
-      toast({
-        title: 'Failed to queue track',
-        description: 'Make sure you are entering a valid spotify track URL',
-        status: 'error',
-      });
-    } else {
-      toast({
-        title: 'Added track to queue',
-        status: 'success',
-      });
-    }
-  };
-
-  return (
-    <Box className={overlayComponent}>
-      <div>
-        <Input onChange={e => setInput(e.target.value)}></Input>
-        <Button onClick={onClick}>Add Track</Button>
-        <span>
-          Current Track: {currentTrack?.url}, {currentTrack?.title}, {currentTrack?.artist},
-          {currentTrack?.album}
-        </span>
-        <span> Queue: </span>
-        {music.map((track, i) => {
-          return (
-            <span key={`track-${i}`}>
-              {track?.url}, {track?.title}, {track?.artist}, {track?.album}
-            </span>
-          );
-        })}
-      </div>
-    </Box>
-  );
+  if (!currentTrack) {
+    return (
+      <Box className={overlayComponent} title='Queue' textAlign='center'>
+        <Button
+          onClick={() => {
+            setSelectIsOpen(true);
+          }}>
+          Add to queue!
+        </Button>
+        <SelectMusicModal
+          isOpen={selectIsOpen}
+          close={() => {
+            setSelectIsOpen(false);
+          }}
+          danceController={danceController}
+          townController={townController}
+        />
+      </Box>
+    );
+  } else {
+    return (
+      <Box>
+        <Spotify
+          wide
+          link={currentTrack.url}
+          title='Spotify'
+          style={{ marginBottom: '25px', width: '95%' }}></Spotify>
+        <Box className={overlayComponent} textAlign='center'>
+          <Button
+            onClick={() => {
+              setSelectIsOpen(true);
+            }}>
+            Add to queue!
+          </Button>
+        </Box>
+        <SelectMusicModal
+          isOpen={selectIsOpen}
+          close={() => {
+            setSelectIsOpen(false);
+          }}
+          danceController={danceController}
+          townController={townController}
+        />
+      </Box>
+    );
+  }
 }
 
 /**
