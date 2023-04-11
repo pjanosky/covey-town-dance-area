@@ -36,7 +36,7 @@ export default function RatingModal({
   townController: TownController;
   playerId: string;
 }): JSX.Element {
-  const [rating, setRating] = useState<Rating>();
+  const [rating, setRating] = useState<Rating>(3);
 
   useEffect(() => {
     if (isOpen) {
