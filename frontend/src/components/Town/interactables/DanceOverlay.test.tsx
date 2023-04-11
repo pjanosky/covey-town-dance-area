@@ -7,12 +7,19 @@ import React from 'react';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { render, waitFor } from '@testing-library/react';
-import { DanceLeaderboard, useCreateDanceArea, useHandleKeys } from './DanceOverlay';
+import { render, screen, waitFor } from '@testing-library/react';
+import {
+  DanceLeaderboard,
+  DanceMusicPlayer,
+  useCreateDanceArea,
+  useHandleKeys,
+} from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
+import userEvent from '@testing-library/user-event';
+import SelectMusicModal from './SelectMusicModal';
 
 function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
@@ -72,6 +79,35 @@ function RenderCreateDanceAreaHook(
     <ChakraProvider>
       <TownControllerContext.Provider value={townController}>
         <CreateDanceAreaHook danceController={danceController}></CreateDanceAreaHook>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
+function RenderDanceMusicPlayer(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <DanceMusicPlayer
+          danceController={danceController}
+          townController={townController}></DanceMusicPlayer>
+      </TownControllerContext.Provider>
+    </ChakraProvider>
+  );
+}
+
+function RenderMusicModal(danceController: DanceAreaController, townController: TownController) {
+  return (
+    <ChakraProvider>
+      <TownControllerContext.Provider value={townController}>
+        <SelectMusicModal
+          isOpen={true}
+          close={() => {}}
+          danceController={danceController}
+          townController={townController}></SelectMusicModal>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -307,6 +343,55 @@ describe('Dance Overlay Tests', () => {
         danceController.roundId = undefined;
       });
       expect(createDanceAreaSpy).toBeCalledWith(danceController);
+    });
+  });
+
+  describe('DanceMusicPlayer', () => {
+    it('Displays add to queue button when no music is set in the area', async () => {
+      danceController.music = [];
+      const renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Add to queue!')).toBeVisible();
+      expect(await renderData.findByTitle('Queue')).toBeVisible();
+    });
+
+    it('Displays the music modal when the add to queue button is pressed', async () => {
+      let renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      userEvent.click(renderData.getByText('Add to queue!'));
+      renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Enter a Spotify link to queue here!')).toBeVisible();
+    });
+
+    it('Displays add to queue button and player when music is set in the area', async () => {
+      danceController.music = [
+        {
+          url: 'https://open.spotify.com/track/5Y35SjAfXjjG0sFQ3KOxmm?si=df34d9f960514271',
+          duration: 18100,
+          title: 'Nobody Gets Me',
+          artist: 'SZA',
+          album: 'SOS',
+        },
+      ];
+      const renderData = render(RenderDanceMusicPlayer(danceController, townController));
+      expect(await renderData.findByText('Add to queue!')).toBeVisible();
+      expect(await renderData.findByTitle('Spotify')).toBeVisible();
+    });
+  });
+
+  describe('SelectMusicModal', () => {
+    it('Renders with correct title', () => {
+      render(RenderMusicModal(danceController, townController));
+      const title = screen.getByText('Enter a Spotify link to queue here!');
+      expect(title).toBeInTheDocument();
+    });
+
+    it('Renders the input form for Spotify URLs', () => {
+      render(RenderMusicModal(danceController, townController));
+      const input = screen.getByLabelText('Spotify URL');
+      expect(input).toBeInTheDocument();
+      const addButton = screen.getByText('Add to queue');
+      expect(addButton).toBeInTheDocument();
+      const cancelButton = screen.getByText('Cancel');
+      expect(cancelButton).toBeInTheDocument();
     });
   });
 });
