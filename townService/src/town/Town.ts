@@ -92,7 +92,7 @@ export default class Town {
 
   private _broadcastEmitter: BroadcastOperator<ServerToClientEvents, SocketData>;
 
-  private _connectedSockets: Set<CoveyTownSocket> = new Set();
+  private _connectedSockets: Map<string, CoveyTownSocket> = new Map();
 
   constructor(
     friendlyName: string,
@@ -118,7 +118,7 @@ export default class Town {
     const newPlayer = new Player(userName, socket.to(this._townID));
     this._players.push(newPlayer);
 
-    this._connectedSockets.add(socket);
+    this._connectedSockets.set(newPlayer.id, socket);
 
     // Create a video token for this user to join this town
     newPlayer.videoToken = await this._videoClient.getTokenForTown(this._townID, newPlayer.id);
@@ -131,7 +131,7 @@ export default class Town {
     // player's session is disconnected
     socket.on('disconnect', () => {
       this._removePlayer(newPlayer);
-      this._connectedSockets.delete(socket);
+      this._connectedSockets.delete(newPlayer.id);
     });
 
     // Set up a listener to forward all chat messages to all clients in the same interactableArea as the player,
@@ -141,7 +141,6 @@ export default class Town {
       const playerId = newPlayer.location?.interactableID;
       if (messageId === playerId)
         this._connectedSockets.forEach(c => c.emit('chatMessage', message));
-      // this._broadcastEmitter.emit('chatMessage', message);
     });
 
     // Register an event listener for the client socket: if the client updates their
@@ -215,7 +214,7 @@ export default class Town {
     const area = this._interactables.find(dance => dance.id === rating.interactableID);
     if (area && area instanceof DanceArea) {
       area.addPoints(recipient, rating.rating);
-      this._broadcastEmitter.emit('danceRating', rating);
+      this._connectedSockets.get(recipient.id)?.emit('danceRating', rating);
     }
   }
 

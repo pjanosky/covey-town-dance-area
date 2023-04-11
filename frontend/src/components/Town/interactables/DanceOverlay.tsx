@@ -6,7 +6,7 @@ import TownController, {
 import useTownController from '../../../hooks/useTownController';
 
 import { DanceArea as DanceAreaInteractable } from './DanceArea';
-import { DanceMoveResult, NumberKey } from '../../../types/CoveyTownSocket';
+import { DanceMoveResult, DanceRating, NumberKey } from '../../../types/CoveyTownSocket';
 import { Box, Divider, Grid, makeStyles, Button, Typography } from '@material-ui/core';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import SelectMusicModal from './SelectMusicModal';
@@ -17,6 +17,7 @@ import DanceAreaController, {
   useRoundId,
 } from '../../../classes/DanceAreaController';
 import { useToast } from '@chakra-ui/react';
+import RatingModal from './RatingModal';
 
 export type DanceControllerProps = { danceController: DanceAreaController };
 
@@ -37,39 +38,65 @@ export function useOverlayComponentStyle(padding = 25) {
   return useStyles().overlayComponent;
 }
 
-function nameForPlayer(townController: TownController, playerId: string | undefined): string {
+/**
+ * Returns the username of the given player in the given town.
+ * @param townController town controller
+ * @param playerId player id
+ * @returns player's username
+ */
+export function nameForPlayer(
+  townController: TownController,
+  playerId: string | undefined,
+): string {
   if (playerId === townController.ourPlayer.id) {
     return 'You';
   }
   return townController.players.find(player => player.id === playerId)?.userName ?? 'Player';
 }
 
-function RatingModal(): JSX.Element {
-  return <></>;
-}
-
+/**
+ * Frontend contents of the dance area leaderboard.
+ */
 function LeaderboardContent({
   danceController,
   townController,
-  onRate,
 }: {
   danceController: DanceAreaController;
   townController: TownController;
-  onRate: (playerId: string) => void;
 }): JSX.Element {
   const points = usePoints(danceController);
   const sortedPoints = [...points];
   sortedPoints.sort((a, b) => b[1] - a[1]);
+  const [selectIsOpen, setSelectIsOpen] = useState(false);
+  const [recipient, setRecipient] = useState('');
+  const toast = useToast();
 
   return (
     <Box>
+      <RatingModal
+        isOpen={selectIsOpen}
+        close={() => {
+          setSelectIsOpen(false);
+        }}
+        danceController={danceController}
+        townController={townController}
+        playerId={recipient}></RatingModal>
       {sortedPoints.map(([playerId, score], i) => {
         return (
           <Button
             fullWidth={true}
             key={playerId}
             onClick={() => {
-              onRate(playerId);
+              if (playerId === townController.ourPlayer.id) {
+                toast({
+                  title: 'Unable to rate player',
+                  description: 'You cannot rate yourself, you silly goose!',
+                  status: 'error',
+                });
+              } else {
+                setRecipient(playerId);
+                setSelectIsOpen(true);
+              }
             }}
             style={{ padding: 0 }}>
             <Box display='flex' justifyContent='space-between' width='100%'>
@@ -85,6 +112,9 @@ function LeaderboardContent({
   );
 }
 
+/**
+ * Wraps the leaderboard contents in a box component.
+ */
 export function DanceLeaderboard({
   danceController,
   townController,
@@ -96,14 +126,12 @@ export function DanceLeaderboard({
 
   return (
     <Box className={overlayComponent} marginTop={0}>
-      <RatingModal></RatingModal>
       <Typography style={{ padding: '15px 25px' }}>Leaderboard</Typography>
       <Divider></Divider>
       <Box overflow='auto' padding='25px' maxHeight='150px'>
         <LeaderboardContent
           danceController={danceController}
-          townController={townController}
-          onRate={() => {}}></LeaderboardContent>
+          townController={townController}></LeaderboardContent>
       </Box>
     </Box>
   );
@@ -239,6 +267,11 @@ export function useDanceAnimation(
   }
 }
 
+/**
+ * Sends the backend a request to create a dance area when requested.
+ * @param danceController dance controller
+ * @param townController town controller
+ */
 export function useCreateDanceArea(
   danceController: DanceAreaController,
   townController: TownController,
@@ -274,6 +307,36 @@ export function useCreateDanceArea(
 }
 
 /**
+ * This hook adds a listener for when a dance rating is emitted and to notify the recipient of a rating.
+ * @param danceController dance area controller
+ * @param townController town controller
+ */
+export function useHandleRatings(
+  danceController: DanceAreaController,
+  townController: TownController,
+) {
+  {
+    const toast = useToast();
+    useEffect(() => {
+      const danceRatingToast = (danceRating: DanceRating) => {
+        const sender = nameForPlayer(townController, danceRating.sender);
+        const rate = danceRating.rating.toString();
+        if (sender)
+          toast({
+            title: 'Rating received!',
+            description: 'Epic! '.concat(sender, ' sent you ', rate, ' points.'),
+            status: 'info',
+          });
+      };
+      danceController.addListener('danceRating', danceRatingToast);
+      return () => {
+        danceController.removeListener('danceRating', danceRatingToast);
+      };
+    }, [danceController, toast, townController]);
+  }
+}
+
+/**
  * Dance overlay displays all of the overlay components for a dance interactable area
  * including the keys the user needs to press, the leaderboard, and the music player.
  * It also handles key presses made by the user while in the area.
@@ -284,6 +347,7 @@ export function DanceOverlay({ danceArea }: { danceArea: DanceAreaInteractable }
   useHandleKeys(danceController, townController);
   useDanceAnimation(danceController, danceArea);
   useCreateDanceArea(danceController, townController);
+  useHandleRatings(danceController, townController);
 
   return (
     <Box

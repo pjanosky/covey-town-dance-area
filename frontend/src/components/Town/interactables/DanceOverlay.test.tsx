@@ -7,29 +7,19 @@ import React from 'react';
 import DanceAreaController from '../../../classes/DanceAreaController';
 import { act } from 'react-dom/test-utils';
 import { DeepMockProxy } from 'jest-mock-extended';
-import { render, screen, waitFor } from '@testing-library/react';
-import {
-  DanceLeaderboard,
-  DanceMusicPlayer,
-  useCreateDanceArea,
-  useHandleKeys,
-} from './DanceOverlay';
+import { RenderResult, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { DanceLeaderboard, DanceMusicPlayer, useHandleKeys } from './DanceOverlay';
 import { DanceArea, DanceMoveResult } from '../../../types/CoveyTownSocket';
 import PlayerController from '../../../classes/PlayerController';
 import useTownController from '../../../hooks/useTownController';
 import { calculateKeyIndex, DanceKeyViewer } from './DanceKeyView';
 import userEvent from '@testing-library/user-event';
+import RatingModal from './RatingModal';
 import SelectMusicModal from './SelectMusicModal';
 
 function HandleKeysHook({ danceController }: { danceController: DanceAreaController }) {
   const townController = useTownController();
   useHandleKeys(danceController, townController);
-  return <></>;
-}
-
-function CreateDanceAreaHook({ danceController }: { danceController: DanceAreaController }) {
-  const townController = useTownController();
-  useCreateDanceArea(danceController, townController);
   return <></>;
 }
 
@@ -66,19 +56,6 @@ function RenderLeaderboard(danceController: DanceAreaController, townController:
         <DanceLeaderboard
           danceController={danceController}
           townController={townController}></DanceLeaderboard>
-      </TownControllerContext.Provider>
-    </ChakraProvider>
-  );
-}
-
-function RenderCreateDanceAreaHook(
-  danceController: DanceAreaController,
-  townController: TownController,
-) {
-  return (
-    <ChakraProvider>
-      <TownControllerContext.Provider value={townController}>
-        <CreateDanceAreaHook danceController={danceController}></CreateDanceAreaHook>
       </TownControllerContext.Provider>
     </ChakraProvider>
   );
@@ -219,6 +196,81 @@ describe('Dance Overlay Tests', () => {
       expect(await renderData.findByText('3')).toBeVisible();
       expect(await renderData.findByText('28')).toBeVisible();
     });
+
+    it('Opens the rating modal when player is clicked', async () => {
+      const points = new Map();
+      points.set(ourPlayer.id, 30);
+      points.set(otherPlayers[0].id, 45);
+      points.set(otherPlayers[1].id, 3);
+      points.set(otherPlayers[2].id, 28);
+      danceController.points = points;
+
+      let renderData = render(RenderLeaderboard(danceController, townController));
+
+      userEvent.click(renderData.getByText('1. person0'));
+      renderData = render(RenderLeaderboard(danceController, townController));
+      expect(await renderData.findByText('Enter your rating for person0 here!')).toBeVisible();
+    });
+  });
+
+  describe('RatingModal', () => {
+    let renderData: RenderResult;
+    beforeEach(() => {
+      const points = new Map();
+      points.set(ourPlayer.id, 30);
+      points.set(otherPlayers[0].id, 45);
+      points.set(otherPlayers[1].id, 3);
+      points.set(otherPlayers[2].id, 28);
+      danceController.points = points;
+
+      renderData = render(
+        <ChakraProvider>
+          <TownControllerContext.Provider value={townController}>
+            <RatingModal
+              isOpen={true}
+              close={() => {}}
+              danceController={danceController}
+              townController={townController}
+              playerId={otherPlayers[0].id}></RatingModal>
+          </TownControllerContext.Provider>
+        </ChakraProvider>,
+      );
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
+    });
+
+    it('Correctly sets the number of points in the slider', async () => {
+      const ratingInputElement = renderData.getByLabelText(
+        'Rate the player 3 points',
+      ) as HTMLInputElement;
+      fireEvent.change(ratingInputElement, { target: { value: '3' } });
+      expect(ratingInputElement.value).toBe('3');
+    });
+
+    it('Closes the modal when send button is submitted', async () => {
+      const townRatingSpy = jest.spyOn(townController, 'emitDanceRating');
+      const ratingInputElement = renderData.getByLabelText(
+        'Rate the player 3 points',
+      ) as HTMLInputElement;
+      const send = screen.getByRole('button', { name: 'Send' });
+      fireEvent.change(ratingInputElement, { target: { value: '3' } });
+      fireEvent.submit(send);
+      expect(send).not.toBeVisible();
+      expect(townRatingSpy).toHaveBeenCalledWith({
+        interactableID: danceController.id,
+        sender: townController.ourPlayer.id,
+        recipient: otherPlayers[0].id,
+        rating: 3,
+      });
+    });
+
+    it('Closes the modal when cancel button is submitted', async () => {
+      const cancel = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.submit(cancel);
+      expect(cancel).not.toBeVisible();
+    });
   });
 
   describe('calculateKeyIndex', () => {
@@ -319,33 +371,6 @@ describe('Dance Overlay Tests', () => {
     });
   });
 
-  describe('useCreateDanceArea', () => {
-    let createDanceAreaSpy: jest.SpyInstance<Promise<void>, [danceController: DanceAreaController]>;
-    beforeEach(() => {
-      createDanceAreaSpy = jest
-        .spyOn(townController, 'createDanceArea')
-        .mockImplementation(async () => {});
-    });
-
-    it('Does not create dance area when round ID is defined', async () => {
-      danceController.roundId = nanoid();
-      render(RenderCreateDanceAreaHook(danceController, townController));
-      act(() => {
-        danceController.roundId = nanoid();
-      });
-      expect(createDanceAreaSpy).not.toBeCalled();
-    });
-
-    it('Creates dance area when round ID is defined', async () => {
-      danceController.roundId = nanoid();
-      render(RenderCreateDanceAreaHook(danceController, townController));
-      act(() => {
-        danceController.roundId = undefined;
-      });
-      expect(createDanceAreaSpy).toBeCalledWith(danceController);
-    });
-  });
-
   describe('DanceMusicPlayer', () => {
     it('Displays add to queue button when no music is set in the area', async () => {
       danceController.music = [];
@@ -355,10 +380,13 @@ describe('Dance Overlay Tests', () => {
     });
 
     it('Displays the music modal when the add to queue button is pressed', async () => {
-      let renderData = render(RenderDanceMusicPlayer(danceController, townController));
-      userEvent.click(renderData.getByText('Add to queue!'));
-      renderData = render(RenderDanceMusicPlayer(danceController, townController));
-      expect(await renderData.findByText('Enter a Spotify link to queue here!')).toBeVisible();
+      render(RenderDanceMusicPlayer(danceController, townController));
+      const button = screen.getByRole('button', { name: 'Add to queue!' });
+      fireEvent.click(button);
+      const selectMusicModal = screen.getByRole('dialog', {
+        name: 'Enter a Spotify link to queue here!',
+      });
+      expect(selectMusicModal).toBeInTheDocument();
     });
 
     it('Displays add to queue button and player when music is set in the area', async () => {
