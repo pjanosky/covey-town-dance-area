@@ -380,10 +380,13 @@ describe('Dance Overlay Tests', () => {
     });
 
     it('Displays the music modal when the add to queue button is pressed', async () => {
-      let renderData = render(RenderDanceMusicPlayer(danceController, townController));
-      userEvent.click(renderData.getByText('Add to queue!'));
-      renderData = render(RenderDanceMusicPlayer(danceController, townController));
-      expect(await renderData.findByText('Enter a Spotify link to queue here!')).toBeVisible();
+      render(RenderDanceMusicPlayer(danceController, townController));
+      const button = screen.getByRole('button', { name: 'Add to queue!' });
+      fireEvent.click(button);
+      const selectMusicModal = screen.getByRole('dialog', {
+        name: 'Enter a Spotify link to queue here!',
+      });
+      expect(selectMusicModal).toBeInTheDocument();
     });
 
     it('Displays add to queue button and player when music is set in the area', async () => {
