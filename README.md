@@ -1,16 +1,41 @@
-# Covey.Town
+# Covey.Town Dance Area
 
-Covey.Town provides a virtual meeting space where different groups of people can have simultaneous video calls, allowing participants to drift between different conversations, just like in real life.
-Covey.Town was built for Northeastern's [Spring 2021 software engineering course](https://neu-se.github.io/CS4530-CS5500-Spring-2021/), and is designed to be reused across semesters.
-You can view our reference deployment of the app at [app.covey.town](https://app.covey.town/), and our project showcase ([Spring 2022](https://neu-se.github.io/CS4530-Spring-2022/assignments/project-showcase), [Spring 2021](https://neu-se.github.io/CS4530-CS5500-Spring-2021/project-showcase)) highlight select student projects.
+Covey.Town is a full-stack web application that provides a virtual meeting space where different groups of people can have simultaneous video calls, allowing participants to drift between different conversations, just like in real life. This fork of the original open-source application adds a new virtual dancing game to the application.
+
+This project was created as a part of Northeastern University's software engineering course. You can view the reference deployment of the original application at [app.covey.town](https://app.covey.town/), and the original source code at [github.com/neu-se/covey.town](https://github.com/neu-se/covey.town).
+
+
+## New Features
+The Covey.Town map contains a variety of "interactable areas" that allow users to watch videos, have discussions, and view posters. This project adds a new dance floor interactable area to the map, allowing users to listen to music from a shared queue, compete in a dancing game, and rate other player's dance moves.
+
+
+![Dance Area Interface Layout](./docs/screenshots/dance_area.png)
+The screenshot above shows the main layout of the dance area user interface. The panel on the left side of the screen displays the dancing game. By pressing each key as it scrolls past the dotted line, users can make their avatar perform a dancing animation. Dancing animations are visible for any player in the area. Each successful dance move adds points to your score, and each players' point total is displayed on a leaderboard in the bottom right panel.
+
+
+
+![Dance Area Overview](./docs/screenshots/music_queue_modal.png)
+
+Clicking the "Add the queue" button opens a modal that allows users to enter links to spotify songs. When a link is entered, the backend makes a request to the Spotify web API to obtain information about the track like the title, album, artist, and duration. This information is displayed in the queue at the bottom of the modal. Once the duration of the song passes, the currently playing songs switches for everyone in the area. Users can play the current song using the embedded spotify player on the right side of the screen.
+
+
+![Dance Area Overview](./docs/screenshots/rating_modal.png)
+
+Clicking on a users's name on the leaderboard opens a modal allowing users to rate other players in the area. When a player is rated, points are added to their total and they are notified that another player like their dancing.
+
+
+## Architecture Overview
 
 ![Covey.Town Architecture](docs/covey-town-architecture.png)
 
 The figure above depicts the high-level architecture of Covey.Town.
-The frontend client (in the `frontend` directory of this repository) uses the [PhaserJS Game Library](https://phaser.io) to create a 2D game interface, using tilemaps and sprites.
+The frontend client (in the `frontend` directory of this repository) uses the [PhaserJS Game Library](https://phaser.io) to create a 2D game interface, using tilemaps and sprites. The other parts of the user interface are implemented with React.
 The frontend implements video chat using the [Twilio Programmable Video](https://www.twilio.com/docs/video) API, and that aspect of the interface relies heavily on [Twilio's React Starter App](https://github.com/twilio/twilio-video-app-react). Twilio's React Starter App is packaged and reused under the Apache License, 2.0.
 
-A backend service (in the `townService` directory) implements the application logic: tracking which "towns" are available to be joined, and the state of each of those towns.
+A backend service (in the `townService` directory) implements the application logic: tracking which "towns" are available to be joined, and the state of each of those towns. To support the new dance area features, the backend use's the [Spotify's Web API](https://developer.spotify.com/documentation/web-api) to get information on tracks.
+
+For more information of the application architecture, see [the architecture documentation](./docs/architecture.md).
+
 
 ## Running this app locally
 
@@ -57,4 +82,5 @@ Create a `.env` file in the `frontend` directory, with the line: `REACT_APP_TOWN
 In the `frontend` directory, run `npm start` (again, you'll need to run `npm install` the very first time). After several moments (or minutes, depending on the speed of your machine), a browser will open with the frontend running locally.
 The frontend will automatically re-compile and reload in your browser if you change any files in the `frontend/src` directory.
 
-Sign into your spotify account in the browswer where you are running Covey.Town. This will enable the embeded music player in the dance area.
+Sign into your spotify account in the browser where you are running Covey.Town at [open.spotify.com](https://open.spotify.com/). This will enable the full functionality of the embedded music player in the dance area.
+
